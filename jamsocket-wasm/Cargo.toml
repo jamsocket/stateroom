@@ -10,5 +10,9 @@ anyhow = "1.0.42"
 byteorder = "1.4.3"
 jamsocket-wasm-macro = {path="./jamsocket-wasm-macro"}
 jamsocket = {path="../jamsocket"}
-wasmtime = "0.28.0"
 wasmtime-wasi = "0.28.0"
+
+[dependencies.wasmtime]
+version = "0.28.0"
+default-features = false
+features = ["async", "wat", "jitdump", "parallel-compilation"]

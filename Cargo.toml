@@ -2,5 +2,6 @@
 
 members = [
     "jamsocket",
+    "jamsocket-server",
     "jamsocket-wasm",
 ]
