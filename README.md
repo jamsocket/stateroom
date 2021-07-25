@@ -10,4 +10,5 @@ Jamsocket is a lightweight framework for building applications that are served o
 Jamsocket has a modular architecture:
 
 - [`jamsocket`](/jamsocket) is the core, minimal implementation of the service interface.
+- [`jamsocket-server`](/jamsocket-server) provides [Actix](https://actix.rs/) actors to facilitate serving Jamsocket services in a WebSocket server.
 - [`jamsocket-wasm`](/jamsocket-wasm) provides facilities both for generating WebAssembly modules from Jamsocket services, and for embedding those services in an application.
