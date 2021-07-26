@@ -7,7 +7,7 @@ use anyhow::Result;
 use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceBuilder, MessageRecipient};
 use std::time::Duration;
 
-pub struct ServiceActor<T: JamsocketService + Unpin> {
+pub struct ServiceActor<T: JamsocketService> {
     service: T,
     timer_handle: Option<SpawnHandle>,
     room: Addr<RoomActor>,
@@ -60,7 +60,7 @@ impl JamsocketContext for ServiceActorContext {
     }
 }
 
-impl<T: JamsocketService + 'static + Unpin> ServiceActor<T> {
+impl<T: JamsocketService + Unpin + 'static> ServiceActor<T> {
     pub fn new(
         ctx: &mut Context<Self>,
         token: &str,

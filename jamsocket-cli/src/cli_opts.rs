@@ -1,5 +1,5 @@
-use crate::room_id::RoomIdStrategy;
 use clap::Clap;
+use jamsocket_server::RoomIdStrategy;
 
 #[derive(Clap)]
 pub struct Opts {

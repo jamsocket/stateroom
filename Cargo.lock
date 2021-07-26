@@ -1272,15 +1272,10 @@ dependencies = [
  "actix-web",
  "actix-web-actors",
  "anyhow",
- "async-std",
  "clap",
  "jamsocket",
  "jamsocket-server",
  "jamsocket-wasm-host",
- "rand",
- "serde",
- "serde_json",
- "uuid",
  "wasmtime",
 ]
 
@@ -1292,7 +1287,12 @@ dependencies = [
  "actix-web",
  "actix-web-actors",
  "anyhow",
+ "async-std",
  "jamsocket",
+ "rand",
+ "serde",
+ "serde_json",
+ "uuid",
 ]
 
 [[package]]

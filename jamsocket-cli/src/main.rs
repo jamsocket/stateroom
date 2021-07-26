@@ -1,5 +1,4 @@
 mod cli_opts;
-mod room_id;
 mod serve;
 
 use clap::Clap;

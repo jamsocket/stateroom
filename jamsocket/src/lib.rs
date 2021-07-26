@@ -114,7 +114,7 @@ pub trait JamsocketService {
 /// Enables an object to become a [JamsocketService] of the associated `Service` type.
 pub trait JamsocketServiceBuilder<C: JamsocketContext> {
     /// The type of [JamsocketService] that the object implementing this trait becomes.
-    type Service: JamsocketService;
+    type Service: JamsocketService + Unpin + 'static;
 
     /// Transform `self` into a [JamsocketService].
     fn build(self, token: &str, context: C) -> Self::Service;
@@ -122,12 +122,12 @@ pub trait JamsocketServiceBuilder<C: JamsocketContext> {
 
 /// Combines a [SimpleJamsocketService] with an owned [JamsocketContext] in order to implement
 /// [JamsocketService].
-pub struct WrappedJamsocketService<S: SimpleJamsocketService, C: JamsocketContext> {
+pub struct WrappedJamsocketService<S: SimpleJamsocketService + Unpin, C: JamsocketContext + Unpin> {
     context: C,
     model: S,
 }
 
-impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceBuilder<C> for T {
+impl<T: SimpleJamsocketService + Unpin + 'static, C: JamsocketContext + Unpin + 'static> JamsocketServiceBuilder<C> for T {
     type Service = WrappedJamsocketService<T, C>;
 
     fn build(mut self, token: &str, context: C) -> Self::Service {
@@ -140,7 +140,7 @@ impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceBuilder<C> 
     }
 }
 
-impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketService
+impl<T: SimpleJamsocketService + Unpin, C: JamsocketContext + Unpin> JamsocketService
     for WrappedJamsocketService<T, C>
 {
     fn connect(&mut self, user: u32) {
