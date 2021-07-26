@@ -6,12 +6,10 @@ use actix_web::web;
 use actix_web::{get, post, web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use actix_web_actors::ws;
 use async_std::sync::RwLock;
-use jamsocket::JamsocketServiceBuilder;
 use jamsocket_server::{
     AssignUserId, ClientSocketConnection, GetRoomAddr, MessageFromClient, RoomActor, ServiceActor,
-    ServiceActorContext,
 };
-use jamsocket_wasm_host::{WasmHost, WasmHostFactory};
+use jamsocket_wasm_host::{WasmHostFactory};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -35,14 +33,9 @@ async fn try_create_room(
     match room_mapper.write().await.entry(room_id.clone()) {
         std::collections::hash_map::Entry::Occupied(_) => None,
         std::collections::hash_map::Entry::Vacant(entry) => {
-            let service_constructor: Box<dyn FnOnce(ServiceActorContext) -> WasmHost> = {
-                let wasm_host_factory = host_factory.as_ref().clone();
-                let room_id = room_id.clone();
-                Box::new(move |wctx| wasm_host_factory.build(&room_id, wctx))
-            };
-
+            let host_factory = host_factory.as_ref().clone();
             let room_addr =
-                ServiceActor::create(|ctx| ServiceActor::new(ctx, service_constructor).unwrap())
+                ServiceActor::create(|ctx| ServiceActor::new(ctx, &room_id, host_factory).unwrap())
                     .send(GetRoomAddr)
                     .await
                     .unwrap();
