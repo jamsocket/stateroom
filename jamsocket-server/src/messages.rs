@@ -37,11 +37,17 @@ impl Message for MessageFromServer {
 
 impl MessageFromServer {
     pub fn new(to_user: MessageRecipient, data: String) -> Self {
-        MessageFromServer { to_user, data: MessageData::String(data) }
+        MessageFromServer {
+            to_user,
+            data: MessageData::String(data),
+        }
     }
 
     pub fn new_binary(to_user: MessageRecipient, data: Vec<u8>) -> Self {
-        MessageFromServer { to_user, data: MessageData::Binary(data) }
+        MessageFromServer {
+            to_user,
+            data: MessageData::Binary(data),
+        }
     }
 }
 

@@ -59,8 +59,7 @@ impl WasmHost {
     pub fn try_binary(&mut self, user: u32, message: &[u8]) -> Result<()> {
         let pt = self.fn_malloc.call(&mut self.store, message.len() as u32)?;
 
-        self.memory
-            .write(&mut self.store, pt as usize, &message)?;
+        self.memory.write(&mut self.store, pt as usize, &message)?;
 
         self.fn_binary
             .call(&mut self.store, (user, pt as u32, message.len() as u32))?;
