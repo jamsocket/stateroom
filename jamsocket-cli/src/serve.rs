@@ -60,8 +60,8 @@ async fn new_room(req: HttpRequest) -> Result<HttpResponse, Error> {
         let room_id_strategy: &Data<RoomIdStrategy> = req.app_data().unwrap();
 
         match &room_id_strategy.get_ref() {
-            &RoomIdStrategy::Generator(g) => g.generate(),
-            &RoomIdStrategy::Implicit => UuidRoomIdGenerator.generate(),
+            RoomIdStrategy::Generator(g) => g.generate(),
+            RoomIdStrategy::Implicit => UuidRoomIdGenerator.generate(),
             _ => {
                 return Err(ErrorBadRequest(
                     "Room ID strategy does not support room ID generation.",
@@ -92,7 +92,7 @@ async fn websocket(
     } else {
         let room_id_strategy: &Data<RoomIdStrategy> = req.app_data().unwrap();
 
-        if let &RoomIdStrategy::Implicit = room_id_strategy.get_ref() {
+        if let RoomIdStrategy::Implicit = room_id_strategy.get_ref() {
             // TODO: there is technically a race condition where if a room does not exist when
             // we first try to read it, but it is created before we get the write lock, we will
             // fail to connect to the room when the correct behavior is to connect to the existing
