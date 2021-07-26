@@ -1,13 +1,15 @@
 use crate::cli_opts::ServeCommand;
 use crate::room_id::{RoomIdGenerator, RoomIdStrategy, UuidRoomIdGenerator};
 use actix::{Actor, Addr};
-use actix_web::error::ErrorBadRequest;
+use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNotFound};
+use actix_web::web;
 use actix_web::{get, post, web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use async_std::sync::RwLock;
-use jamsocket_server::{GetRoomAddr, RoomActor, ServiceActor, ServiceActorContext};
+use jamsocket_server::{AssignUserId, ClientSocketConnection, GetRoomAddr, MessageFromClient, RoomActor, ServiceActor, ServiceActorContext};
 use jamsocket_wasm_host::{WasmHost, WasmHostFactory};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use actix_web_actors::ws;
 
 type RoomMapper = RwLock<HashMap<String, Addr<RoomActor>>>;
 
@@ -56,6 +58,43 @@ async fn new_room(req: HttpRequest) -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().json(NewRoom { room_id }))
 }
 
+#[get("/ws/{room_id}")]
+async fn websocket(
+    req: HttpRequest,
+    stream: web::Payload,
+    room_id: web::Path<String>,
+) -> actix_web::Result<HttpResponse> {
+    let room_mapper: &Data<RoomMapper> = req.app_data().unwrap();
+
+    let room_addr = room_mapper
+        .read()
+        .await
+        .get(room_id.as_ref())
+        .ok_or(ErrorNotFound("Room not found."))?
+        .clone();
+
+    let user = room_addr
+        .send(AssignUserId)
+        .await
+        .map_err(|_| ErrorInternalServerError("Error getting room."))?;
+
+    match ws::start_with_addr(
+        ClientSocketConnection {
+            room: room_addr.clone().recipient(),
+            user,
+        },
+        &req,
+        stream,
+    ) {
+        Ok((addr, resp)) => {
+            room_addr.do_send(MessageFromClient::Connect(user, addr.recipient()));
+
+            Ok(resp)
+        }
+        Err(e) => Err(e),
+    }
+}
+
 pub fn serve(serve_opts: ServeCommand) -> std::io::Result<()> {
     let ServeCommand {
         module,
@@ -75,6 +114,7 @@ pub fn serve(serve_opts: ServeCommand) -> std::io::Result<()> {
                 .app_data(room_id_strategy.clone())
                 .service(status)
                 .service(new_room)
+                .service(websocket)
         })
         .bind(&format!("127.0.0.1:{}", port))
         .unwrap();
