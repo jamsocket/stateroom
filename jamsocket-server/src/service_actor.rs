@@ -66,8 +66,7 @@ impl<T: JamsocketService + 'static + Unpin> ServiceActor<T> {
         ctx: &mut Context<Self>,
         service_constructor: Box<dyn FnOnce(ServiceActorContext) -> T>,
     ) -> Result<Self> {
-        let room_actor = RoomActor::new(ctx.address().recipient())
-            .start();
+        let room_actor = RoomActor::new(ctx.address().recipient()).start();
 
         let recipient = room_actor.clone().recipient();
 
