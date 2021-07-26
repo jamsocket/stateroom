@@ -135,6 +135,7 @@ pub fn get_global<T>(
 
 impl WasmHost {
     pub fn new(
+        _token: &str,
         module: &Module,
         engine: &Engine,
         context: Arc<impl JamsocketContext + Send + Sync + 'static>,
@@ -180,6 +181,7 @@ impl WasmHost {
 
         let initialize = instance.get_typed_func::<(), (), _>(&mut store, EXT_FN_INITIALIZE)?;
 
+        // TODO: pass token to initialize.
         initialize.call(&mut store, ())?;
 
         let mut memory = instance
