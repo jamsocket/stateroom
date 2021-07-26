@@ -1,4 +1,4 @@
-use crate::messages::{MessageFromClient, MessageFromServer};
+use crate::messages::{MessageData, MessageFromClient, MessageFromServer};
 use actix::{Actor, Handler, Recipient, StreamHandler};
 use actix_web_actors::ws;
 
@@ -17,7 +17,10 @@ impl Handler<MessageFromServer> for ClientSocketConnection {
     type Result = ();
 
     fn handle(&mut self, msg: MessageFromServer, ctx: &mut Self::Context) {
-        ctx.text(msg.data);
+        match msg.data {
+            MessageData::String(st) => ctx.text(st),
+            MessageData::Binary(bin) => ctx.binary(bin),
+        };
     }
 }
 
