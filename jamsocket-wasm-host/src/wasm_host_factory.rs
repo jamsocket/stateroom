@@ -17,9 +17,6 @@ impl WasmHostFactory {
         let engine = Engine::default();
         let module = Module::from_file(&engine, wasm_file).unwrap();
 
-        WasmHostFactory {
-            engine,
-            module,
-        }
+        WasmHostFactory { engine, module }
     }
 }

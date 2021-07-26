@@ -4,12 +4,15 @@ use actix::{Actor, Addr};
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
 use actix_web::web;
 use actix_web::{get, post, web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
+use actix_web_actors::ws;
 use async_std::sync::RwLock;
-use jamsocket_server::{AssignUserId, ClientSocketConnection, GetRoomAddr, MessageFromClient, RoomActor, ServiceActor, ServiceActorContext};
+use jamsocket_server::{
+    AssignUserId, ClientSocketConnection, GetRoomAddr, MessageFromClient, RoomActor, ServiceActor,
+    ServiceActorContext,
+};
 use jamsocket_wasm_host::{WasmHost, WasmHostFactory};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use actix_web_actors::ws;
 
 type RoomMapper = RwLock<HashMap<String, Addr<RoomActor>>>;
 
@@ -23,7 +26,11 @@ async fn status() -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().body("ok"))
 }
 
-async fn try_create_room(room_id: String, room_mapper: &RoomMapper, host_factory: &Data<WasmHostFactory>) -> Option<Addr<RoomActor>> {
+async fn try_create_room(
+    room_id: String,
+    room_mapper: &RoomMapper,
+    host_factory: &Data<WasmHostFactory>,
+) -> Option<Addr<RoomActor>> {
     match room_mapper.write().await.entry(room_id) {
         std::collections::hash_map::Entry::Occupied(_) => None,
         std::collections::hash_map::Entry::Vacant(entry) => {
@@ -32,15 +39,16 @@ async fn try_create_room(room_id: String, room_mapper: &RoomMapper, host_factory
                 Box::new(move |wctx| wasm_host_factory.create_room(wctx))
             };
 
-            let room_addr = ServiceActor::create(|ctx| ServiceActor::new(ctx, service_constructor).unwrap())
-                .send(GetRoomAddr)
-                .await
-                .unwrap();
+            let room_addr =
+                ServiceActor::create(|ctx| ServiceActor::new(ctx, service_constructor).unwrap())
+                    .send(GetRoomAddr)
+                    .await
+                    .unwrap();
 
             entry.insert(room_addr.clone());
-                
+
             Some(room_addr)
-        },
+        }
     }
 }
 
@@ -64,7 +72,9 @@ async fn new_room(req: HttpRequest) -> Result<HttpResponse, Error> {
 
     let room_mapper: &Data<RoomMapper> = req.app_data().unwrap();
     // TODO: this could fail, we really need to wrap it in a `try_generate_room`.
-    try_create_room(room_id.clone(), room_mapper, wasm_host_factory).await.unwrap();
+    try_create_room(room_id.clone(), room_mapper, wasm_host_factory)
+        .await
+        .unwrap();
 
     Ok(HttpResponse::Ok().json(NewRoom { room_id }))
 }
@@ -92,9 +102,7 @@ async fn websocket(
 
             room_addr.await.unwrap()
         } else {
-            return Err(ErrorBadRequest(
-                "The requested room was not found.",
-            ))
+            return Err(ErrorBadRequest("The requested room was not found."));
         }
     };
 
