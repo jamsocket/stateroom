@@ -1,4 +1,4 @@
-use actix::{Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
+use actix::{Actor, Addr, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
 use anyhow::Result;
 use jamsocket::{JamsocketContext, JamsocketService, MessageRecipient};
 use std::time::Duration;
@@ -11,6 +11,7 @@ use crate::{
 pub struct ServiceActor<T: JamsocketService + Unpin> {
     service: T,
     timer_handle: Option<SpawnHandle>,
+    room: Addr<RoomActor>,
 }
 
 struct SetTimer(u32);
@@ -22,6 +23,20 @@ struct TimerFinished;
 
 impl Message for TimerFinished {
     type Result = ();
+}
+
+pub struct GetRoomAddr;
+
+impl Message for GetRoomAddr {
+    type Result = Addr<RoomActor>;
+}
+
+impl<T: JamsocketService + 'static + Unpin> Handler<GetRoomAddr> for ServiceActor<T> {
+    type Result = Addr<RoomActor>;
+
+    fn handle(&mut self, _: GetRoomAddr, _: &mut Self::Context) -> Self::Result {
+        self.room.clone()
+    }
 }
 
 pub struct ServiceActorContext {
@@ -51,9 +66,10 @@ impl<T: JamsocketService + 'static + Unpin> ServiceActor<T> {
         ctx: &mut Context<Self>,
         service_constructor: Box<dyn FnOnce(ServiceActorContext) -> T>,
     ) -> Result<Self> {
-        let recipient = RoomActor::new(ctx.address().recipient())
-            .start()
-            .recipient();
+        let room_actor = RoomActor::new(ctx.address().recipient())
+            .start();
+
+        let recipient = room_actor.clone().recipient();
 
         let host_context = ServiceActorContext {
             set_timer_recipient: ctx.address().recipient(),
@@ -64,6 +80,7 @@ impl<T: JamsocketService + 'static + Unpin> ServiceActor<T> {
         Ok(ServiceActor {
             service,
             timer_handle: None,
+            room: room_actor,
         })
     }
 }
