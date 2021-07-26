@@ -2,6 +2,8 @@ use crate::messages::{MessageFromClient, MessageFromServer};
 use actix::{Actor, Handler, Recipient, StreamHandler};
 use actix_web_actors::ws;
 
+/// Represents a connection from a service to a client, which consists of a
+/// message receiver and a user ID.
 pub struct ClientSocketConnection {
     pub room: Recipient<MessageFromClient>,
     pub user: u32,

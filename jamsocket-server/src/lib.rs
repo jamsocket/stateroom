@@ -1,13 +1,9 @@
 mod client_socket_connection;
 mod messages;
 mod room_actor;
-mod service_actor;
 mod room_id;
+mod service_actor;
 
-pub use client_socket_connection::ClientSocketConnection;
-pub use messages::{AssignUserId, MessageFromClient, MessageFromServer};
-pub use room_actor::RoomActor;
-pub use service_actor::{GetRoomAddr, ServiceActor, ServiceActorContext};
 pub use crate::room_id::{RoomIdGenerator, RoomIdStrategy, UuidRoomIdGenerator};
 use actix::{Actor, Addr};
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
@@ -15,8 +11,12 @@ use actix_web::web::{self, get, post};
 use actix_web::{get, web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use actix_web_actors::ws;
 use async_std::sync::RwLock;
+pub use client_socket_connection::ClientSocketConnection;
 use jamsocket::JamsocketServiceBuilder;
+pub use messages::{AssignUserId, MessageFromClient, MessageFromServer};
+pub use room_actor::RoomActor;
 use serde::{Deserialize, Serialize};
+use service_actor::{GetRoomAddr, ServiceActor, ServiceActorContext};
 use std::collections::HashMap;
 
 type RoomMapper = RwLock<HashMap<String, Addr<RoomActor>>>;
@@ -53,7 +53,9 @@ async fn try_create_room<T: JamsocketServiceBuilder<ServiceActorContext> + Clone
     }
 }
 
-async fn new_room<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Clone>(req: HttpRequest) -> Result<HttpResponse, Error> {
+async fn new_room<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Clone>(
+    req: HttpRequest,
+) -> Result<HttpResponse, Error> {
     let wasm_host_factory: &Data<T> = req.app_data().unwrap();
 
     let room_id = {
@@ -127,7 +129,11 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
     }
 }
 
-pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 'static + Clone>(host_factory: T, room_id_strategy: RoomIdStrategy, port: u32) -> std::io::Result<()>  {
+pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 'static + Clone>(
+    host_factory: T,
+    room_id_strategy: RoomIdStrategy,
+    port: u32,
+) -> std::io::Result<()> {
     let room_mapper = Data::new(RoomMapper::default());
     let room_id_strategy = Data::new(room_id_strategy);
     let host_factory = Data::new(host_factory);
@@ -141,7 +147,6 @@ pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 
                 .service(status)
                 .route("/new_room", post().to(new_room::<T>))
                 .route("/ws/{room_id}", get().to(websocket::<T>))
-                
         })
         .bind(&format!("127.0.0.1:{}", port))
         .unwrap();

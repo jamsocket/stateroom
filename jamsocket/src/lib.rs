@@ -127,7 +127,9 @@ pub struct WrappedJamsocketService<S: SimpleJamsocketService + Unpin, C: Jamsock
     model: S,
 }
 
-impl<T: SimpleJamsocketService + Unpin + 'static, C: JamsocketContext + Unpin + 'static> JamsocketServiceBuilder<C> for T {
+impl<T: SimpleJamsocketService + Unpin + 'static, C: JamsocketContext + Unpin + 'static>
+    JamsocketServiceBuilder<C> for T
+{
     type Service = WrappedJamsocketService<T, C>;
 
     fn build(mut self, token: &str, context: C) -> Self::Service {

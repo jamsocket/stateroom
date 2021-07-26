@@ -18,6 +18,7 @@ impl RoomIdGenerator for ShortRoomIdGenerator {
     }
 }
 
+/// Assigns a user ID from a UUID.
 pub struct UuidRoomIdGenerator;
 
 impl RoomIdGenerator for UuidRoomIdGenerator {
@@ -27,6 +28,7 @@ impl RoomIdGenerator for UuidRoomIdGenerator {
     }
 }
 
+/// Trait for objects capable of generating a user ID.
 pub trait RoomIdGenerator {
     fn generate(&self) -> String;
 }
