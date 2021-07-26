@@ -1,0 +1,13 @@
+[package]
+name = "randomness"
+version = "0.1.0"
+authors = ["Paul Butler <paulgb@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+bytemuck = "1.7.0"
+jamsocket-wasm = {path="../../jamsocket-wasm"}
+wasi = "0.10.2"

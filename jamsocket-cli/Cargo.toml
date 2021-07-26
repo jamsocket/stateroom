@@ -8,7 +8,7 @@ edition = "2018"
 [dependencies]
 jamsocket = {path="../jamsocket"}
 jamsocket-server = {path="../jamsocket-server"}
-jamsocket-wasm = {path="../jamsocket-wasm"}
+jamsocket-wasm-host = {path="../jamsocket-wasm-host"}
 clap = "3.0.0-beta.2"
 uuid = { version = "0.8.2", features = ["v4"] }
 rand = "0.8.4"

@@ -3,7 +3,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::ItemStruct;
 
-/// Exposes a `jamsocket::SimpleJamsocketService`-implementing trait as a WebAssembly module.
+/// Exposes a `jamsocket_wasm::SimpleJamsocketService`-implementing trait as a WebAssembly module.
 #[proc_macro_attribute]
 pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
     // Extract the name of the wrapped entity.
@@ -22,7 +22,7 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
             extern crate alloc;
 
             use super::#name;
-            use jamsocket::{
+            use jamsocket_wasm::prelude::{
                 WrappedJamsocketService,
                 MessageRecipient,
                 JamsocketServiceBuilder,

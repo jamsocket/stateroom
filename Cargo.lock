@@ -1276,7 +1276,7 @@ dependencies = [
  "clap",
  "jamsocket",
  "jamsocket-server",
- "jamsocket-wasm",
+ "jamsocket-wasm-host",
  "rand",
  "serde",
  "serde_json",
@@ -1299,10 +1299,17 @@ dependencies = [
 name = "jamsocket-wasm"
 version = "0.1.0"
 dependencies = [
+ "jamsocket",
+ "jamsocket-wasm-macro",
+]
+
+[[package]]
+name = "jamsocket-wasm-host"
+version = "0.1.0"
+dependencies = [
  "anyhow",
  "byteorder",
  "jamsocket",
- "jamsocket-wasm-macro",
  "wasmtime",
  "wasmtime-wasi",
 ]

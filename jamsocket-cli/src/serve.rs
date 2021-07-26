@@ -4,7 +4,7 @@ use actix::{Actor, Addr};
 use actix_web::{post, web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use async_std::sync::RwLock;
 use jamsocket_server::{GetRoomAddr, RoomActor, ServiceActor};
-use jamsocket_wasm::WasmHostFactory;
+use jamsocket_wasm_host::WasmHostFactory;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
