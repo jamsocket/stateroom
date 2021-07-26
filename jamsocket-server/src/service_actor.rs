@@ -1,5 +1,5 @@
 use crate::{
-    messages::{MessageFromClient, MessageFromServer},
+    messages::{MessageData, MessageFromClient, MessageFromServer},
     RoomActor,
 };
 use actix::{Actor, Addr, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
@@ -108,9 +108,10 @@ impl<T: JamsocketService + 'static + Unpin> Handler<MessageFromClient> for Servi
             MessageFromClient::Disconnect(u) => {
                 self.service.disconnect(u);
             }
-            MessageFromClient::Message { data, from_user } => {
-                self.service.message(from_user, &data);
-            }
+            MessageFromClient::Message { data, from_user } => match data {
+                MessageData::Binary(bin) => self.service.binary(from_user, &bin),
+                MessageData::String(st) => self.service.message(from_user, &st),
+            },
         }
     }
 }

@@ -31,11 +31,17 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
             Ok(ws::Message::Text(text)) => {
                 let message = MessageFromClient::Message {
                     from_user: self.user,
-                    data: text.to_string(),
+                    data: MessageData::String(text.to_string()),
                 };
                 self.room.do_send(message).unwrap();
             }
-            Ok(ws::Message::Binary(_)) => panic!(),
+            Ok(ws::Message::Binary(data)) => {
+                let message = MessageFromClient::Message {
+                    from_user: self.user,
+                    data: MessageData::Binary(data.to_vec()),
+                };
+                self.room.do_send(message).unwrap();
+            }
             Ok(ws::Message::Close(_)) => {
                 self.room
                     .do_send(MessageFromClient::Disconnect(self.user))

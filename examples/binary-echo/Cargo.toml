@@ -1,0 +1,11 @@
+[package]
+name = "binary-echo"
+version = "0.1.0"
+authors = ["Paul Butler <paulgb@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+jamsocket-wasm = {path="../../jamsocket-wasm"}

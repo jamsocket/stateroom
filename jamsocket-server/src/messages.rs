@@ -11,7 +11,7 @@ pub enum MessageFromClient {
     Disconnect(u32),
 
     /// A client sends a message.
-    Message { from_user: u32, data: String },
+    Message { from_user: u32, data: MessageData },
 }
 
 impl Message for MessageFromClient {

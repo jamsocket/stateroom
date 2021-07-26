@@ -244,10 +244,10 @@ impl WasmHost {
             fn_malloc,
             fn_free,
             fn_message,
+            fn_binary,
             fn_connect,
             fn_disconnect,
             fn_timer,
-            fn_binary,
         })
     }
 }
