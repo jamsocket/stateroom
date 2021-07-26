@@ -69,6 +69,11 @@ pub trait JamsocketContext {
     /// The message is a string which is sent verbatim to the user(s) indicated.
     fn send_message(&self, recipient: impl Into<MessageRecipient>, message: &str);
 
+    /// Sends a binary message to a currently connected user, or broadcast a message to all users.
+    ///
+    /// See [JamsocketContext::send_message] for details on the semantics of `recipient`.
+    fn send_binary(&self, recipient: impl Into<MessageRecipient>, message: &[u8]);
+
     /// Sets a timer to wake up the service in the given number of milliseconds by invoking `timer()`.
     ///
     /// Each instance of a service can only have one (or zero) timer outstanding at any time; if this
@@ -92,6 +97,8 @@ pub trait SimpleJamsocketService: Default {
 
     fn message(&mut self, user: u32, message: &str, context: &impl JamsocketContext) {}
 
+    fn binary(&mut self, user: u32, message: &[u8], context: &impl JamsocketContext) {}
+
     fn timer(&mut self, context: &impl JamsocketContext) {}
 }
 
@@ -107,6 +114,8 @@ pub trait JamsocketService {
     fn disconnect(&mut self, user: u32);
 
     fn message(&mut self, user: u32, message: &str);
+
+    fn binary(&mut self, user: u32, message: &[u8]);
 
     fn timer(&mut self);
 }
@@ -159,5 +168,9 @@ impl<T: SimpleJamsocketService + Unpin, C: JamsocketContext + Unpin> JamsocketSe
 
     fn timer(&mut self) {
         self.model.timer(&self.context);
+    }
+
+    fn binary(&mut self, user: u32, message: &[u8]) {
+        self.model.binary(user, message, &self.context)
     }
 }

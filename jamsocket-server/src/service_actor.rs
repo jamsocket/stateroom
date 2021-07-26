@@ -1,5 +1,5 @@
 use crate::{
-    messages::{MessageFromClient, MessageFromServer},
+    messages::{MessageData, MessageFromClient, MessageFromServer},
     RoomActor,
 };
 use actix::{Actor, Addr, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
@@ -53,6 +53,15 @@ impl JamsocketContext for ServiceActorContext {
             .unwrap();
     }
 
+    fn send_binary(&self, recipient: impl Into<MessageRecipient>, message: &[u8]) {
+        self.send_message_recipient
+            .do_send(MessageFromServer::new_binary(
+                recipient.into(),
+                message.to_vec(),
+            ))
+            .unwrap();
+    }
+
     fn set_timer(&self, ms_delay: u32) {
         self.set_timer_recipient
             .do_send(SetTimer(ms_delay))
@@ -99,9 +108,10 @@ impl<T: JamsocketService + 'static + Unpin> Handler<MessageFromClient> for Servi
             MessageFromClient::Disconnect(u) => {
                 self.service.disconnect(u);
             }
-            MessageFromClient::Message { data, from_user } => {
-                self.service.message(from_user, &data);
-            }
+            MessageFromClient::Message { data, from_user } => match data {
+                MessageData::Binary(bin) => self.service.binary(from_user, &bin),
+                MessageData::String(st) => self.service.message(from_user, &st),
+            },
         }
     }
 }

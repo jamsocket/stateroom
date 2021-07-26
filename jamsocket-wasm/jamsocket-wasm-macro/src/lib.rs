@@ -57,12 +57,24 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         );
                     }
                 }
+
+                fn send_binary(&self, recipient: impl Into<MessageRecipient>, message: &[u8]) {
+                    unsafe {
+                        ffi::send_binary(
+                            recipient.into().encode_u32(),
+                            &message[0] as *const u8 as u32,
+                            message.len() as u32,
+                        );
+                    }
+                }
             }
 
             // Functions implemented by the host.
             mod ffi {
                 extern "C" {
                     pub fn send_message(user: u32, message: u32, message_len: u32);
+
+                    pub fn send_binary(user: u32, message: u32, message_len: u32);
 
                     pub fn set_timer(ms_delay: u32);
                 }
@@ -109,6 +121,18 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
                     match SERVER_STATE.as_mut() {
                         Some(st) => JamsocketService::message(st, user, &string),
+                        None => ()
+                    }
+                }
+            }
+
+            #[no_mangle]
+            extern "C" fn binary(user: u32, ptr: *const u8, len: usize) {
+                unsafe {
+                    let data = std::slice::from_raw_parts(ptr, len);
+
+                    match SERVER_STATE.as_mut() {
+                        Some(st) => JamsocketService::binary(st, user, data),
                         None => ()
                     }
                 }

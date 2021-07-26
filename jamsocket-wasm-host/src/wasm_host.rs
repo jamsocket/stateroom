@@ -12,8 +12,10 @@ const ENV: &str = "env";
 const EXT_MEMORY: &str = "memory";
 const EXT_FN_CONNECT: &str = "connect";
 const EXT_FN_DISCONNECT: &str = "disconnect";
+const EXT_FN_BINARY: &str = "binary";
 const EXT_FN_MESSAGE: &str = "message";
 const EXT_FN_SEND_MESSAGE: &str = "send_message";
+const EXT_FN_SEND_BINARY: &str = "send_binary";
 const EXT_FN_SET_TIMER: &str = "set_timer";
 const EXT_FN_TIMER: &str = "timer";
 const EXT_FN_INITIALIZE: &str = "initialize";
@@ -33,6 +35,7 @@ pub struct WasmHost {
     fn_malloc: TypedFunc<u32, u32>,
     fn_free: TypedFunc<(u32, u32), ()>,
     fn_message: TypedFunc<(u32, u32, u32), ()>,
+    fn_binary: TypedFunc<(u32, u32, u32), ()>,
     fn_connect: TypedFunc<u32, ()>,
     fn_disconnect: TypedFunc<u32, ()>,
     fn_timer: TypedFunc<(), ()>,
@@ -46,6 +49,20 @@ impl WasmHost {
             .write(&mut self.store, pt as usize, &message.as_bytes())?;
 
         self.fn_message
+            .call(&mut self.store, (user, pt as u32, message.len() as u32))?;
+
+        self.fn_free
+            .call(&mut self.store, (pt, message.len() as u32))?;
+
+        Ok(())
+    }
+
+    pub fn try_binary(&mut self, user: u32, message: &[u8]) -> Result<()> {
+        let pt = self.fn_malloc.call(&mut self.store, message.len() as u32)?;
+
+        self.memory.write(&mut self.store, pt as usize, &message)?;
+
+        self.fn_binary
             .call(&mut self.store, (user, pt as u32, message.len() as u32))?;
 
         self.fn_free
@@ -79,6 +96,12 @@ impl JamsocketService for WasmHost {
             println!("Error calling `timer` on wasm host. {:?}", &e);
         };
     }
+
+    fn binary(&mut self, user: u32, message: &[u8]) {
+        if let Err(e) = self.try_binary(user, message) {
+            println!("Error calling `binary` on wasm host. {:?}", &e);
+        };
+    }
 }
 
 #[inline]
@@ -96,6 +119,7 @@ fn get_string<'a, T>(
     start: u32,
     len: u32,
 ) -> &'a str {
+    // TODO: refactor to use get_u8_vec
     let data = memory
         .data(caller)
         .get(start as usize..(start + len) as usize);
@@ -104,6 +128,22 @@ fn get_string<'a, T>(
             Ok(s) => s,
             Err(_) => panic!(),
         },
+        None => panic!(),
+    }
+}
+
+#[inline]
+fn get_u8_vec<'a, T>(
+    caller: &'a Caller<'_, T>,
+    memory: &'a Memory,
+    start: u32,
+    len: u32,
+) -> &'a [u8] {
+    let data = memory
+        .data(caller)
+        .get(start as usize..(start + len) as usize);
+    match data {
+        Some(data) => data,
         None => panic!(),
     }
 }
@@ -168,6 +208,23 @@ impl WasmHost {
             let context = context.clone();
             linker.func_wrap(
                 ENV,
+                EXT_FN_SEND_BINARY,
+                move |mut caller: Caller<'_, WasiCtx>, user: u32, start: u32, len: u32| {
+                    let memory = get_memory(&mut caller);
+                    let message = get_u8_vec(&caller, &memory, start, len);
+
+                    context.send_binary(MessageRecipient::decode_u32(user), message);
+
+                    Ok(())
+                },
+            )?;
+        }
+
+        {
+            #[allow(clippy::redundant_clone)]
+            let context = context.clone();
+            linker.func_wrap(
+                ENV,
                 EXT_FN_SET_TIMER,
                 move |_: Caller<'_, WasiCtx>, duration_ms: u32| {
                     context.set_timer(duration_ms);
@@ -213,12 +270,16 @@ impl WasmHost {
         let fn_message =
             instance.get_typed_func::<(u32, u32, u32), (), _>(&mut store, EXT_FN_MESSAGE)?;
 
+        let fn_binary =
+            instance.get_typed_func::<(u32, u32, u32), (), _>(&mut store, EXT_FN_BINARY)?;
+
         Ok(WasmHost {
             store,
             memory,
             fn_malloc,
             fn_free,
             fn_message,
+            fn_binary,
             fn_connect,
             fn_disconnect,
             fn_timer,
