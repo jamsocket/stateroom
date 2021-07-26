@@ -2,21 +2,20 @@ use jamsocket_wasm::prelude::*;
 
 #[jamsocket_wasm]
 #[derive(Default)]
-struct EchoServer;
+struct BinaryEcho;
 
-impl SimpleJamsocketService for EchoServer {
-    fn connect(&mut self, user: u32, ctx: &impl JamsocketContext) {
-        ctx.send_message(user, &format!("User {} connected.", user));
-    }
-
-    fn message(&mut self, user: u32, message: &str, ctx: &impl JamsocketContext) {
-        ctx.send_message(
+impl SimpleJamsocketService for BinaryEcho {
+    fn message(&mut self, _: u32, message: &str, ctx: &impl JamsocketContext) {
+        ctx.send_binary(
             MessageRecipient::Broadcast,
-            &format!("User {} sent '{}'", user, message),
+            message.as_bytes(),
         );
     }
 
-    fn disconnect(&mut self, user: u32, ctx: &impl JamsocketContext) {
-        ctx.send_message(MessageRecipient::Broadcast, &format!("User {} left.", user));
+    fn binary(&mut self, _: u32, message: &[u8], ctx: &impl JamsocketContext) {
+        ctx.send_message(
+            MessageRecipient::Broadcast,
+            &format!("Received binary data: {:?}", &message),
+        );
     }
 }

@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "echo-server"
+name = "binary-echo"
 version = "0.1.0"
 dependencies = [
  "jamsocket-wasm",

@@ -88,11 +88,14 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
 ) -> actix_web::Result<HttpResponse> {
     let room_mapper: &Data<RoomMapper> = req.app_data().unwrap();
 
-    let room_addr = if let Some(room_addr) = room_mapper.read().await.get(room_id.as_ref()) {
+    let maybe_room_addr = {
+        room_mapper.read().await.get(room_id.as_ref()).map(|d| d.clone())
+    };
+
+    let room_addr = if let Some(room_addr) = maybe_room_addr {
         room_addr.clone()
     } else {
         let room_id_strategy: &Data<RoomIdStrategy> = req.app_data().unwrap();
-
         if let RoomIdStrategy::Implicit = room_id_strategy.get_ref() {
             // TODO: there is technically a race condition where if a room does not exist when
             // we first try to read it, but it is created before we get the write lock, we will
@@ -100,7 +103,6 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
             // room.
             let wasm_host_factory: &Data<T> = req.app_data().unwrap();
             let room_addr = try_create_room(room_id.to_string(), room_mapper, wasm_host_factory);
-
             room_addr.await.unwrap()
         } else {
             return Err(ErrorBadRequest("The requested room was not found."));

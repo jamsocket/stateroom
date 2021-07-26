@@ -15,6 +15,7 @@ const EXT_FN_DISCONNECT: &str = "disconnect";
 const EXT_FN_BINARY: &str = "binary";
 const EXT_FN_MESSAGE: &str = "message";
 const EXT_FN_SEND_MESSAGE: &str = "send_message";
+const EXT_FN_SEND_BINARY: &str = "send_binary";
 const EXT_FN_SET_TIMER: &str = "set_timer";
 const EXT_FN_TIMER: &str = "timer";
 const EXT_FN_INITIALIZE: &str = "initialize";
@@ -118,6 +119,7 @@ fn get_string<'a, T>(
     start: u32,
     len: u32,
 ) -> &'a str {
+    // TODO: refactor to use get_u8_vec
     let data = memory
         .data(caller)
         .get(start as usize..(start + len) as usize);
@@ -126,6 +128,22 @@ fn get_string<'a, T>(
             Ok(s) => s,
             Err(_) => panic!(),
         },
+        None => panic!(),
+    }
+}
+
+#[inline]
+fn get_u8_vec<'a, T>(
+    caller: &'a Caller<'_, T>,
+    memory: &'a Memory,
+    start: u32,
+    len: u32,
+) -> &'a [u8] {
+    let data = memory
+        .data(caller)
+        .get(start as usize..(start + len) as usize);
+    match data {
+        Some(data) => data,
         None => panic!(),
     }
 }
@@ -179,6 +197,23 @@ impl WasmHost {
                     let message = get_string(&caller, &memory, start, len);
 
                     context.send_message(MessageRecipient::decode_u32(user), message);
+
+                    Ok(())
+                },
+            )?;
+        }
+
+        {
+            #[allow(clippy::redundant_clone)]
+            let context = context.clone();
+            linker.func_wrap(
+                ENV,
+                EXT_FN_SEND_BINARY,
+                move |mut caller: Caller<'_, WasiCtx>, user: u32, start: u32, len: u32| {
+                    let memory = get_memory(&mut caller);
+                    let message = get_u8_vec(&caller, &memory, start, len);
+
+                    context.send_binary(MessageRecipient::decode_u32(user), message);
 
                     Ok(())
                 },
