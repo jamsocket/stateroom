@@ -1,12 +1,11 @@
-use actix::{Actor, Addr, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
-use anyhow::Result;
-use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceBuilder, MessageRecipient};
-use std::time::Duration;
-
 use crate::{
     messages::{MessageFromClient, MessageFromServer},
     RoomActor,
 };
+use actix::{Actor, Addr, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
+use anyhow::Result;
+use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceBuilder, MessageRecipient};
+use std::time::Duration;
 
 pub struct ServiceActor<T: JamsocketService + Unpin> {
     service: T,
@@ -65,7 +64,7 @@ impl<T: JamsocketService + 'static + Unpin> ServiceActor<T> {
     pub fn new(
         ctx: &mut Context<Self>,
         token: &str,
-        service_constructor: impl JamsocketServiceBuilder<ServiceActorContext, Service=T>,
+        service_constructor: impl JamsocketServiceBuilder<ServiceActorContext, Service = T>,
     ) -> Result<Self> {
         let room_actor = RoomActor::new(ctx.address().recipient()).start();
 

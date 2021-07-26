@@ -13,7 +13,13 @@ impl<T: JamsocketContext + Send + Sync + 'static> JamsocketServiceBuilder<T> for
     type Service = WasmHost;
 
     fn build(self, token: &str, context: T) -> Self::Service {
-        WasmHost::new(token, self.module.as_ref(), self.engine.as_ref(), Arc::new(context)).unwrap()
+        WasmHost::new(
+            token,
+            self.module.as_ref(),
+            self.engine.as_ref(),
+            Arc::new(context),
+        )
+        .unwrap()
     }
 }
 
@@ -22,6 +28,9 @@ impl WasmHostFactory {
         let engine = Engine::default();
         let module = Module::from_file(&engine, wasm_file).unwrap();
 
-        WasmHostFactory { engine: Arc::new(engine), module: Arc::new(module) }
+        WasmHostFactory {
+            engine: Arc::new(engine),
+            module: Arc::new(module),
+        }
     }
 }

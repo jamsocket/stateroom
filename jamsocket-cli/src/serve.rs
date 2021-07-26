@@ -9,7 +9,7 @@ use async_std::sync::RwLock;
 use jamsocket_server::{
     AssignUserId, ClientSocketConnection, GetRoomAddr, MessageFromClient, RoomActor, ServiceActor,
 };
-use jamsocket_wasm_host::{WasmHostFactory};
+use jamsocket_wasm_host::WasmHostFactory;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
