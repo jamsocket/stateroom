@@ -26,6 +26,7 @@ impl<T: JamsocketContext + Send + Sync + 'static> JamsocketServiceBuilder<T> for
 impl WasmHostFactory {
     pub fn new(wasm_file: &str) -> Self {
         let engine = Engine::default();
+        log::info!("Loading WebAssembly module {}", &wasm_file);
         let module = Module::from_file(&engine, wasm_file).unwrap();
 
         WasmHostFactory {

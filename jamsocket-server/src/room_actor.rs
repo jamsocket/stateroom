@@ -34,8 +34,6 @@ impl Handler<MessageFromServer> for RoomActor {
     type Result = ();
 
     fn handle(&mut self, message: MessageFromServer, _ctx: &mut Context<Self>) {
-        println!("handle called from wasm with message: {:?}", &message);
-
         match message.to_user {
             MessageRecipient::Broadcast => {
                 for addr in self.connections.values() {
@@ -46,8 +44,8 @@ impl Handler<MessageFromServer> for RoomActor {
                 if let Some(client_connection) = self.connections.get(&u) {
                     client_connection.do_send(message).unwrap();
                 } else {
-                    println!(
-                        "Error getting address of user {:?}; may have disconnected.",
+                    log::warn!(
+                        "Could not get address of user {:?}; they may have disconnected.",
                         u
                     );
                 }
@@ -60,8 +58,6 @@ impl Handler<MessageFromClient> for RoomActor {
     type Result = ();
 
     fn handle(&mut self, message: MessageFromClient, _ctx: &mut Context<Self>) {
-        println!("handle called from client with message: {:?}", &message);
-
         match &message {
             MessageFromClient::Connect(u, resp) => {
                 self.connections.insert(*u, resp.clone());

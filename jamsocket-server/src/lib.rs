@@ -48,6 +48,7 @@ async fn try_create_room<T: JamsocketServiceBuilder<ServiceActorContext> + Clone
 
             entry.insert(room_addr.clone());
 
+            log::info!("Created room: {}", &room_id);
             Some(room_addr)
         }
     }
@@ -86,10 +87,20 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
     stream: web::Payload,
     room_id: web::Path<String>,
 ) -> actix_web::Result<HttpResponse> {
+    let ip = if let Some(peer_addr) = req.peer_addr() {
+        peer_addr.ip().to_string()
+    } else {
+        "<unknown>".to_string()
+    };
+
     let room_mapper: &Data<RoomMapper> = req.app_data().unwrap();
 
     let maybe_room_addr = {
-        room_mapper.read().await.get(room_id.as_ref()).map(|d| d.clone())
+        room_mapper
+            .read()
+            .await
+            .get(room_id.as_ref())
+            .cloned()
     };
 
     let room_addr = if let Some(room_addr) = maybe_room_addr {
@@ -118,11 +129,19 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
         ClientSocketConnection {
             room: room_addr.clone().recipient(),
             user,
+            ip: ip.clone(),
+            room_id: room_id.clone(),
         },
         &req,
         stream,
     ) {
         Ok((addr, resp)) => {
+            log::info!(
+                "New connection from IP {} to room {} (user {})",
+                &ip,
+                &room_id,
+                user
+            );
             room_addr.do_send(MessageFromClient::Connect(user, addr.recipient()));
 
             Ok(resp)
@@ -139,6 +158,7 @@ pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 
     let room_mapper = Data::new(RoomMapper::default());
     let room_id_strategy = Data::new(room_id_strategy);
     let host_factory = Data::new(host_factory);
+    let host = format!("127.0.0.1:{}", port);
 
     actix_web::rt::System::new().block_on(async move {
         let server = HttpServer::new(move || {
@@ -150,9 +170,10 @@ pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 
                 .route("/new_room", post().to(new_room::<T>))
                 .route("/ws/{room_id}", get().to(websocket::<T>))
         })
-        .bind(&format!("127.0.0.1:{}", port))
+        .bind(&host)
         .unwrap();
 
+        log::info!("Listening at {}", &host);
         server.run().await
     })
 }

@@ -7,6 +7,8 @@ use actix_web_actors::ws;
 pub struct ClientSocketConnection {
     pub room: Recipient<MessageFromClient>,
     pub user: u32,
+    pub room_id: String,
+    pub ip: String,
 }
 
 impl Actor for ClientSocketConnection {
@@ -43,6 +45,13 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                 self.room.do_send(message).unwrap();
             }
             Ok(ws::Message::Close(_)) => {
+                log::info!(
+                    "User {} (IP: {}) has disconnected from room {}",
+                    self.user,
+                    &self.ip,
+                    &self.room_id
+                );
+
                 self.room
                     .do_send(MessageFromClient::Disconnect(self.user))
                     .unwrap();

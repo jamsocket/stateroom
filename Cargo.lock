@@ -944,6 +944,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "env_logger"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b2cf0344971ee6c64c31be0d530793fba457d322dfec2810c453d0ef228f9c3"
+dependencies = [
+ "atty",
+ "humantime",
+ "log",
+ "regex",
+ "termcolor",
+]
+
+[[package]]
 name = "errno"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1198,6 +1211,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3a87b616e37e93c22fb19bcd386f02f3af5ea98a25670ad0fce773de23c5e68"
 
 [[package]]
+name = "humantime"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
+
+[[package]]
 name = "idna"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1273,9 +1292,11 @@ dependencies = [
  "actix-web-actors",
  "anyhow",
  "clap",
+ "env_logger",
  "jamsocket",
  "jamsocket-server",
  "jamsocket-wasm-host",
+ "log",
  "wasmtime",
 ]
 
@@ -1289,6 +1310,7 @@ dependencies = [
  "anyhow",
  "async-std",
  "jamsocket",
+ "log",
  "rand",
  "serde",
  "serde_json",
@@ -1310,6 +1332,7 @@ dependencies = [
  "anyhow",
  "byteorder",
  "jamsocket",
+ "log",
  "wasmtime",
  "wasmtime-wasi",
 ]
