@@ -46,13 +46,13 @@ pub struct ServerSettings {
     pub port: u32,
 }
 
-async fn try_create_room<T: JamsocketServiceBuilder<ServiceActorContext> + Clone>(
+async fn create_room<T: JamsocketServiceBuilder<ServiceActorContext> + Clone>(
     room_id: String,
     room_mapper: &RoomMapper,
     host_factory: &Data<T>,
-) -> Option<Addr<RoomActor>> {
+) -> (bool, Addr<RoomActor>) {
     match room_mapper.write().await.entry(room_id.clone()) {
-        std::collections::hash_map::Entry::Occupied(_) => None,
+        std::collections::hash_map::Entry::Occupied(entry) => (true, entry.get().clone()),
         std::collections::hash_map::Entry::Vacant(entry) => {
             let host_factory: T = host_factory.get_ref().clone();
 
@@ -77,37 +77,39 @@ async fn try_create_room<T: JamsocketServiceBuilder<ServiceActorContext> + Clone
             entry.insert(room_actor.clone());
 
             log::info!("Created room: {}", &room_id);
-            Some(room_actor)
+            (false, room_actor)
         }
     }
 }
 
 async fn new_room<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Clone>(
     req: HttpRequest,
-) -> Result<HttpResponse, Error> {
+) -> Result<String, Error> {
     let wasm_host_factory: &Data<T> = req.app_data().unwrap();
-
-    let room_id = {
-        let server_settings: &Data<ServerSettings> = req.app_data().unwrap();
-
-        match &server_settings.room_id_strategy {
-            RoomIdStrategy::Generator(g) => g.generate(),
-            RoomIdStrategy::Implicit => UuidRoomIdGenerator.generate(),
-            _ => {
-                return Err(ErrorBadRequest(
-                    "Room ID strategy does not support room ID generation.",
-                ))
-            }
-        }
-    };
-
+    let server_settings: &Data<ServerSettings> = req.app_data().unwrap();
     let room_mapper: &Data<RoomMapper> = req.app_data().unwrap();
-    // TODO: this could fail, we really need to wrap it in a `try_generate_room`.
-    try_create_room(room_id.clone(), room_mapper, wasm_host_factory)
-        .await
-        .unwrap();
 
-    Ok(HttpResponse::Ok().json(NewRoom { room_id }))
+    for _ in 0..100 {
+        let room_id = {
+            match &server_settings.room_id_strategy {
+                RoomIdStrategy::Generator(g) => g.generate(),
+                RoomIdStrategy::Implicit => UuidRoomIdGenerator.generate(),
+                _ => {
+                    return Err(ErrorBadRequest(
+                        "Room ID strategy does not support room ID generation.",
+                    ))
+                }
+            }
+        };
+    
+        let (already_existed, _) = create_room(room_id.clone(), room_mapper, wasm_host_factory).await;
+
+        if !already_existed {
+            return Ok(room_id);
+        }
+    }
+
+    Err(ErrorInternalServerError("Could not assign a unique room ID."))
 }
 
 async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Clone>(
@@ -131,13 +133,9 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
     } else {
         let server_settings: &Data<ServerSettings> = req.app_data().unwrap();
         if let RoomIdStrategy::Implicit = server_settings.room_id_strategy {
-            // TODO: there is technically a race condition where if a room does not exist when
-            // we first try to read it, but it is created before we get the write lock, we will
-            // fail to connect to the room when the correct behavior is to connect to the existing
-            // room.
             let wasm_host_factory: &Data<T> = req.app_data().unwrap();
-            let room_addr = try_create_room(room_id.to_string(), room_mapper, wasm_host_factory);
-            room_addr.await.unwrap()
+            let (_, room_addr) = create_room(room_id.to_string(), room_mapper, wasm_host_factory).await;
+            room_addr
         } else {
             return Err(ErrorBadRequest("The requested room was not found."));
         }
