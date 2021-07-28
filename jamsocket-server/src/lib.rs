@@ -18,6 +18,7 @@ pub use room_actor::RoomActor;
 use serde::{Deserialize, Serialize};
 use service_actor::{GetRoomAddr, ServiceActor, ServiceActorContext};
 use std::collections::HashMap;
+use std::time::{Duration, Instant};
 
 type RoomMapper = RwLock<HashMap<String, Addr<RoomActor>>>;
 
@@ -29,6 +30,13 @@ struct NewRoom {
 #[get("/")]
 async fn status() -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().body("ok"))
+}
+
+pub struct ServerSettings {
+    pub heartbeat_interval: Duration,
+    pub heartbeat_timeout: Duration,
+    pub room_id_strategy: RoomIdStrategy,
+    pub port: u32,
 }
 
 async fn try_create_room<T: JamsocketServiceBuilder<ServiceActorContext> + Clone>(
@@ -60,9 +68,9 @@ async fn new_room<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Cl
     let wasm_host_factory: &Data<T> = req.app_data().unwrap();
 
     let room_id = {
-        let room_id_strategy: &Data<RoomIdStrategy> = req.app_data().unwrap();
+        let server_settings: &Data<ServerSettings> = req.app_data().unwrap();
 
-        match &room_id_strategy.get_ref() {
+        match &server_settings.room_id_strategy {
             RoomIdStrategy::Generator(g) => g.generate(),
             RoomIdStrategy::Implicit => UuidRoomIdGenerator.generate(),
             _ => {
@@ -94,20 +102,15 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
     };
 
     let room_mapper: &Data<RoomMapper> = req.app_data().unwrap();
+    let server_settings: &Data<ServerSettings> = req.app_data().unwrap();
 
-    let maybe_room_addr = {
-        room_mapper
-            .read()
-            .await
-            .get(room_id.as_ref())
-            .cloned()
-    };
+    let maybe_room_addr = { room_mapper.read().await.get(room_id.as_ref()).cloned() };
 
     let room_addr = if let Some(room_addr) = maybe_room_addr {
         room_addr.clone()
     } else {
-        let room_id_strategy: &Data<RoomIdStrategy> = req.app_data().unwrap();
-        if let RoomIdStrategy::Implicit = room_id_strategy.get_ref() {
+        let server_settings: &Data<ServerSettings> = req.app_data().unwrap();
+        if let RoomIdStrategy::Implicit = server_settings.room_id_strategy {
             // TODO: there is technically a race condition where if a room does not exist when
             // we first try to read it, but it is created before we get the write lock, we will
             // fail to connect to the room when the correct behavior is to connect to the existing
@@ -131,6 +134,9 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
             user,
             ip: ip.clone(),
             room_id: room_id.clone(),
+            last_seen: Instant::now(),
+            heartbeat_interval: server_settings.heartbeat_interval,
+            heartbeat_timeout: server_settings.heartbeat_timeout,
         },
         &req,
         stream,
@@ -152,20 +158,19 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
 
 pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 'static + Clone>(
     host_factory: T,
-    room_id_strategy: RoomIdStrategy,
-    port: u32,
+    server_settings: ServerSettings,
 ) -> std::io::Result<()> {
     let room_mapper = Data::new(RoomMapper::default());
-    let room_id_strategy = Data::new(room_id_strategy);
     let host_factory = Data::new(host_factory);
-    let host = format!("127.0.0.1:{}", port);
+    let host = format!("127.0.0.1:{}", server_settings.port);
+    let server_settings = Data::new(server_settings);
 
     actix_web::rt::System::new().block_on(async move {
         let server = HttpServer::new(move || {
             App::new()
                 .app_data(room_mapper.clone())
                 .app_data(host_factory.clone())
-                .app_data(room_id_strategy.clone())
+                .app_data(server_settings.clone())
                 .service(status)
                 .route("/new_room", post().to(new_room::<T>))
                 .route("/ws/{room_id}", get().to(websocket::<T>))
