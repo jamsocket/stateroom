@@ -1,5 +1,5 @@
 use crate::messages::{AssignUserId, MessageFromClient, MessageFromServer};
-use actix::{Actor, Context, Handler, Recipient};
+use actix::{Actor, ActorContext, Context, Handler, Recipient};
 use jamsocket::MessageRecipient;
 use std::collections::HashMap;
 
@@ -8,7 +8,8 @@ use std::collections::HashMap;
 /// is like a room in a chat service. Events (such as messages) and their
 /// side-effects are isolated to the room in which they occur.
 pub struct RoomActor {
-    service_actor: Recipient<MessageFromClient>,
+    room_id: String,
+    service_actor: Option<Recipient<MessageFromClient>>,
     connections: HashMap<u32, Recipient<MessageFromServer>>,
     /// User IDs are assigned sequentially within the context of each room,
     /// ensuring that they never overlap. `next_id` stores the next ID that
@@ -17,9 +18,10 @@ pub struct RoomActor {
 }
 
 impl RoomActor {
-    pub fn new(service_actor: Recipient<MessageFromClient>) -> Self {
+    pub fn new(room_id: String, service_actor: Recipient<MessageFromClient>) -> Self {
         RoomActor {
-            service_actor,
+            room_id,
+            service_actor: Some(service_actor),
             connections: Default::default(),
             next_id: 1,
         }
@@ -57,19 +59,36 @@ impl Handler<MessageFromServer> for RoomActor {
 impl Handler<MessageFromClient> for RoomActor {
     type Result = ();
 
-    fn handle(&mut self, message: MessageFromClient, _ctx: &mut Context<Self>) {
-        match &message {
-            MessageFromClient::Connect(u, resp) => {
-                self.connections.insert(*u, resp.clone());
-                self.service_actor.do_send(message).unwrap();
+    fn handle(&mut self, message: MessageFromClient, ctx: &mut Context<Self>) {
+        if let Some(service_actor) = &self.service_actor {
+            match &message {
+                MessageFromClient::Connect(u, resp) => {
+                    self.connections.insert(*u, resp.clone());
+                    service_actor.do_send(message).unwrap();
+                }
+                MessageFromClient::Disconnect(u) => {
+                    self.connections.remove(&u);
+
+                    if self.connections.is_empty() {
+                        log::info!(
+                            "Shutting down service actor for {} because no clients are left.",
+                            &self.room_id
+                        );
+
+                        ctx.stop();
+                    } else {
+                        service_actor.do_send(message).unwrap();
+                    }
+                }
+                MessageFromClient::Message { .. } => {
+                    service_actor.do_send(message).unwrap();
+                }
             }
-            MessageFromClient::Disconnect(u) => {
-                self.connections.remove(&u);
-                self.service_actor.do_send(message).unwrap();
-            }
-            MessageFromClient::Message { .. } => {
-                self.service_actor.do_send(message).unwrap();
-            }
+        } else {
+            log::warn!(
+                "MessageFromClient received on room with no service attached ({}).",
+                self.room_id
+            );
         }
     }
 }

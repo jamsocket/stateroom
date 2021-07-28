@@ -1,8 +1,7 @@
 use crate::{
     messages::{MessageData, MessageFromClient, MessageFromServer},
-    RoomActor,
 };
-use actix::{Actor, Addr, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
+use actix::{Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
 use anyhow::Result;
 use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceBuilder, MessageRecipient};
 use std::time::Duration;
@@ -10,7 +9,6 @@ use std::time::Duration;
 pub struct ServiceActor<T: JamsocketService> {
     service: T,
     timer_handle: Option<SpawnHandle>,
-    room: Addr<RoomActor>,
 }
 
 struct SetTimer(u32);
@@ -24,20 +22,6 @@ impl Message for TimerFinished {
     type Result = ();
 }
 
-pub struct GetRoomAddr;
-
-impl Message for GetRoomAddr {
-    type Result = Addr<RoomActor>;
-}
-
-impl<T: JamsocketService + 'static + Unpin> Handler<GetRoomAddr> for ServiceActor<T> {
-    type Result = Addr<RoomActor>;
-
-    fn handle(&mut self, _: GetRoomAddr, _: &mut Self::Context) -> Self::Result {
-        self.room.clone()
-    }
-}
-
 pub struct ServiceActorContext {
     set_timer_recipient: Recipient<SetTimer>,
     send_message_recipient: Recipient<MessageFromServer>,
@@ -45,6 +29,7 @@ pub struct ServiceActorContext {
 
 impl JamsocketContext for ServiceActorContext {
     fn send_message(&self, recipient: impl Into<MessageRecipient>, message: &str) {
+        println!("message: {}", message);
         self.send_message_recipient
             .do_send(MessageFromServer::new(
                 recipient.into(),
@@ -72,29 +57,30 @@ impl JamsocketContext for ServiceActorContext {
 impl<T: JamsocketService + Unpin + 'static> ServiceActor<T> {
     pub fn new(
         ctx: &mut Context<Self>,
-        token: &str,
+        token: String,
         service_constructor: impl JamsocketServiceBuilder<ServiceActorContext, Service = T>,
+        recipient: Recipient<MessageFromServer>,
     ) -> Result<Self> {
-        let room_actor = RoomActor::new(ctx.address().recipient()).start();
-
-        let recipient = room_actor.clone().recipient();
-
         let host_context = ServiceActorContext {
             set_timer_recipient: ctx.address().recipient(),
             send_message_recipient: recipient,
         };
-        let service = service_constructor.build(token, host_context);
+        let service = service_constructor.build(&token, host_context);
 
         Ok(ServiceActor {
             service,
             timer_handle: None,
-            room: room_actor,
         })
     }
 }
 
 impl<T: JamsocketService + 'static + Unpin> Actor for ServiceActor<T> {
     type Context = Context<Self>;
+
+    fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::Running {
+        log::info!("Shutting down service.");
+        actix::Running::Stop
+    }
 }
 
 impl<T: JamsocketService + 'static + Unpin> Handler<MessageFromClient> for ServiceActor<T> {

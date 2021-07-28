@@ -5,7 +5,7 @@ mod room_id;
 mod service_actor;
 
 pub use crate::room_id::{RoomIdGenerator, RoomIdStrategy, UuidRoomIdGenerator};
-use actix::{Actor, Addr};
+use actix::{Actor, Addr, AsyncContext};
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
 use actix_web::web::{self, get, post};
 use actix_web::{get, web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
@@ -16,7 +16,7 @@ use jamsocket::JamsocketServiceBuilder;
 pub use messages::{AssignUserId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
 use serde::{Deserialize, Serialize};
-use service_actor::{GetRoomAddr, ServiceActor, ServiceActorContext};
+use service_actor::{ServiceActor, ServiceActorContext};
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
@@ -48,16 +48,29 @@ async fn try_create_room<T: JamsocketServiceBuilder<ServiceActorContext> + Clone
         std::collections::hash_map::Entry::Occupied(_) => None,
         std::collections::hash_map::Entry::Vacant(entry) => {
             let host_factory: T = host_factory.get_ref().clone();
-            let room_addr =
-                ServiceActor::create(|ctx| ServiceActor::new(ctx, &room_id, host_factory).unwrap())
-                    .send(GetRoomAddr)
-                    .await
-                    .unwrap();
 
-            entry.insert(room_addr.clone());
+            let room_actor = {
+                let room_id = room_id.clone();
+
+                RoomActor::create(|room_actor_context| {
+                    let service_actor = ServiceActor::create(|service_actor_context| {
+                        ServiceActor::new(
+                            service_actor_context,
+                            room_id.clone(),
+                            host_factory,
+                            room_actor_context.address().recipient(),
+                        )
+                        .unwrap()
+                    });
+
+                    RoomActor::new(room_id, service_actor.recipient())
+                })
+            };
+
+            entry.insert(room_actor.clone());
 
             log::info!("Created room: {}", &room_id);
-            Some(room_addr)
+            Some(room_actor)
         }
     }
 }
