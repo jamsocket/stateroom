@@ -2,6 +2,8 @@
 
 # Jamsocket
 
+[![docs.rs](https://img.shields.io/badge/docs-latest-orange)](https://jamsocket.github.io/jamsocket/jamsocket/index.html)
+
 Jamsocket is a lightweight framework for building applications that are served over
 [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
 
