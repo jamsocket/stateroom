@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["jamsocket","jamsocket_cli","jamsocket_server","jamsocket_wasm","jamsocket_wasm_host","jamsocket_wasm_macro"];

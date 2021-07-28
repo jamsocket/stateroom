@@ -1,0 +1,1 @@
+initSidebarItems({"attr":[["jamsocket_wasm","Exposes a `jamsocket_wasm::SimpleJamsocketService`-implementing trait as a WebAssembly module."]]});

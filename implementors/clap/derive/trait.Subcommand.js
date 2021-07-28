@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["jamsocket_cli"] = [{"text":"impl <a class=\"trait\" href=\"https://docs.rs/clap/3.0.0-beta.2/clap/derive/trait.Subcommand.html\" title=\"trait clap::derive::Subcommand\">Subcommand</a> for <a class=\"enum\" href=\"jamsocket_cli/cli_opts/enum.SubCommand.html\" title=\"enum jamsocket_cli::cli_opts::SubCommand\">SubCommand</a>","synthetic":false,"types":["jamsocket_cli::cli_opts::SubCommand"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

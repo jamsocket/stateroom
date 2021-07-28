@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["jamsocket_wasm_host"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"jamsocket_wasm_host/enum.WasmRuntimeError.html\" title=\"enum jamsocket_wasm_host::WasmRuntimeError\">WasmRuntimeError</a>","synthetic":false,"types":["jamsocket_wasm_host::WasmRuntimeError"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["jamsocket_server"] = [{"text":"impl StreamHandler&lt;<a class=\"enum\" href=\"https://doc.rust-lang.org/nightly/core/result/enum.Result.html\" title=\"enum core::result::Result\">Result</a>&lt;Message, ProtocolError&gt;&gt; for <a class=\"struct\" href=\"jamsocket_server/struct.ClientSocketConnection.html\" title=\"struct jamsocket_server::ClientSocketConnection\">ClientSocketConnection</a>","synthetic":false,"types":["jamsocket_server::client_socket_connection::ClientSocketConnection"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

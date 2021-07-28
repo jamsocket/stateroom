@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["jamsocket"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/convert/trait.From.html\" title=\"trait core::convert::From\">From</a>&lt;<a class=\"primitive\" href=\"https://doc.rust-lang.org/nightly/std/primitive.u32.html\">u32</a>&gt; for <a class=\"enum\" href=\"jamsocket/enum.MessageRecipient.html\" title=\"enum jamsocket::MessageRecipient\">MessageRecipient</a>","synthetic":false,"types":["jamsocket::message_recipient::MessageRecipient"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

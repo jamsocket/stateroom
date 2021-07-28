@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["WasmRuntimeError",""]],"struct":[["WasmHost","Hosts a [jamsocket::JamsocketService] implemented by a WebAssembly module."],["WasmHostFactory",""]]});

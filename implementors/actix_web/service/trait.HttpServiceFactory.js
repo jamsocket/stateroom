@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["jamsocket_server"] = [{"text":"impl HttpServiceFactory for <a class=\"struct\" href=\"jamsocket_server/struct.status.html\" title=\"struct jamsocket_server::status\">status</a>","synthetic":false,"types":["jamsocket_server::status"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
