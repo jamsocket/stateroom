@@ -1311,6 +1311,7 @@ dependencies = [
  "async-std",
  "jamsocket",
  "log",
+ "matches",
  "rand",
  "serde",
  "serde_json",

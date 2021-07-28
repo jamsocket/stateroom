@@ -1,6 +1,4 @@
-use crate::{
-    messages::{MessageData, MessageFromClient, MessageFromServer},
-};
+use crate::messages::{MessageData, MessageFromClient, MessageFromServer};
 use actix::{Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
 use anyhow::Result;
 use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceBuilder, MessageRecipient};
