@@ -137,6 +137,7 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
             last_seen: Instant::now(),
             heartbeat_interval: server_settings.heartbeat_interval,
             heartbeat_timeout: server_settings.heartbeat_timeout,
+            interval_handle: None,
         },
         &req,
         stream,

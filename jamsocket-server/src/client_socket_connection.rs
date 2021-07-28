@@ -1,5 +1,5 @@
 use crate::messages::{MessageData, MessageFromClient, MessageFromServer};
-use actix::{Actor, ActorContext, AsyncContext, Handler, Recipient, StreamHandler};
+use actix::{Actor, ActorContext, AsyncContext, Handler, Recipient, SpawnHandle, StreamHandler};
 use actix_web_actors::ws;
 use std::time::{Duration, Instant};
 
@@ -13,11 +13,12 @@ pub struct ClientSocketConnection {
     pub last_seen: Instant,
     pub heartbeat_interval: Duration,
     pub heartbeat_timeout: Duration,
+    pub interval_handle: Option<SpawnHandle>,
 }
 
 impl ClientSocketConnection {
-    fn check_if_dropped(&self, ctx: &mut <Self as Actor>::Context) {
-        ctx.run_interval(self.heartbeat_interval, |act, ctx| {
+    fn start_heartbeat_interval(&mut self, ctx: &mut <Self as Actor>::Context) {
+        self.interval_handle = Some(ctx.run_interval(self.heartbeat_interval, |act, ctx| {
             if Instant::now() - act.last_seen > act.heartbeat_timeout {
                 log::warn!(
                     "Stopping ClientSocketConnection {} (IP: {}) from room {} \
@@ -26,11 +27,21 @@ impl ClientSocketConnection {
                     act.ip,
                     act.room_id,
                 );
-                ctx.stop();
+                act.close(ctx);
             } else {
                 ctx.ping(b"");
             }
-        });
+        }));
+    }
+
+    fn close(&self, ctx: &mut ws::WebsocketContext<Self>) {
+        self.interval_handle.map(|d| ctx.cancel_future(d));
+
+        self.room
+            .do_send(MessageFromClient::Disconnect(self.user))
+            .unwrap();
+
+        ctx.stop();
     }
 }
 
@@ -38,8 +49,7 @@ impl Actor for ClientSocketConnection {
     type Context = ws::WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        log::info!("Started");
-        self.check_if_dropped(ctx);
+        self.start_heartbeat_interval(ctx);
     }
 }
 
@@ -81,9 +91,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                     &self.room_id
                 );
 
-                self.room
-                    .do_send(MessageFromClient::Disconnect(self.user))
-                    .unwrap();
+                self.close(ctx);
             }
             Err(e) => log::error!("Encountered error in StreamHandler: {:?}", &e),
             _ => log::warn!("Encountered unhandled message in StreamHandler: {:?}", &msg),
