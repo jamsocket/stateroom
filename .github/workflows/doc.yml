@@ -1,0 +1,28 @@
+name: docs
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install Nightly
+      run: rustup toolchain install nightly
+    - name: Build docs
+      run: |
+        RUSTDOCFLAGS="--enable-index-page -Zunstable-options" \
+          cargo +nightly \
+          doc \
+          --no-deps
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@4.0.0
+      with:
+        branch: gh-pages
+        folder: target/doc
