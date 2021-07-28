@@ -12,9 +12,9 @@ pub struct WasmHostFactory {
 impl<T: JamsocketContext + Send + Sync + 'static> JamsocketServiceBuilder<T> for WasmHostFactory {
     type Service = WasmHost;
 
-    fn build(self, token: &str, context: T) -> Self::Service {
+    fn build(self, room_id: &str, context: T) -> Self::Service {
         WasmHost::new(
-            token,
+            room_id,
             self.module.as_ref(),
             self.engine.as_ref(),
             Arc::new(context),

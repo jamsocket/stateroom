@@ -57,7 +57,7 @@ impl JamsocketContext for ServiceActorContext {
 impl<T: JamsocketService + Unpin + 'static> ServiceActor<T> {
     pub fn new(
         ctx: &mut Context<Self>,
-        token: String,
+        room_id: String,
         service_constructor: impl JamsocketServiceBuilder<ServiceActorContext, Service = T>,
         recipient: Recipient<MessageFromServer>,
     ) -> Result<Self> {
@@ -65,7 +65,7 @@ impl<T: JamsocketService + Unpin + 'static> ServiceActor<T> {
             set_timer_recipient: ctx.address().recipient(),
             send_message_recipient: recipient,
         };
-        let service = service_constructor.build(&token, host_context);
+        let service = service_constructor.build(&room_id, host_context);
 
         Ok(ServiceActor {
             service,

@@ -89,7 +89,7 @@ pub trait JamsocketContext {
 /// See module documentation for usage examples.
 #[allow(unused_variables)]
 pub trait SimpleJamsocketService: Default {
-    fn initialize(&mut self, token: &str, context: &impl JamsocketContext) {}
+    fn initialize(&mut self, room_id: &str, context: &impl JamsocketContext) {}
 
     fn connect(&mut self, user: u32, context: &impl JamsocketContext) {}
 
@@ -126,7 +126,7 @@ pub trait JamsocketServiceBuilder<C: JamsocketContext> {
     type Service: JamsocketService + Unpin + 'static;
 
     /// Transform `self` into a [JamsocketService].
-    fn build(self, token: &str, context: C) -> Self::Service;
+    fn build(self, room_id: &str, context: C) -> Self::Service;
 }
 
 /// Combines a [SimpleJamsocketService] with an owned [JamsocketContext] in order to implement
@@ -141,8 +141,8 @@ impl<T: SimpleJamsocketService + Unpin + 'static, C: JamsocketContext + Unpin + 
 {
     type Service = WrappedJamsocketService<T, C>;
 
-    fn build(mut self, token: &str, context: C) -> Self::Service {
-        self.initialize(token, &context);
+    fn build(mut self, room_id: &str, context: C) -> Self::Service {
+        self.initialize(room_id, &context);
 
         WrappedJamsocketService {
             context,
