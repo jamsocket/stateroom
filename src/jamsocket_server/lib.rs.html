@@ -196,6 +196,21 @@
 <span id="196">196</span>
 <span id="197">197</span>
 <span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
 </pre><pre class="rust">
 <span class="kw">mod</span> <span class="ident">client_socket_connection</span>;
 <span class="kw">mod</span> <span class="ident">messages</span>;
@@ -207,7 +222,7 @@
 <span class="kw">use</span> <span class="ident">actix</span>::{<span class="ident">Actor</span>, <span class="ident">Addr</span>, <span class="ident">AsyncContext</span>};
 <span class="kw">use</span> <span class="ident">actix_web::error</span>::{<span class="ident">ErrorBadRequest</span>, <span class="ident">ErrorInternalServerError</span>};
 <span class="kw">use</span> <span class="ident">actix_web::web</span>::{<span class="self">self</span>, <span class="ident">get</span>, <span class="ident">post</span>};
-<span class="kw">use</span> <span class="ident">actix_web</span>::{<span class="ident">get</span>, <span class="ident">web::Data</span>, <span class="ident">App</span>, <span class="ident">Error</span>, <span class="ident">HttpRequest</span>, <span class="ident">HttpResponse</span>, <span class="ident">HttpServer</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use</span> <span class="ident">actix_web</span>::{<span class="ident">web::Data</span>, <span class="ident">App</span>, <span class="ident">Error</span>, <span class="ident">HttpRequest</span>, <span class="ident">HttpResponse</span>, <span class="ident">HttpServer</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">actix_web_actors::ws</span>;
 <span class="kw">use</span> <span class="ident">async_std::sync::RwLock</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">client_socket_connection::ClientSocketConnection</span>;
@@ -226,15 +241,22 @@
     <span class="ident">room_id</span>: <span class="ident">String</span>,
 }
 
-<span class="attribute">#[<span class="ident">get</span>(<span class="string">&quot;/&quot;</span>)]</span>
 <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">status</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::Ok</span>().<span class="ident">body</span>(<span class="string">&quot;ok&quot;</span>))
 }
 
+<span class="doccomment">/// Settings used by the server.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ServerSettings</span> {
+    <span class="doccomment">/// The duration of time between server-initiated WebSocket heartbeats.</span>
     <span class="kw">pub</span> <span class="ident">heartbeat_interval</span>: <span class="ident">Duration</span>,
+
+    <span class="doccomment">/// The minimum amount of time between client heartbeats before a connection is dropped.</span>
     <span class="kw">pub</span> <span class="ident">heartbeat_timeout</span>: <span class="ident">Duration</span>,
+
+    <span class="doccomment">/// The method by which new rooms are created and assigned names.</span>
     <span class="kw">pub</span> <span class="ident">room_id_strategy</span>: <span class="ident">RoomIdStrategy</span>,
+
+    <span class="doccomment">/// The port to run the server on.</span>
     <span class="kw">pub</span> <span class="ident">port</span>: <span class="ident">u32</span>,
 }
 
@@ -369,6 +391,14 @@
     }
 }
 
+<span class="doccomment">/// Start a server given a cloneable [JamsocketServiceBuilder] and a [ServerSettings] object.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function blocks until the server is terminated. While it is running, the following</span>
+<span class="doccomment">/// endpoints are available:</span>
+<span class="doccomment">/// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)</span>
+<span class="doccomment">/// - `/new_room` (POST): create a new room, if not in `explicit` room creation mode.</span>
+<span class="doccomment">/// - `/ws/{room_id}` (GET): initiate a WebSocket connection to the given room. If the room</span>
+<span class="doccomment">///     does not exist and the server is in `implicit` room creation mode, it will be created.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">do_serve</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceBuilder</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span>(
     <span class="ident">host_factory</span>: <span class="ident">T</span>,
     <span class="ident">server_settings</span>: <span class="ident">ServerSettings</span>,
@@ -384,7 +414,7 @@
                 .<span class="ident">app_data</span>(<span class="ident">room_mapper</span>.<span class="ident">clone</span>())
                 .<span class="ident">app_data</span>(<span class="ident">host_factory</span>.<span class="ident">clone</span>())
                 .<span class="ident">app_data</span>(<span class="ident">server_settings</span>.<span class="ident">clone</span>())
-                .<span class="ident">service</span>(<span class="ident">status</span>)
+                .<span class="ident">route</span>(<span class="string">&quot;/&quot;</span>, <span class="ident">get</span>().<span class="ident">to</span>(<span class="ident">status</span>))
                 .<span class="ident">route</span>(<span class="string">&quot;/new_room&quot;</span>, <span class="ident">post</span>().<span class="ident">to</span>(<span class="ident">new_room</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>))
                 .<span class="ident">route</span>(<span class="string">&quot;/ws/{room_id}&quot;</span>, <span class="ident">get</span>().<span class="ident">to</span>(<span class="ident">websocket</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>))
         })

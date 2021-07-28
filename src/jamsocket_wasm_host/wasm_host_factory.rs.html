@@ -35,12 +35,22 @@
 <span id="35">35</span>
 <span id="36">36</span>
 <span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::wasm_host::WasmHost</span>;
 <span class="kw">use</span> <span class="ident">jamsocket</span>::{<span class="ident">JamsocketContext</span>, <span class="ident">JamsocketServiceBuilder</span>};
 <span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 <span class="kw">use</span> <span class="ident">wasmtime</span>::{<span class="ident">Engine</span>, <span class="ident">Module</span>};
 
+<span class="doccomment">/// Loads and caches a WebAssembly module such that a [WasmHost] instance can be</span>
+<span class="doccomment">/// created from it.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This struct is cheaply cloneable, so it can be used to create multiple instances</span>
+<span class="doccomment">/// of the same module.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WasmHostFactory</span> {
     <span class="ident">engine</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Engine</span><span class="op">&gt;</span>,

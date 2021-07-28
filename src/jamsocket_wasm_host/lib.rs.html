@@ -37,18 +37,26 @@
 <span id="37">37</span>
 <span id="38">38</span>
 <span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
 </pre><pre class="rust">
+<span class="doccomment">//! This module provides a [jamsocket::JamsocketService] implementation that is backed by a</span>
+<span class="doccomment">//! WebAssembly module. It is the counterpart to `jamsocket-wasm`, which is used to</span>
+<span class="doccomment">//! implement a compatible guest module.</span>
+
+<span class="kw">use</span> <span class="ident">std</span>::{
+    <span class="ident">error::Error</span>,
+    <span class="ident">fmt</span>::{<span class="ident">Debug</span>, <span class="ident">Display</span>},
+};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">wasm_host::WasmHost</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">wasm_host_factory::WasmHostFactory</span>;
 
 <span class="kw">mod</span> <span class="ident">wasm_host</span>;
 <span class="kw">mod</span> <span class="ident">wasm_host_factory</span>;
 
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">error::Error</span>,
-    <span class="ident">fmt</span>::{<span class="ident">Debug</span>, <span class="ident">Display</span>},
-};
-
+<span class="doccomment">/// An error encountered while running WebAssembly.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">WasmRuntimeError</span> {
     <span class="ident">CouldNotImportMemory</span>,
