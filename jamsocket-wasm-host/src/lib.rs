@@ -1,14 +1,18 @@
+//! This module provides a [jamsocket::JamsocketService] implementation that is backed by a
+//! WebAssembly module. It is the counterpart to `jamsocket-wasm`, which is used to
+//! implement a compatible guest module.
+
+use std::{
+    error::Error,
+    fmt::{Debug, Display},
+};
 pub use wasm_host::WasmHost;
 pub use wasm_host_factory::WasmHostFactory;
 
 mod wasm_host;
 mod wasm_host_factory;
 
-use std::{
-    error::Error,
-    fmt::{Debug, Display},
-};
-
+/// An error encountered while running WebAssembly.
 #[derive(Debug)]
 pub enum WasmRuntimeError {
     CouldNotImportMemory,

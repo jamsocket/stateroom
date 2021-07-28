@@ -3,6 +3,11 @@ use jamsocket::{JamsocketContext, JamsocketServiceBuilder};
 use std::sync::Arc;
 use wasmtime::{Engine, Module};
 
+/// Loads and caches a WebAssembly module such that a [WasmHost] instance can be
+/// created from it.
+///
+/// This struct is cheaply cloneable, so it can be used to create multiple instances
+/// of the same module.
 #[derive(Clone)]
 pub struct WasmHostFactory {
     engine: Arc<Engine>,

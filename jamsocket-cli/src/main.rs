@@ -1,3 +1,5 @@
+//! # `jamsocket-cli`: a command-line interface to Jamsocket
+
 mod cli_opts;
 mod serve;
 

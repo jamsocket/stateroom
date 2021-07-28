@@ -8,7 +8,7 @@ pub use crate::room_id::{RoomIdGenerator, RoomIdStrategy, UuidRoomIdGenerator};
 use actix::{Actor, Addr, AsyncContext};
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
 use actix_web::web::{self, get, post};
-use actix_web::{get, web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
+use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use actix_web_actors::ws;
 use async_std::sync::RwLock;
 pub use client_socket_connection::ClientSocketConnection;
@@ -27,15 +27,22 @@ struct NewRoom {
     room_id: String,
 }
 
-#[get("/")]
 async fn status() -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().body("ok"))
 }
 
+/// Settings used by the server.
 pub struct ServerSettings {
+    /// The duration of time between server-initiated WebSocket heartbeats.
     pub heartbeat_interval: Duration,
+
+    /// The minimum amount of time between client heartbeats before a connection is dropped.
     pub heartbeat_timeout: Duration,
+
+    /// The method by which new rooms are created and assigned names.
     pub room_id_strategy: RoomIdStrategy,
+
+    /// The port to run the server on.
     pub port: u32,
 }
 
@@ -170,6 +177,14 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
     }
 }
 
+/// Start a server given a cloneable [JamsocketServiceBuilder] and a [ServerSettings] object.
+///
+/// This function blocks until the server is terminated. While it is running, the following
+/// endpoints are available:
+/// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)
+/// - `/new_room` (POST): create a new room, if not in `explicit` room creation mode.
+/// - `/ws/{room_id}` (GET): initiate a WebSocket connection to the given room. If the room
+///     does not exist and the server is in `implicit` room creation mode, it will be created.
 pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 'static + Clone>(
     host_factory: T,
     server_settings: ServerSettings,
@@ -185,7 +200,7 @@ pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 
                 .app_data(room_mapper.clone())
                 .app_data(host_factory.clone())
                 .app_data(server_settings.clone())
-                .service(status)
+                .route("/", get().to(status))
                 .route("/new_room", post().to(new_room::<T>))
                 .route("/ws/{room_id}", get().to(websocket::<T>))
         })

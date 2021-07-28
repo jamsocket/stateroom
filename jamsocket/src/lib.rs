@@ -23,8 +23,9 @@
 //!
 //!         // Send a welcome message.
 //!         ctx.send_message(user,
-//!             &format!("Welcome to the chat! Your name is {}. Send /nick <username> to change it.",
-//!                     &username));
+//!             &format!("Welcome to the chat! Your name is {}. \
+//!                      Send /nick <username> to change it.",
+//!                      &username));
 //!
 //!         // Alert all other connected users to the new user.
 //!         ctx.send_message(MessageRecipient::Broadcast,
@@ -89,16 +90,24 @@ pub trait JamsocketContext {
 /// See module documentation for usage examples.
 #[allow(unused_variables)]
 pub trait SimpleJamsocketService: Default {
+    /// Called when the service is created, before any client has had a chance to connect.
     fn initialize(&mut self, room_id: &str, context: &impl JamsocketContext) {}
 
+    /// Called each time a client connects to the service.
     fn connect(&mut self, user: u32, context: &impl JamsocketContext) {}
 
+    /// Called each time a client disconnects from the service, unless that disconnection
+    /// will cause the service to be destroyed.
     fn disconnect(&mut self, user: u32, context: &impl JamsocketContext) {}
 
+    /// Called each time a client sends a text message to the service.
     fn message(&mut self, user: u32, message: &str, context: &impl JamsocketContext) {}
 
+    /// Called each time a client sends a binary message to the service.
     fn binary(&mut self, user: u32, message: &[u8], context: &impl JamsocketContext) {}
 
+    /// Called when [JamsocketContext::set_timer] has been called on this service's context,
+    /// after the provided duration.
     fn timer(&mut self, context: &impl JamsocketContext) {}
 }
 
@@ -109,14 +118,21 @@ pub trait SimpleJamsocketService: Default {
 /// [WrappedJamsocketService] for an example.
 #[allow(unused_variables)]
 pub trait JamsocketService {
+    /// Called each time a client connects to the service.
     fn connect(&mut self, user: u32);
 
+    /// Called each time a client disconnects from the service, unless that disconnection
+    /// will cause the service to be destroyed.
     fn disconnect(&mut self, user: u32);
 
+    /// Called each time a client sends a text message to the service.
     fn message(&mut self, user: u32, message: &str);
 
+    /// Called each time a client sends a binary message to the service.
     fn binary(&mut self, user: u32, message: &[u8]);
 
+    /// Called when [JamsocketContext::set_timer] has been called on this service's context,
+    /// after the provided duration.
     fn timer(&mut self);
 }
 
