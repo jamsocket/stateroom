@@ -47,6 +47,12 @@ pub enum RoomIdStrategy {
     Generator(Box<dyn RoomIdGenerator + Sync + Send>),
 }
 
+impl Default for RoomIdStrategy {
+    fn default() -> Self {
+        RoomIdStrategy::Implicit
+    }
+}
+
 #[derive(Debug)]
 pub struct BadGeneratorName(String);
 
@@ -81,12 +87,6 @@ impl FromStr for RoomIdStrategy {
             }
             _ => Err(BadGeneratorName(s.to_string())),
         }
-    }
-}
-
-impl Default for RoomIdStrategy {
-    fn default() -> Self {
-        RoomIdStrategy::Generator(Box::new(UuidRoomIdGenerator))
     }
 }
 
