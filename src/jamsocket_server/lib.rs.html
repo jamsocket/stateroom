@@ -236,6 +236,9 @@
 <span id="236">236</span>
 <span id="237">237</span>
 <span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
 </pre><pre class="rust">
 <span class="kw">mod</span> <span class="ident">client_socket_connection</span>;
 <span class="kw">mod</span> <span class="ident">messages</span>;
@@ -463,7 +466,10 @@
                 .<span class="ident">app_data</span>(<span class="ident">room_mapper</span>.<span class="ident">clone</span>())
                 .<span class="ident">app_data</span>(<span class="ident">host_factory</span>.<span class="ident">clone</span>())
                 .<span class="ident">app_data</span>(<span class="ident">server_settings</span>.<span class="ident">clone</span>())
-                .<span class="ident">route</span>(<span class="string">&quot;/&quot;</span>, <span class="ident">get</span>().<span class="ident">to</span>(<span class="ident">status</span>))
+                <span class="comment">// TODO: don&#39;t hard-code this</span>
+                .<span class="ident">service</span>(<span class="ident">actix_files::Files::new</span>(<span class="string">&quot;client/&quot;</span>, <span class="string">&quot;./static-client&quot;</span>))
+                .<span class="ident">service</span>(<span class="ident">actix_files::Files::new</span>(<span class="string">&quot;/&quot;</span>, <span class="string">&quot;./static&quot;</span>).<span class="ident">index_file</span>(<span class="string">&quot;index.html&quot;</span>))
+                .<span class="ident">route</span>(<span class="string">&quot;/status&quot;</span>, <span class="ident">get</span>().<span class="ident">to</span>(<span class="ident">status</span>))
                 .<span class="ident">route</span>(<span class="string">&quot;/new_room&quot;</span>, <span class="ident">post</span>().<span class="ident">to</span>(<span class="ident">new_room</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>))
                 .<span class="ident">route</span>(<span class="string">&quot;/ws/{room_id}&quot;</span>, <span class="ident">get</span>().<span class="ident">to</span>(<span class="ident">websocket</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>))
                 .<span class="ident">route</span>(<span class="string">&quot;/ws/{room_id}&quot;</span>, <span class="ident">post</span>().<span class="ident">to</span>(<span class="ident">new_room_explicit</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>))
