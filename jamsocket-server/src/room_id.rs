@@ -86,7 +86,7 @@ impl FromStr for RoomIdStrategy {
 
 impl Default for RoomIdStrategy {
     fn default() -> Self {
-        RoomIdStrategy::Generator(UuidRoomIdGenerator)
+        RoomIdStrategy::Generator(Box::new(UuidRoomIdGenerator))
     }
 }
 
