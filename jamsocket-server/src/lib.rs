@@ -224,6 +224,7 @@ pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 
                 .app_data(room_mapper.clone())
                 .app_data(host_factory.clone())
                 .app_data(server_settings.clone())
+                // TODO: don't hard-code this
                 .service(actix_files::Files::new("client/", "./static-client"))
                 .service(actix_files::Files::new("/", "./static").index_file("index.html"))
                 .route("/status", get().to(status))
