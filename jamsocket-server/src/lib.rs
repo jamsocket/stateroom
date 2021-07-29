@@ -6,7 +6,7 @@ mod service_actor;
 
 pub use crate::room_id::{RoomIdGenerator, RoomIdStrategy, UuidRoomIdGenerator};
 use actix::{Actor, Addr, AsyncContext};
-use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
+use actix_web::error::{ErrorBadRequest, ErrorConflict, ErrorInternalServerError};
 use actix_web::web::{self, get, post};
 use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use actix_web_actors::ws;
@@ -84,7 +84,7 @@ async fn create_room<T: JamsocketServiceBuilder<ServiceActorContext> + Clone>(
 
 async fn new_room<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Clone>(
     req: HttpRequest,
-) -> Result<String, Error> {
+) -> actix_web::Result<HttpResponse> {
     let wasm_host_factory: &Data<T> = req.app_data().unwrap();
     let server_settings: &Data<ServerSettings> = req.app_data().unwrap();
     let room_mapper: &Data<RoomMapper> = req.app_data().unwrap();
@@ -105,11 +105,37 @@ async fn new_room<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Cl
         let (already_existed, _) = create_room(room_id.clone(), room_mapper, wasm_host_factory).await;
 
         if !already_existed {
-            return Ok(room_id);
+            return Ok(HttpResponse::Ok().json(NewRoom {room_id}));
         }
     }
 
     Err(ErrorInternalServerError("Could not assign a unique room ID."))
+}
+
+async fn new_room_explicit<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Clone>(
+    req: HttpRequest,
+    room_id: web::Path<String>,
+) -> actix_web::Result<HttpResponse> {
+    let wasm_host_factory: &Data<T> = req.app_data().unwrap();
+    let server_settings: &Data<ServerSettings> = req.app_data().unwrap();
+    let room_mapper: &Data<RoomMapper> = req.app_data().unwrap();
+
+    let room_creation_allowed = match &server_settings.room_id_strategy {
+        RoomIdStrategy::Explicit => true,
+        RoomIdStrategy::Implicit => true,
+        _ => false,
+    };
+
+    if room_creation_allowed {
+        let (already_existed, _) = create_room(room_id.clone(), room_mapper, wasm_host_factory).await;
+        if !already_existed {
+            Ok(HttpResponse::Ok().json(NewRoom {room_id: room_id.to_owned()}))
+        } else {
+            Err(ErrorConflict("Attempted to create a room that already exists."))
+        }
+    } else {
+        Err(ErrorInternalServerError("Explicit room creation is not enabled."))
+    }
 }
 
 async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Clone>(
@@ -201,6 +227,7 @@ pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 
                 .route("/", get().to(status))
                 .route("/new_room", post().to(new_room::<T>))
                 .route("/ws/{room_id}", get().to(websocket::<T>))
+                .route("/ws/{room_id}", post().to(new_room_explicit::<T>))
         })
         .bind(&host)
         .unwrap();
