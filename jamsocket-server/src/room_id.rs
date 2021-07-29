@@ -84,6 +84,12 @@ impl FromStr for RoomIdStrategy {
     }
 }
 
+impl Default for RoomIdStrategy {
+    fn default() -> Self {
+        RoomIdStrategy::Generator(UuidRoomIdGenerator)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
