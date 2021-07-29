@@ -121,6 +121,7 @@
 <span id="121">121</span>
 <span id="122">122</span>
 <span id="123">123</span>
+<span id="124">124</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::messages</span>::{<span class="ident">MessageData</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>};
 <span class="kw">use</span> <span class="ident">actix</span>::{<span class="ident">Actor</span>, <span class="ident">AsyncContext</span>, <span class="ident">Context</span>, <span class="ident">Handler</span>, <span class="ident">Message</span>, <span class="ident">Recipient</span>, <span class="ident">SpawnHandle</span>};
@@ -144,6 +145,7 @@
     <span class="kw">type</span> <span class="prelude-ty">Result</span> <span class="op">=</span> ();
 }
 
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ServiceActorContext</span> {
     <span class="ident">set_timer_recipient</span>: <span class="ident">Recipient</span><span class="op">&lt;</span><span class="ident">SetTimer</span><span class="op">&gt;</span>,
     <span class="ident">send_message_recipient</span>: <span class="ident">Recipient</span><span class="op">&lt;</span><span class="ident">MessageFromServer</span><span class="op">&gt;</span>,
