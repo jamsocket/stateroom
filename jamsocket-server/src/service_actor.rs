@@ -20,6 +20,7 @@ impl Message for TimerFinished {
     type Result = ();
 }
 
+#[derive(Clone)]
 pub struct ServiceActorContext {
     set_timer_recipient: Recipient<SetTimer>,
     send_message_recipient: Recipient<MessageFromServer>,
