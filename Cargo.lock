@@ -261,7 +261,16 @@ version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7a2e47a1fbe209ee101dd6d61285226744c6c8d3c21c8dc878ba6cb9f467f3a"
 dependencies = [
- "gimli",
+ "gimli 0.24.0",
+]
+
+[[package]]
+name = "addr2line"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3e61f2b7f93d2c7d2b08263acaa4a363b3e276806c68af6134c44f523bf1aacd"
+dependencies = [
+ "gimli 0.25.0",
 ]
 
 [[package]]
@@ -409,9 +418,9 @@ checksum = "e91831deabf0d6d7ec49552e489aed63b7456a7a3c46cff62adad428110b0af0"
 
 [[package]]
 name = "async-trait"
-version = "0.1.50"
+version = "0.1.51"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b98e84bbb4cbcdd97da190ba0c58a1bb0de2c1fdf67d159e192ed766aeca722"
+checksum = "44318e776df68115a881de9a8fd1b9e53368d7a4a5ce4cc48517da3393233a5e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -443,16 +452,16 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
 name = "backtrace"
-version = "0.3.60"
+version = "0.3.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7815ea54e4d821e791162e078acbebfd6d8c8939cd559c9335dceb1c8ca7282"
+checksum = "e7a905d892734eea339e896738c14b9afce22b5318f64b951e70bf3844419b01"
 dependencies = [
- "addr2line",
+ "addr2line 0.16.0",
  "cc",
  "cfg-if",
  "libc",
  "miniz_oxide",
- "object",
+ "object 0.26.0",
  "rustc-demangle",
 ]
 
@@ -741,7 +750,7 @@ dependencies = [
  "cranelift-codegen-meta",
  "cranelift-codegen-shared",
  "cranelift-entity",
- "gimli",
+ "gimli 0.24.0",
  "log",
  "regalloc",
  "serde",
@@ -1136,6 +1145,12 @@ dependencies = [
  "indexmap",
  "stable_deref_trait",
 ]
+
+[[package]]
+name = "gimli"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0a01e0497841a3b2db4f8afa483cce65f7e96a3498bd6c541734792aeac8fe7"
 
 [[package]]
 name = "gloo-timers"
@@ -1542,6 +1557,15 @@ checksum = "a38f2be3697a57b4060074ff41b44c16870d916ad7877c17696e063257482bc7"
 dependencies = [
  "crc32fast",
  "indexmap",
+ "memchr",
+]
+
+[[package]]
+name = "object"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c55827317fb4c08822499848a14237d2874d6f139828893017237e7ab93eb386"
+dependencies = [
  "memchr",
 ]
 
@@ -1994,9 +2018,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.64"
+version = "1.0.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "799e97dc9fdae36a5c8b8f2cae9ce2ee9fdce2058c57a93e6099d919fd982f79"
+checksum = "28c5e91e4240b46c4c19219d6cc84784444326131a4210f496f948d5cc827a29"
 dependencies = [
  "itoa",
  "ryu",
@@ -2066,9 +2090,9 @@ checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
 
 [[package]]
 name = "socket2"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e3dfc207c526015c632472a77be09cf1b6e46866581aecae5cc38fb4235dea2"
+checksum = "765f090f0e423d2b55843402a07915add955e7d60657db13707a159727326cad"
 dependencies = [
  "libc",
  "winapi",
@@ -2614,9 +2638,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ddf6e9bca2f3bc1dd499db2a93d35c735176cff0de7daacdc18c3794f7082e0"
 dependencies = [
  "anyhow",
- "gimli",
+ "gimli 0.24.0",
  "more-asserts",
- "object",
+ "object 0.25.3",
  "target-lexicon",
  "thiserror",
  "wasmparser",
@@ -2633,7 +2657,7 @@ dependencies = [
  "cranelift-codegen",
  "cranelift-entity",
  "cranelift-wasm",
- "gimli",
+ "gimli 0.24.0",
  "indexmap",
  "log",
  "more-asserts",
@@ -2659,7 +2683,7 @@ version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f33a0ae79b7c8d050156b22e10fdc49dfb09cc482c251d12bf10e8a833498fb"
 dependencies = [
- "addr2line",
+ "addr2line 0.15.2",
  "anyhow",
  "cfg-if",
  "cranelift-codegen",
@@ -2667,10 +2691,10 @@ dependencies = [
  "cranelift-frontend",
  "cranelift-native",
  "cranelift-wasm",
- "gimli",
+ "gimli 0.24.0",
  "log",
  "more-asserts",
- "object",
+ "object 0.25.3",
  "rayon",
  "region",
  "serde",
@@ -2694,7 +2718,7 @@ checksum = "4a879f03d416615f322dcb3aa5cb4cbc47b64b12be6aa235a64ab63a4281d50a"
 dependencies = [
  "anyhow",
  "more-asserts",
- "object",
+ "object 0.25.3",
  "target-lexicon",
  "wasmtime-debug",
  "wasmtime-environ",
@@ -2708,10 +2732,10 @@ checksum = "171ae3107e8502667b16d336a1dd03e370aa6630a1ce26559aba572ade1031d1"
 dependencies = [
  "anyhow",
  "cfg-if",
- "gimli",
+ "gimli 0.24.0",
  "lazy_static",
  "libc",
- "object",
+ "object 0.25.3",
  "scroll",
  "serde",
  "target-lexicon",
