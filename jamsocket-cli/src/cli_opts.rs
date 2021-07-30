@@ -1,5 +1,5 @@
 use clap::Clap;
-use jamsocket_server::RoomIdStrategy;
+use jamsocket_server::{RoomIdStrategy, ServiceShutdownPolicy};
 
 #[derive(Clap)]
 pub struct Opts {
@@ -36,6 +36,9 @@ pub struct ServeCommand {
     /// assumed to be disconnected.
     #[clap(short = 't', long, default_value = "120")]
     pub heartbeat_timeout: u64,
+
+    #[clap(short, long, default_value="300sec")]
+    pub shutdown_policy: ServiceShutdownPolicy,
 }
 
 #[derive(Clap)]

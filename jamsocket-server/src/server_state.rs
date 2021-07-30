@@ -65,7 +65,11 @@ impl<T: JamsocketServiceBuilder<ServiceActorContext> + Clone> ServerState<T> {
                             .unwrap()
                         });
 
-                        RoomActor::new(room_id.to_string(), service_actor.recipient())
+                        RoomActor::new(
+                            room_id.to_string(),
+                            service_actor.recipient(),
+                            self.settings.shutdown_policy,
+                        )
                     })
                 };
 

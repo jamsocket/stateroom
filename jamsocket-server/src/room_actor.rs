@@ -1,7 +1,10 @@
-use crate::messages::{AssignUserId, MessageFromClient, MessageFromServer};
-use actix::{Actor, ActorContext, Context, Handler, Recipient};
+use crate::{
+    messages::{AssignUserId, MessageFromClient, MessageFromServer},
+    ServiceShutdownPolicy,
+};
+use actix::{Actor, ActorContext, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
 use jamsocket::MessageRecipient;
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 /// Actor model representation of a “room”. A room is a set of clients
 /// that share an instance of a Jamsocket instance. Conceptually, this
@@ -15,15 +18,47 @@ pub struct RoomActor {
     /// ensuring that they never overlap. `next_id` stores the next ID that
     /// will be assigned.
     next_id: u32,
+    shutdown_policy: ServiceShutdownPolicy,
+    shutdown_handle: Option<SpawnHandle>,
+}
+
+struct Shutdown;
+
+impl Message for Shutdown {
+    type Result = ();
 }
 
 impl RoomActor {
-    pub fn new(room_id: String, service_actor: Recipient<MessageFromClient>) -> Self {
+    pub fn new(
+        room_id: String,
+        service_actor: Recipient<MessageFromClient>,
+        shutdown_policy: ServiceShutdownPolicy,
+    ) -> Self {
         RoomActor {
             room_id,
             service_actor: Some(service_actor),
             connections: Default::default(),
             next_id: 1,
+            shutdown_policy,
+            shutdown_handle: None,
+        }
+    }
+
+    fn handle_empty_room(&mut self, ctx: &mut Context<Self>) {
+        match self.shutdown_policy {
+            ServiceShutdownPolicy::Immediate => {
+                log::info!(
+                    "Shutting down service actor for {} because no clients are left.",
+                    &self.room_id
+                );
+
+                ctx.stop();
+            }
+            ServiceShutdownPolicy::Never => (),
+            ServiceShutdownPolicy::AfterSeconds(secs) => {
+                self.shutdown_handle =
+                    Some(ctx.notify_later(Shutdown, Duration::from_secs(secs.into())));
+            }
         }
     }
 }
@@ -65,20 +100,17 @@ impl Handler<MessageFromClient> for RoomActor {
                 MessageFromClient::Connect(u, resp) => {
                     self.connections.insert(*u, resp.clone());
                     service_actor.do_send(message).unwrap();
+                    
+                    // If this task was scheduled to shut down becuse the room is empty,
+                    // cancel that.
+                    self.shutdown_handle.take().map(|t| ctx.cancel_future(t));
                 }
                 MessageFromClient::Disconnect(u) => {
                     self.connections.remove(&u);
+                    service_actor.do_send(message).unwrap();
 
                     if self.connections.is_empty() {
-                        // TODO: implement shutdown strategy
-                        log::info!(
-                            "Shutting down service actor for {} because no clients are left.",
-                            &self.room_id
-                        );
-
-                        ctx.stop();
-                    } else {
-                        service_actor.do_send(message).unwrap();
+                        self.handle_empty_room(ctx);
                     }
                 }
                 MessageFromClient::Message { .. } => {
@@ -102,5 +134,18 @@ impl Handler<AssignUserId> for RoomActor {
         self.next_id += 1;
 
         result
+    }
+}
+
+impl Handler<Shutdown> for RoomActor {
+    type Result = ();
+
+    fn handle(&mut self, _: Shutdown, ctx: &mut Self::Context) -> Self::Result {
+        log::info!(
+            "Shutting down service actor for {} because no clients are left and the timeout period has elapsed.",
+            &self.room_id
+        );
+
+        ctx.stop();
     }
 }

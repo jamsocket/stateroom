@@ -4,6 +4,7 @@ mod room_actor;
 mod room_id;
 mod server_state;
 mod service_actor;
+mod shutdown_policy;
 
 pub use crate::room_id::{RoomIdGenerator, RoomIdStrategy, UuidRoomIdGenerator};
 use actix_web::error::ErrorInternalServerError;
@@ -17,6 +18,7 @@ pub use room_actor::RoomActor;
 use serde::{Deserialize, Serialize};
 use server_state::ServerState;
 use service_actor::ServiceActorContext;
+pub use shutdown_policy::ServiceShutdownPolicy;
 use std::time::{Duration, Instant};
 
 #[derive(Serialize, Deserialize)]
@@ -26,12 +28,6 @@ struct NewRoom {
 
 async fn status() -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().body("ok"))
-}
-
-pub enum ServiceShutdownPolicy {
-    Never,
-    Immediate,
-    // TODO: implement AfterTimeout(timeout_seconds)
 }
 
 /// Settings used by the server.
