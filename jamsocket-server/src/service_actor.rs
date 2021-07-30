@@ -1,7 +1,7 @@
 use crate::messages::{MessageData, MessageFromClient, MessageFromServer};
-use actix::{Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
+use actix::{Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle, prelude::SendError};
 use anyhow::Result;
-use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceBuilder, MessageRecipient};
+use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceFactory, MessageRecipient};
 use std::time::Duration;
 
 pub struct ServiceActor<T: JamsocketService> {
@@ -26,23 +26,29 @@ pub struct ServiceActorContext {
     send_message_recipient: Recipient<MessageFromServer>,
 }
 
+impl ServiceActorContext {
+    fn try_send(&self, message: MessageFromServer) {
+        match self.send_message_recipient.do_send(message) {
+            Ok(_) => (),
+            Err(SendError::Closed(_)) => log::warn!("Attempted to send a message to a closed service."),
+            e => e.unwrap()
+        }
+    }
+}
+
 impl JamsocketContext for ServiceActorContext {
     fn send_message(&self, recipient: impl Into<MessageRecipient>, message: &str) {
-        self.send_message_recipient
-            .do_send(MessageFromServer::new(
-                recipient.into(),
-                message.to_string(),
-            ))
-            .unwrap();
+        self.try_send(MessageFromServer::new(
+            recipient.into(),
+            message.to_string(),
+        ));
     }
 
     fn send_binary(&self, recipient: impl Into<MessageRecipient>, message: &[u8]) {
-        self.send_message_recipient
-            .do_send(MessageFromServer::new_binary(
-                recipient.into(),
-                message.to_vec(),
-            ))
-            .unwrap();
+        self.try_send(MessageFromServer::new_binary(
+            recipient.into(),
+            message.to_vec(),
+        ));
     }
 
     fn set_timer(&self, ms_delay: u32) {
@@ -52,11 +58,11 @@ impl JamsocketContext for ServiceActorContext {
     }
 }
 
-impl<T: JamsocketService + Unpin + 'static> ServiceActor<T> {
+impl<T: JamsocketService> ServiceActor<T> {
     pub fn new(
         ctx: &mut Context<Self>,
         room_id: String,
-        service_constructor: impl JamsocketServiceBuilder<ServiceActorContext, Service = T>,
+        service_constructor: &impl JamsocketServiceFactory<ServiceActorContext, Service = T>,
         recipient: Recipient<MessageFromServer>,
     ) -> Result<Self> {
         let host_context = ServiceActorContext {
@@ -72,7 +78,7 @@ impl<T: JamsocketService + Unpin + 'static> ServiceActor<T> {
     }
 }
 
-impl<T: JamsocketService + 'static + Unpin> Actor for ServiceActor<T> {
+impl<T: JamsocketService> Actor for ServiceActor<T> {
     type Context = Context<Self>;
 
     fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::Running {
@@ -81,7 +87,7 @@ impl<T: JamsocketService + 'static + Unpin> Actor for ServiceActor<T> {
     }
 }
 
-impl<T: JamsocketService + 'static + Unpin> Handler<MessageFromClient> for ServiceActor<T> {
+impl<T: JamsocketService> Handler<MessageFromClient> for ServiceActor<T> {
     type Result = ();
 
     fn handle(&mut self, msg: MessageFromClient, _ctx: &mut Self::Context) -> Self::Result {
@@ -100,7 +106,7 @@ impl<T: JamsocketService + 'static + Unpin> Handler<MessageFromClient> for Servi
     }
 }
 
-impl<T: JamsocketService + 'static + Unpin> Handler<SetTimer> for ServiceActor<T> {
+impl<T: JamsocketService> Handler<SetTimer> for ServiceActor<T> {
     type Result = ();
 
     fn handle(&mut self, SetTimer(duration_ms): SetTimer, ctx: &mut Self::Context) -> Self::Result {
@@ -114,7 +120,7 @@ impl<T: JamsocketService + 'static + Unpin> Handler<SetTimer> for ServiceActor<T
     }
 }
 
-impl<T: JamsocketService + 'static + Unpin> Handler<TimerFinished> for ServiceActor<T> {
+impl<T: JamsocketService> Handler<TimerFinished> for ServiceActor<T> {
     type Result = ();
 
     fn handle(&mut self, _: TimerFinished, _: &mut Self::Context) -> Self::Result {

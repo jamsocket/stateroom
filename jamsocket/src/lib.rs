@@ -57,12 +57,14 @@
 //!     }
 //! }
 
+use std::marker::PhantomData;
+
 pub use message_recipient::MessageRecipient;
 
 mod message_recipient;
 
 /// Provides an interface for a [JamsocketService] instance to send messages back to its host environment.
-pub trait JamsocketContext {
+pub trait JamsocketContext: Unpin + 'static + Send + Sync {
     /// Sends a message to a currently connected user, or broadcast a message to all users.
     ///
     /// Recipient can be a `u32` representing an individual user to send a message to, or
@@ -89,7 +91,7 @@ pub trait JamsocketContext {
 ///
 /// See module documentation for usage examples.
 #[allow(unused_variables)]
-pub trait SimpleJamsocketService: Default {
+pub trait SimpleJamsocketService: Default + Unpin + Send + Sync + 'static {
     /// Called when the service is created, before any client has had a chance to connect.
     fn initialize(&mut self, room_id: &str, context: &impl JamsocketContext) {}
 
@@ -117,7 +119,7 @@ pub trait SimpleJamsocketService: Default {
 /// or borrow a [JamsocketContext] object, but the details are left up to the implementer. See
 /// [WrappedJamsocketService] for an example.
 #[allow(unused_variables)]
-pub trait JamsocketService {
+pub trait JamsocketService: Send + Sync + Unpin + 'static {
     /// Called each time a client connects to the service.
     fn connect(&mut self, user: u32);
 
@@ -137,37 +139,44 @@ pub trait JamsocketService {
 }
 
 /// Enables an object to become a [JamsocketService] of the associated `Service` type.
-pub trait JamsocketServiceBuilder<C: JamsocketContext> {
+pub trait JamsocketServiceFactory<C: JamsocketContext>: Send + Sync + 'static {
     /// The type of [JamsocketService] that the object implementing this trait becomes.
-    type Service: JamsocketService + Unpin + 'static;
+    type Service: JamsocketService;
 
     /// Transform `self` into a [JamsocketService].
-    fn build(self, room_id: &str, context: C) -> Self::Service;
+    fn build(&self, room_id: &str, context: C) -> Self::Service;
 }
 
 /// Combines a [SimpleJamsocketService] with an owned [JamsocketContext] in order to implement
 /// [JamsocketService].
-pub struct WrappedJamsocketService<S: SimpleJamsocketService + Unpin, C: JamsocketContext + Unpin> {
+pub struct WrappedJamsocketService<S: SimpleJamsocketService, C: JamsocketContext> {
     context: C,
     model: S,
 }
 
-impl<T: SimpleJamsocketService + Unpin + 'static, C: JamsocketContext + Unpin + 'static>
-    JamsocketServiceBuilder<C> for T
+#[derive(Default)]
+struct SimpleJamsocketServiceFactory<T: SimpleJamsocketService, C: JamsocketContext>(
+    PhantomData<T>,
+    PhantomData<C>,
+);
+
+impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceFactory<C>
+    for SimpleJamsocketServiceFactory<T, C>
 {
     type Service = WrappedJamsocketService<T, C>;
 
-    fn build(mut self, room_id: &str, context: C) -> Self::Service {
-        self.initialize(room_id, &context);
+    fn build(&self, room_id: &str, context: C) -> Self::Service {
+        let mut model = T::default();
+        model.initialize(room_id, &context);
 
         WrappedJamsocketService {
             context,
-            model: self,
+            model: T::default(),
         }
     }
 }
 
-impl<T: SimpleJamsocketService + Unpin, C: JamsocketContext + Unpin> JamsocketService
+impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketService
     for WrappedJamsocketService<T, C>
 {
     fn connect(&mut self, user: u32) {

@@ -5,17 +5,17 @@ use actix::{Actor, Addr, AsyncContext};
 use actix_web::error::{ErrorBadRequest, ErrorConflict, ErrorInternalServerError, ErrorNotFound};
 use actix_web::Result;
 use async_std::sync::{Mutex, RwLock};
-use jamsocket::JamsocketServiceBuilder;
+use jamsocket::JamsocketServiceFactory;
 use std::collections::HashMap;
 
-pub struct ServerState<T: JamsocketServiceBuilder<ServiceActorContext> + Clone> {
+pub struct ServerState<T: JamsocketServiceFactory<ServiceActorContext>> {
     mapping: RwLock<HashMap<String, Addr<RoomActor>>>,
     generator: Option<Mutex<Box<dyn RoomIdGenerator>>>,
     pub settings: ServerSettings,
     host_factory: T,
 }
 
-impl<T: JamsocketServiceBuilder<ServiceActorContext> + Clone> ServerState<T> {
+impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
     pub fn new(host_factory: T, settings: ServerSettings) -> Self {
         ServerState {
             mapping: Default::default(),
@@ -51,15 +51,13 @@ impl<T: JamsocketServiceBuilder<ServiceActorContext> + Clone> ServerState<T> {
                 }
             }
             std::collections::hash_map::Entry::Vacant(entry) => {
-                let host_factory = self.host_factory.clone();
-
                 let room_actor = {
                     RoomActor::create(|room_actor_context| {
                         let service_actor = ServiceActor::create(|service_actor_context| {
                             ServiceActor::new(
                                 service_actor_context,
                                 room_id.to_string(),
-                                host_factory,
+                                &self.host_factory,
                                 room_actor_context.address().recipient(),
                             )
                             .unwrap()

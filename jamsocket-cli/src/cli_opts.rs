@@ -37,7 +37,7 @@ pub struct ServeCommand {
     #[clap(short = 't', long, default_value = "120")]
     pub heartbeat_timeout: u64,
 
-    #[clap(short, long, default_value="300sec")]
+    #[clap(short, long, default_value = "300sec")]
     pub shutdown_policy: ServiceShutdownPolicy,
 }
 

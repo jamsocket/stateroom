@@ -12,7 +12,7 @@ use actix_web::web::{self, get, post};
 use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use actix_web_actors::ws;
 pub use client_socket_connection::ClientSocketConnection;
-use jamsocket::JamsocketServiceBuilder;
+use jamsocket::JamsocketServiceFactory;
 pub use messages::{AssignUserId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
 use serde::{Deserialize, Serialize};
@@ -47,7 +47,7 @@ pub struct ServerSettings {
     pub shutdown_policy: ServiceShutdownPolicy,
 }
 
-async fn new_room<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Clone>(
+async fn new_room<T: JamsocketServiceFactory<ServiceActorContext>>(
     req: HttpRequest,
 ) -> actix_web::Result<HttpResponse> {
     let server_state: &Data<ServerState<T>> = req.app_data().unwrap();
@@ -56,7 +56,7 @@ async fn new_room<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Cl
     Ok(HttpResponse::Ok().json(NewRoom { room_id }))
 }
 
-async fn new_room_explicit<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Clone>(
+async fn new_room_explicit<T: JamsocketServiceFactory<ServiceActorContext>>(
     req: HttpRequest,
     room_id: web::Path<String>,
 ) -> actix_web::Result<HttpResponse> {
@@ -68,7 +68,7 @@ async fn new_room_explicit<T: JamsocketServiceBuilder<ServiceActorContext> + 'st
     }))
 }
 
-async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Clone>(
+async fn websocket<T: JamsocketServiceFactory<ServiceActorContext>>(
     req: HttpRequest,
     stream: web::Payload,
     room_id: web::Path<String>,
@@ -124,7 +124,7 @@ async fn websocket<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + C
 /// - `/new_room` (POST): create a new room, if not in `explicit` room creation mode.
 /// - `/ws/{room_id}` (GET): initiate a WebSocket connection to the given room. If the room
 ///     does not exist and the server is in `implicit` room creation mode, it will be created.
-pub fn do_serve<T: JamsocketServiceBuilder<ServiceActorContext> + Send + Sync + 'static + Clone>(
+pub fn do_serve<T: JamsocketServiceFactory<ServiceActorContext>>(
     host_factory: T,
     server_settings: ServerSettings,
 ) -> std::io::Result<()> {

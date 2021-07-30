@@ -178,7 +178,7 @@ impl WasmHost {
         _room_id: &str,
         module: &Module,
         engine: &Engine,
-        context: Arc<impl JamsocketContext + Send + Sync + 'static>,
+        context: Arc<impl JamsocketContext>,
     ) -> Result<Self> {
         let wasi = WasiCtxBuilder::new().build();
 

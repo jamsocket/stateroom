@@ -30,10 +30,14 @@ impl FromStr for ServiceShutdownPolicy {
             "never" => ServiceShutdownPolicy::Never,
             "immediate" => ServiceShutdownPolicy::Immediate,
             _ if s.ends_with("sec") => {
-                let v: u32 = s.strip_suffix("sec").unwrap().parse().map_err(move |_| BadShutdownPolicyName(s.to_string()))?;
+                let v: u32 = s
+                    .strip_suffix("sec")
+                    .unwrap()
+                    .parse()
+                    .map_err(move |_| BadShutdownPolicyName(s.to_string()))?;
                 ServiceShutdownPolicy::AfterSeconds(v)
-            },
-            _ => return Err(BadShutdownPolicyName(s.to_string()))
+            }
+            _ => return Err(BadShutdownPolicyName(s.to_string())),
         })
     }
 }
@@ -42,7 +46,7 @@ impl FromStr for ServiceShutdownPolicy {
 mod tests {
     use std::str::FromStr;
 
-    use crate::{ServiceShutdownPolicy, shutdown_policy::BadShutdownPolicyName};
+    use crate::{shutdown_policy::BadShutdownPolicyName, ServiceShutdownPolicy};
 
     #[test]
     fn test_from_string() {

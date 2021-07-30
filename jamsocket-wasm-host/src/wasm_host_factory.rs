@@ -1,5 +1,5 @@
 use crate::wasm_host::WasmHost;
-use jamsocket::{JamsocketContext, JamsocketServiceBuilder};
+use jamsocket::{JamsocketContext, JamsocketServiceFactory};
 use std::sync::Arc;
 use wasmtime::{Engine, Module};
 
@@ -14,10 +14,10 @@ pub struct WasmHostFactory {
     module: Arc<Module>,
 }
 
-impl<T: JamsocketContext + Send + Sync + 'static> JamsocketServiceBuilder<T> for WasmHostFactory {
+impl<T: JamsocketContext> JamsocketServiceFactory<T> for WasmHostFactory {
     type Service = WasmHost;
 
-    fn build(self, room_id: &str, context: T) -> Self::Service {
+    fn build(&self, room_id: &str, context: T) -> Self::Service {
         WasmHost::new(
             room_id,
             self.module.as_ref(),

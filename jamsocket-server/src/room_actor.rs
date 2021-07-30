@@ -100,17 +100,21 @@ impl Handler<MessageFromClient> for RoomActor {
                 MessageFromClient::Connect(u, resp) => {
                     self.connections.insert(*u, resp.clone());
                     service_actor.do_send(message).unwrap();
-                    
+
                     // If this task was scheduled to shut down becuse the room is empty,
                     // cancel that.
                     self.shutdown_handle.take().map(|t| ctx.cancel_future(t));
                 }
                 MessageFromClient::Disconnect(u) => {
                     self.connections.remove(&u);
-                    service_actor.do_send(message).unwrap();
-
+                    
                     if self.connections.is_empty() {
+                        if self.shutdown_policy != ServiceShutdownPolicy::Immediate {
+                            service_actor.do_send(message).unwrap();
+                        }
                         self.handle_empty_room(ctx);
+                    } else {
+                        service_actor.do_send(message).unwrap();
                     }
                 }
                 MessageFromClient::Message { .. } => {
