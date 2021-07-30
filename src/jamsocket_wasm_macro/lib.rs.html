@@ -152,6 +152,7 @@
 <span id="152">152</span>
 <span id="153">153</span>
 <span id="154">154</span>
+<span id="155">155</span>
 </pre><pre class="rust">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">proc_macro</span>;
 <span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
@@ -180,7 +181,7 @@
             <span class="kw">use</span> <span class="ident">jamsocket_wasm::prelude</span>::{
                 <span class="ident">WrappedJamsocketService</span>,
                 <span class="ident">MessageRecipient</span>,
-                <span class="ident">JamsocketServiceBuilder</span>,
+                <span class="ident">JamsocketServiceFactory</span>,
                 <span class="ident">JamsocketService</span>,
                 <span class="ident">JamsocketContext</span>
             };
@@ -238,7 +239,8 @@
             <span class="comment">// Functions provided to the host.</span>
             <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
             <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">initialize</span>() {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">JamsocketServiceBuilder::build</span>(#<span class="ident">name::default</span>(), <span class="string">&quot;&quot;</span>, <span class="ident">GlobalJamsocketContext</span>);
+                <span class="comment">// TODO: this is a bit awkward; we build a default to use as a factory.</span>
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span> <span class="op">=</span> #<span class="ident">name::default</span>().<span class="ident">build</span>(<span class="string">&quot;&quot;</span>, <span class="ident">GlobalJamsocketContext</span>);
 
                 <span class="kw">unsafe</span> {
                     <span class="ident">SERVER_STATE</span>.<span class="ident">replace</span>(<span class="ident">c</span>);
