@@ -24,11 +24,12 @@
 <span id="24">24</span>
 <span id="25">25</span>
 <span id="26">26</span>
+<span id="27">27</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">std::time::Duration</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::cli_opts::ServeCommand</span>;
-<span class="kw">use</span> <span class="ident">jamsocket_server</span>::{<span class="ident">do_serve</span>, <span class="ident">ServerSettings</span>, <span class="ident">ServiceShutdownPolicy</span>};
+<span class="kw">use</span> <span class="ident">jamsocket_server</span>::{<span class="ident">do_serve</span>, <span class="ident">ServerSettings</span>};
 <span class="kw">use</span> <span class="ident">jamsocket_wasm_host::WasmHostFactory</span>;
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serve</span>(<span class="ident">serve_opts</span>: <span class="ident">ServeCommand</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -38,6 +39,7 @@
         <span class="ident">rooms</span>,
         <span class="ident">heartbeat_interval</span>,
         <span class="ident">heartbeat_timeout</span>,
+        <span class="ident">shutdown_policy</span>,
     } <span class="op">=</span> <span class="ident">serve_opts</span>;
 
     <span class="kw">let</span> <span class="ident">host_factory</span> <span class="op">=</span> <span class="ident">WasmHostFactory::new</span>(<span class="kw-2">&amp;</span><span class="ident">module</span>);
@@ -46,7 +48,7 @@
         <span class="ident">heartbeat_timeout</span>: <span class="ident">Duration::from_secs</span>(<span class="ident">heartbeat_timeout</span>),
         <span class="ident">port</span>,
         <span class="ident">room_id_strategy</span>: <span class="ident">rooms</span>,
-        <span class="ident">shutdown_policy</span>: <span class="ident">ServiceShutdownPolicy::Immediate</span>,
+        <span class="ident">shutdown_policy</span>,
     };
 
     <span class="ident">do_serve</span>(<span class="ident">host_factory</span>, <span class="ident">server_settings</span>)

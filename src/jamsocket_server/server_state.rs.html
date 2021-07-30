@@ -111,6 +111,10 @@
 <span id="111">111</span>
 <span id="112">112</span>
 <span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
 </pre><pre class="rust">
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::room_id</span>::{<span class="ident">RoomIdGenerator</span>, <span class="ident">RoomIdStrategy</span>, <span class="ident">UuidRoomIdGenerator</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::service_actor</span>::{<span class="ident">ServiceActor</span>, <span class="ident">ServiceActorContext</span>};
@@ -179,7 +183,11 @@
                             .<span class="ident">unwrap</span>()
                         });
 
-                        <span class="ident">RoomActor::new</span>(<span class="ident">room_id</span>.<span class="ident">to_string</span>(), <span class="ident">service_actor</span>.<span class="ident">recipient</span>())
+                        <span class="ident">RoomActor::new</span>(
+                            <span class="ident">room_id</span>.<span class="ident">to_string</span>(),
+                            <span class="ident">service_actor</span>.<span class="ident">recipient</span>(),
+                            <span class="self">self</span>.<span class="ident">settings</span>.<span class="ident">shutdown_policy</span>,
+                        )
                     })
                 };
 
