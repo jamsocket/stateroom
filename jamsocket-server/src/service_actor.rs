@@ -28,7 +28,6 @@ pub struct ServiceActorContext {
 
 impl JamsocketContext for ServiceActorContext {
     fn send_message(&self, recipient: impl Into<MessageRecipient>, message: &str) {
-        println!("message: {}", message);
         self.send_message_recipient
             .do_send(MessageFromServer::new(
                 recipient.into(),

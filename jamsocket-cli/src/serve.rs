@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::cli_opts::ServeCommand;
-use jamsocket_server::{ServerSettings, ServiceShutdownPolicy, do_serve};
+use jamsocket_server::{do_serve, ServerSettings, ServiceShutdownPolicy};
 use jamsocket_wasm_host::WasmHostFactory;
 
 pub fn serve(serve_opts: ServeCommand) -> std::io::Result<()> {
