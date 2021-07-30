@@ -28,7 +28,7 @@
 <span class="kw">use</span> <span class="ident">std::time::Duration</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::cli_opts::ServeCommand</span>;
-<span class="kw">use</span> <span class="ident">jamsocket_server</span>::{<span class="ident">ServerSettings</span>, <span class="ident">ServiceShutdownPolicy</span>, <span class="ident">do_serve</span>};
+<span class="kw">use</span> <span class="ident">jamsocket_server</span>::{<span class="ident">do_serve</span>, <span class="ident">ServerSettings</span>, <span class="ident">ServiceShutdownPolicy</span>};
 <span class="kw">use</span> <span class="ident">jamsocket_wasm_host::WasmHostFactory</span>;
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serve</span>(<span class="ident">serve_opts</span>: <span class="ident">ServeCommand</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
