@@ -25,7 +25,7 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
             use jamsocket_wasm::prelude::{
                 WrappedJamsocketService,
                 MessageRecipient,
-                JamsocketServiceBuilder,
+                JamsocketServiceFactory,
                 JamsocketService,
                 JamsocketContext
             };
@@ -83,7 +83,8 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
             // Functions provided to the host.
             #[no_mangle]
             extern "C" fn initialize() {
-                let mut c = JamsocketServiceBuilder::build(#name::default(), "", GlobalJamsocketContext);
+                // TODO: this is a bit awkward; we build a default to use as a factory.
+                let mut c = #name::default().build("", GlobalJamsocketContext);
 
                 unsafe {
                     SERVER_STATE.replace(c);

@@ -11,12 +11,17 @@ checksum = "72957246c41db82b8ef88a5486143830adeb8227ef9837740bdec67724cf2c5b"
 [[package]]
 name = "jamsocket"
 version = "0.1.0"
+
+[[package]]
+name = "jamsocket-wasm"
+version = "0.1.0"
 dependencies = [
- "jamsocket-macro",
+ "jamsocket",
+ "jamsocket-wasm-macro",
 ]
 
 [[package]]
-name = "jamsocket-macro"
+name = "jamsocket-wasm-macro"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
@@ -47,7 +52,7 @@ name = "randomness"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
- "jamsocket",
+ "jamsocket-wasm",
  "wasi",
 ]
 

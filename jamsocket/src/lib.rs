@@ -57,8 +57,6 @@
 //!     }
 //! }
 
-use std::marker::PhantomData;
-
 pub use message_recipient::MessageRecipient;
 
 mod message_recipient;
@@ -154,15 +152,7 @@ pub struct WrappedJamsocketService<S: SimpleJamsocketService, C: JamsocketContex
     model: S,
 }
 
-#[derive(Default)]
-struct SimpleJamsocketServiceFactory<T: SimpleJamsocketService, C: JamsocketContext>(
-    PhantomData<T>,
-    PhantomData<C>,
-);
-
-impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceFactory<C>
-    for SimpleJamsocketServiceFactory<T, C>
-{
+impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceFactory<C> for T {
     type Service = WrappedJamsocketService<T, C>;
 
     fn build(&self, room_id: &str, context: C) -> Self::Service {
@@ -171,7 +161,7 @@ impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceFactory<C>
 
         WrappedJamsocketService {
             context,
-            model: T::default(),
+            model
         }
     }
 }
