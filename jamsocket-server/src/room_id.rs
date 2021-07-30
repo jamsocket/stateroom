@@ -47,6 +47,32 @@ pub enum RoomIdStrategy {
     Generator(Box<dyn RoomIdGenerator + Sync + Send>),
 }
 
+impl RoomIdStrategy {
+    pub fn explicit_room_creation_allowed(&self) -> bool {
+        match self {
+            RoomIdStrategy::Explicit => true,
+            RoomIdStrategy::Implicit => true,
+            RoomIdStrategy::Generator(_) => false,
+        }
+    }
+
+    pub fn implicit_room_creation_allowed(&self) -> bool {
+        match self {
+            RoomIdStrategy::Explicit => false,
+            RoomIdStrategy::Implicit => true,
+            RoomIdStrategy::Generator(_) => false,
+        }
+    }
+
+    pub fn try_generate(&self) -> Option<String> {
+        match self {
+            RoomIdStrategy::Explicit => None,
+            RoomIdStrategy::Implicit => Some(UuidRoomIdGenerator.generate()),
+            RoomIdStrategy::Generator(g) => Some(g.generate()),
+        }
+    }
+}
+
 impl Default for RoomIdStrategy {
     fn default() -> Self {
         RoomIdStrategy::Implicit

@@ -70,6 +70,7 @@ impl Handler<MessageFromClient> for RoomActor {
                     self.connections.remove(&u);
 
                     if self.connections.is_empty() {
+                        // TODO: implement shutdown strategy
                         log::info!(
                             "Shutting down service actor for {} because no clients are left.",
                             &self.room_id

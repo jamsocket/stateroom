@@ -31,6 +31,12 @@ async fn status() -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().body("ok"))
 }
 
+pub enum ServiceShutdownPolicy {
+    Never,
+    Immediate,
+    // TODO: implement AfterTimeout(timeout_seconds)
+}
+
 /// Settings used by the server.
 pub struct ServerSettings {
     /// The duration of time between server-initiated WebSocket heartbeats.
@@ -44,6 +50,8 @@ pub struct ServerSettings {
 
     /// The port to run the server on.
     pub port: u32,
+
+    pub shutdown_policy: ServiceShutdownPolicy,
 }
 
 async fn create_room<T: JamsocketServiceBuilder<ServiceActorContext> + Clone>(
@@ -90,17 +98,9 @@ async fn new_room<T: JamsocketServiceBuilder<ServiceActorContext> + 'static + Cl
     let room_mapper: &Data<RoomMapper> = req.app_data().unwrap();
 
     for _ in 0..100 {
-        let room_id = {
-            match &server_settings.room_id_strategy {
-                RoomIdStrategy::Generator(g) => g.generate(),
-                RoomIdStrategy::Implicit => UuidRoomIdGenerator.generate(),
-                _ => {
-                    return Err(ErrorBadRequest(
-                        "Room ID strategy does not support room ID generation.",
-                    ))
-                }
-            }
-        };
+        let room_id = server_settings.room_id_strategy.try_generate().ok_or(ErrorBadRequest(
+            "Room ID strategy does not support room ID generation.",
+        ))?;
     
         let (already_existed, _) = create_room(room_id.clone(), room_mapper, wasm_host_factory).await;
 
@@ -120,13 +120,7 @@ async fn new_room_explicit<T: JamsocketServiceBuilder<ServiceActorContext> + 'st
     let server_settings: &Data<ServerSettings> = req.app_data().unwrap();
     let room_mapper: &Data<RoomMapper> = req.app_data().unwrap();
 
-    let room_creation_allowed = match &server_settings.room_id_strategy {
-        RoomIdStrategy::Explicit => true,
-        RoomIdStrategy::Implicit => true,
-        _ => false,
-    };
-
-    if room_creation_allowed {
+    if server_settings.room_id_strategy.explicit_room_creation_allowed() {
         let (already_existed, _) = create_room(room_id.clone(), room_mapper, wasm_host_factory).await;
         if !already_existed {
             Ok(HttpResponse::Ok().json(NewRoom {room_id: room_id.to_owned()}))
