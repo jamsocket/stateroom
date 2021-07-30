@@ -73,6 +73,10 @@
 <span id="73">73</span>
 <span id="74">74</span>
 <span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt::Display</span>, <span class="ident">str::FromStr</span>};
 
@@ -106,10 +110,14 @@
             <span class="string">&quot;never&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ServiceShutdownPolicy::Never</span>,
             <span class="string">&quot;immediate&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ServiceShutdownPolicy::Immediate</span>,
             <span class="kw">_</span> <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">ends_with</span>(<span class="string">&quot;sec&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">v</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">strip_suffix</span>(<span class="string">&quot;sec&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="kw">move</span> <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">BadShutdownPolicyName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">v</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">s</span>
+                    .<span class="ident">strip_suffix</span>(<span class="string">&quot;sec&quot;</span>)
+                    .<span class="ident">unwrap</span>()
+                    .<span class="ident">parse</span>()
+                    .<span class="ident">map_err</span>(<span class="kw">move</span> <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">BadShutdownPolicyName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
                 <span class="ident">ServiceShutdownPolicy::AfterSeconds</span>(<span class="ident">v</span>)
-            },
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">BadShutdownPolicyName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))
+            }
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">BadShutdownPolicyName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>())),
         })
     }
 }
@@ -118,7 +126,7 @@
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
 
-    <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">ServiceShutdownPolicy</span>, <span class="ident">shutdown_policy::BadShutdownPolicyName</span>};
+    <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">shutdown_policy::BadShutdownPolicyName</span>, <span class="ident">ServiceShutdownPolicy</span>};
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_from_string</span>() {

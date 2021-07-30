@@ -165,7 +165,7 @@
 <span class="kw">use</span> <span class="ident">actix_web</span>::{<span class="ident">web::Data</span>, <span class="ident">App</span>, <span class="ident">Error</span>, <span class="ident">HttpRequest</span>, <span class="ident">HttpResponse</span>, <span class="ident">HttpServer</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">actix_web_actors::ws</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">client_socket_connection::ClientSocketConnection</span>;
-<span class="kw">use</span> <span class="ident">jamsocket::JamsocketServiceBuilder</span>;
+<span class="kw">use</span> <span class="ident">jamsocket::JamsocketServiceFactory</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">messages</span>::{<span class="ident">AssignUserId</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">room_actor::RoomActor</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
@@ -200,7 +200,7 @@
     <span class="kw">pub</span> <span class="ident">shutdown_policy</span>: <span class="ident">ServiceShutdownPolicy</span>,
 }
 
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new_room</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceBuilder</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span>(
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new_room</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">req</span>: <span class="ident">HttpRequest</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">actix_web::Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">unwrap</span>();
@@ -209,7 +209,7 @@
     <span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::Ok</span>().<span class="ident">json</span>(<span class="ident">NewRoom</span> { <span class="ident">room_id</span> }))
 }
 
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new_room_explicit</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceBuilder</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span>(
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new_room_explicit</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">req</span>: <span class="ident">HttpRequest</span>,
     <span class="ident">room_id</span>: <span class="ident">web::Path</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">actix_web::Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span><span class="op">&gt;</span> {
@@ -221,7 +221,7 @@
     }))
 }
 
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">websocket</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceBuilder</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span>(
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">websocket</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">req</span>: <span class="ident">HttpRequest</span>,
     <span class="ident">stream</span>: <span class="ident">web::Payload</span>,
     <span class="ident">room_id</span>: <span class="ident">web::Path</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
@@ -277,7 +277,7 @@
 <span class="doccomment">/// - `/new_room` (POST): create a new room, if not in `explicit` room creation mode.</span>
 <span class="doccomment">/// - `/ws/{room_id}` (GET): initiate a WebSocket connection to the given room. If the room</span>
 <span class="doccomment">///     does not exist and the server is in `implicit` room creation mode, it will be created.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">do_serve</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceBuilder</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">do_serve</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">host_factory</span>: <span class="ident">T</span>,
     <span class="ident">server_settings</span>: <span class="ident">ServerSettings</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
