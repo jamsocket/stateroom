@@ -151,8 +151,6 @@
 <span id="151">151</span>
 <span id="152">152</span>
 <span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
 </pre><pre class="rust">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">proc_macro</span>;
 <span class="kw">use</span> <span class="ident">proc_macro::TokenStream</span>;
@@ -179,15 +177,14 @@
 
             <span class="kw">use</span> <span class="kw">super</span>::#<span class="ident">name</span>;
             <span class="kw">use</span> <span class="ident">jamsocket_wasm::prelude</span>::{
-                <span class="ident">WrappedJamsocketService</span>,
                 <span class="ident">MessageRecipient</span>,
                 <span class="ident">JamsocketServiceFactory</span>,
-                <span class="ident">JamsocketService</span>,
+                <span class="ident">SimpleJamsocketService</span>,
                 <span class="ident">JamsocketContext</span>
             };
 
             <span class="comment">// Instance-global jamsocket service.</span>
-            <span class="kw">static</span> <span class="kw-2">mut</span> <span class="ident">SERVER_STATE</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">WrappedJamsocketService</span><span class="op">&lt;</span>#<span class="ident">name</span>, <span class="ident">GlobalJamsocketContext</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+            <span class="kw">static</span> <span class="kw-2">mut</span> <span class="ident">SERVER_STATE</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>#<span class="ident">name</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
 
             <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
             <span class="kw">pub</span> <span class="kw">static</span> <span class="ident">JAMSOCKET_API_VERSION</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">1</span>;
@@ -239,8 +236,7 @@
             <span class="comment">// Functions provided to the host.</span>
             <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
             <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">initialize</span>() {
-                <span class="comment">// TODO: this is a bit awkward; we build a default to use as a factory.</span>
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span> <span class="op">=</span> #<span class="ident">name::default</span>().<span class="ident">build</span>(<span class="string">&quot;&quot;</span>, <span class="ident">GlobalJamsocketContext</span>);
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span> <span class="op">=</span> #<span class="ident">name::default</span>();
 
                 <span class="kw">unsafe</span> {
                     <span class="ident">SERVER_STATE</span>.<span class="ident">replace</span>(<span class="ident">c</span>);
@@ -250,7 +246,7 @@
             <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
             <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">connect</span>(<span class="ident">user</span>: <span class="ident">u32</span>) {
                 <span class="kw">match</span> <span class="kw">unsafe</span> { <span class="ident">SERVER_STATE</span>.<span class="ident">as_mut</span>() } {
-                    <span class="prelude-val">Some</span>(<span class="ident">st</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">JamsocketService::connect</span>(<span class="ident">st</span>, <span class="ident">user</span>),
+                    <span class="prelude-val">Some</span>(<span class="ident">st</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SimpleJamsocketService::connect</span>(<span class="ident">st</span>, <span class="ident">user</span>, <span class="kw-2">&amp;</span><span class="ident">GlobalJamsocketContext</span>),
                     <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> ()
                 }
             }
@@ -258,7 +254,7 @@
             <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
             <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">disconnect</span>(<span class="ident">user</span>: <span class="ident">u32</span>) {
                 <span class="kw">match</span> <span class="kw">unsafe</span> { <span class="ident">SERVER_STATE</span>.<span class="ident">as_mut</span>() } {
-                    <span class="prelude-val">Some</span>(<span class="ident">st</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">JamsocketService::disconnect</span>(<span class="ident">st</span>, <span class="ident">user</span>),
+                    <span class="prelude-val">Some</span>(<span class="ident">st</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SimpleJamsocketService::disconnect</span>(<span class="ident">st</span>, <span class="ident">user</span>, <span class="kw-2">&amp;</span><span class="ident">GlobalJamsocketContext</span>),
                     <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> ()
                 }
             }
@@ -266,7 +262,7 @@
             <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
             <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">timer</span>() {
                 <span class="kw">match</span> <span class="kw">unsafe</span> { <span class="ident">SERVER_STATE</span>.<span class="ident">as_mut</span>() } {
-                    <span class="prelude-val">Some</span>(<span class="ident">st</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">JamsocketService::timer</span>(<span class="ident">st</span>),
+                    <span class="prelude-val">Some</span>(<span class="ident">st</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SimpleJamsocketService::timer</span>(<span class="ident">st</span>, <span class="kw-2">&amp;</span><span class="ident">GlobalJamsocketContext</span>),
                     <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> ()
                 }
             }
@@ -277,7 +273,7 @@
                     <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="ident">String::from_utf8</span>(<span class="ident">std::slice::from_raw_parts</span>(<span class="ident">ptr</span>, <span class="ident">len</span>).<span class="ident">to_vec</span>()).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Error parsing UTF-8 from host {:?}&quot;</span>, <span class="ident">e</span>)).<span class="ident">unwrap</span>();
 
                     <span class="kw">match</span> <span class="ident">SERVER_STATE</span>.<span class="ident">as_mut</span>() {
-                        <span class="prelude-val">Some</span>(<span class="ident">st</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">JamsocketService::message</span>(<span class="ident">st</span>, <span class="ident">user</span>, <span class="kw-2">&amp;</span><span class="ident">string</span>),
+                        <span class="prelude-val">Some</span>(<span class="ident">st</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SimpleJamsocketService::message</span>(<span class="ident">st</span>, <span class="ident">user</span>, <span class="kw-2">&amp;</span><span class="ident">string</span>, <span class="kw-2">&amp;</span><span class="ident">GlobalJamsocketContext</span>),
                         <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> ()
                     }
                 }
@@ -289,7 +285,7 @@
                     <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">std::slice::from_raw_parts</span>(<span class="ident">ptr</span>, <span class="ident">len</span>);
 
                     <span class="kw">match</span> <span class="ident">SERVER_STATE</span>.<span class="ident">as_mut</span>() {
-                        <span class="prelude-val">Some</span>(<span class="ident">st</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">JamsocketService::binary</span>(<span class="ident">st</span>, <span class="ident">user</span>, <span class="ident">data</span>),
+                        <span class="prelude-val">Some</span>(<span class="ident">st</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SimpleJamsocketService::binary</span>(<span class="ident">st</span>, <span class="ident">user</span>, <span class="ident">data</span>, <span class="kw-2">&amp;</span><span class="ident">GlobalJamsocketContext</span>),
                         <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> ()
                     }
                 }
