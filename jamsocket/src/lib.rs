@@ -138,10 +138,10 @@ pub trait JamsocketService: Send + Sync + Unpin + 'static {
 
 /// Enables an object to become a [JamsocketService] of the associated `Service` type.
 pub trait JamsocketServiceFactory<C: JamsocketContext>: Send + Sync + 'static {
-    /// The type of [JamsocketService] that the object implementing this trait becomes.
+    /// The type of [JamsocketService] that the object implementing this trait builds.
     type Service: JamsocketService;
 
-    /// Transform `self` into a [JamsocketService].
+    /// Non-destructively build a [JamsocketService] from `self`.
     fn build(&self, room_id: &str, context: C) -> Self::Service;
 }
 
@@ -150,20 +150,6 @@ pub trait JamsocketServiceFactory<C: JamsocketContext>: Send + Sync + 'static {
 pub struct WrappedJamsocketService<S: SimpleJamsocketService, C: JamsocketContext> {
     context: C,
     model: S,
-}
-
-impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceFactory<C> for T {
-    type Service = WrappedJamsocketService<T, C>;
-
-    fn build(&self, room_id: &str, context: C) -> Self::Service {
-        let mut model = T::default();
-        model.initialize(room_id, &context);
-
-        WrappedJamsocketService {
-            context,
-            model
-        }
-    }
 }
 
 impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketService

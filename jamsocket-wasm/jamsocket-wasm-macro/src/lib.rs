@@ -23,15 +23,14 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
             use super::#name;
             use jamsocket_wasm::prelude::{
-                WrappedJamsocketService,
                 MessageRecipient,
                 JamsocketServiceFactory,
-                JamsocketService,
+                SimpleJamsocketService,
                 JamsocketContext
             };
 
             // Instance-global jamsocket service.
-            static mut SERVER_STATE: Option<WrappedJamsocketService<#name, GlobalJamsocketContext>> = None;
+            static mut SERVER_STATE: Option<#name> = None;
 
             #[no_mangle]
             pub static JAMSOCKET_API_VERSION: i32 = 1;
@@ -83,8 +82,7 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
             // Functions provided to the host.
             #[no_mangle]
             extern "C" fn initialize() {
-                // TODO: this is a bit awkward; we build a default to use as a factory.
-                let mut c = #name::default().build("", GlobalJamsocketContext);
+                let mut c = #name::default();
 
                 unsafe {
                     SERVER_STATE.replace(c);
@@ -94,7 +92,7 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #[no_mangle]
             extern "C" fn connect(user: u32) {
                 match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => JamsocketService::connect(st, user),
+                    Some(st) => SimpleJamsocketService::connect(st, user, &GlobalJamsocketContext),
                     None => ()
                 }
             }
@@ -102,7 +100,7 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #[no_mangle]
             extern "C" fn disconnect(user: u32) {
                 match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => JamsocketService::disconnect(st, user),
+                    Some(st) => SimpleJamsocketService::disconnect(st, user, &GlobalJamsocketContext),
                     None => ()
                 }
             }
@@ -110,7 +108,7 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #[no_mangle]
             extern "C" fn timer() {
                 match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => JamsocketService::timer(st),
+                    Some(st) => SimpleJamsocketService::timer(st, &GlobalJamsocketContext),
                     None => ()
                 }
             }
@@ -121,7 +119,7 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     let string = String::from_utf8(std::slice::from_raw_parts(ptr, len).to_vec()).map_err(|e| format!("Error parsing UTF-8 from host {:?}", e)).unwrap();
 
                     match SERVER_STATE.as_mut() {
-                        Some(st) => JamsocketService::message(st, user, &string),
+                        Some(st) => SimpleJamsocketService::message(st, user, &string, &GlobalJamsocketContext),
                         None => ()
                     }
                 }
@@ -133,7 +131,7 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
                     let data = std::slice::from_raw_parts(ptr, len);
 
                     match SERVER_STATE.as_mut() {
-                        Some(st) => JamsocketService::binary(st, user, data),
+                        Some(st) => SimpleJamsocketService::binary(st, user, data, &GlobalJamsocketContext),
                         None => ()
                     }
                 }
