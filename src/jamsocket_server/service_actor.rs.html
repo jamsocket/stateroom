@@ -126,9 +126,15 @@
 <span id="126">126</span>
 <span id="127">127</span>
 <span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::messages</span>::{<span class="ident">MessageData</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>};
-<span class="kw">use</span> <span class="ident">actix</span>::{<span class="ident">Actor</span>, <span class="ident">AsyncContext</span>, <span class="ident">Context</span>, <span class="ident">Handler</span>, <span class="ident">Message</span>, <span class="ident">Recipient</span>, <span class="ident">SpawnHandle</span>, <span class="ident">prelude::SendError</span>};
+<span class="kw">use</span> <span class="ident">actix</span>::{
+    <span class="ident">prelude::SendError</span>, <span class="ident">Actor</span>, <span class="ident">AsyncContext</span>, <span class="ident">Context</span>, <span class="ident">Handler</span>, <span class="ident">Message</span>, <span class="ident">Recipient</span>, <span class="ident">SpawnHandle</span>,
+};
 <span class="kw">use</span> <span class="ident">jamsocket</span>::{<span class="ident">JamsocketContext</span>, <span class="ident">JamsocketService</span>, <span class="ident">JamsocketServiceFactory</span>, <span class="ident">MessageRecipient</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">sync::Arc</span>, <span class="ident">time::Duration</span>};
 
@@ -158,8 +164,10 @@
     <span class="kw">fn</span> <span class="ident">try_send</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">message</span>: <span class="ident">MessageFromServer</span>) {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">send_message_recipient</span>.<span class="ident">do_send</span>(<span class="ident">message</span>) {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (),
-            <span class="prelude-val">Err</span>(<span class="ident">SendError::Closed</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">log::warn!</span>(<span class="string">&quot;Attempted to send a message to a closed service.&quot;</span>),
-            <span class="ident">e</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">e</span>.<span class="ident">unwrap</span>()
+            <span class="prelude-val">Err</span>(<span class="ident">SendError::Closed</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="macro">log::warn!</span>(<span class="string">&quot;Attempted to send a message to a closed service.&quot;</span>)
+            }
+            <span class="ident">e</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">e</span>.<span class="ident">unwrap</span>(),
         }
     }
 }
