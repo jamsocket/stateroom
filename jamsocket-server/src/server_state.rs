@@ -2,12 +2,13 @@ pub use crate::room_id::{RoomIdGenerator, RoomIdStrategy, UuidRoomIdGenerator};
 use crate::service_actor::{ServiceActor, ServiceActorContext};
 use crate::{RoomActor, ServerSettings};
 use actix::dev::channel::channel;
-use actix::{Addr, Context};
+use actix::{Addr, Arbiter, Context};
 use actix_web::error::{ErrorBadRequest, ErrorConflict, ErrorInternalServerError, ErrorNotFound};
 use actix_web::Result;
 use async_std::sync::{Mutex, RwLock};
 use jamsocket::JamsocketServiceFactory;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 const MAILBOX_SIZE: usize = 16;
 
@@ -15,7 +16,7 @@ pub struct ServerState<T: JamsocketServiceFactory<ServiceActorContext>> {
     mapping: RwLock<HashMap<String, Addr<RoomActor>>>,
     generator: Option<Mutex<Box<dyn RoomIdGenerator>>>,
     pub settings: ServerSettings,
-    host_factory: T,
+    host_factory: Arc<T>,
 }
 
 impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
@@ -24,7 +25,7 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
             mapping: Default::default(),
             generator: settings.room_id_strategy.try_generator().map(Mutex::new),
             settings,
-            host_factory,
+            host_factory: Arc::new(host_factory),
         }
     }
 
@@ -54,29 +55,39 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
                 }
             }
             std::collections::hash_map::Entry::Vacant(entry) => {
+                let arbiter = Arbiter::new();
                 let (room_tx, room_rx) = channel(MAILBOX_SIZE);
-                let (service_tx, service_rx) = channel(MAILBOX_SIZE);
-
-                let room_ctx = Context::with_receiver(room_rx);
+                let (service_tx, service_rx) = channel(MAILBOX_SIZE);    
                 let room_addr = Addr::new(room_tx);
-                let service_ctx = Context::with_receiver(service_rx);
                 let service_addr = Addr::new(service_tx);
 
-                let service_actor = ServiceActor::new(
-                    &service_ctx,
-                    room_id.to_string(),
-                    &self.host_factory,
-                    room_addr.clone().recipient(),
-                );
+                {
+                    let room_id = room_id.to_string();
+                    let host_factory = self.host_factory.clone();
+                    let shutdown_policy = self.settings.shutdown_policy;
+                    let room_addr = room_addr.clone();
 
-                let room_actor = RoomActor::new(
-                    room_id.to_string(),
-                    service_addr.recipient(),
-                    self.settings.shutdown_policy,
-                );
+                    arbiter.spawn_fn(move || {
+                        let room_ctx = Context::with_receiver(room_rx);
+                        let service_ctx = Context::with_receiver(service_rx);
+    
+                        let service_actor = ServiceActor::new(
+                            &service_ctx,
+                            room_id.clone(),
+                            host_factory,
+                            room_addr.clone().recipient(),
+                        );
+        
+                        let room_actor = RoomActor::new(
+                            room_id.clone(),
+                            service_addr.recipient(),
+                            shutdown_policy,
+                        );
 
-                room_ctx.run(room_actor);
-                service_ctx.run(service_actor);
+                        room_ctx.run(room_actor);
+                        service_ctx.run(service_actor);        
+                    });    
+                }
 
                 entry.insert(room_addr.clone());
 
