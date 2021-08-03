@@ -17,7 +17,7 @@ pub use messages::{AssignUserId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
 use serde::{Deserialize, Serialize};
 use server_state::ServerState;
-use service_actor::ServiceActorContext;
+pub use service_actor::ServiceActorContext;
 pub use shutdown_policy::ServiceShutdownPolicy;
 use std::time::{Duration, Instant};
 
