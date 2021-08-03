@@ -57,7 +57,7 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
             std::collections::hash_map::Entry::Vacant(entry) => {
                 let arbiter = Arbiter::new();
                 let (room_tx, room_rx) = channel(MAILBOX_SIZE);
-                let (service_tx, service_rx) = channel(MAILBOX_SIZE);    
+                let (service_tx, service_rx) = channel(MAILBOX_SIZE);
                 let room_addr = Addr::new(room_tx);
                 let service_addr = Addr::new(service_tx);
 
@@ -70,14 +70,14 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
                     arbiter.spawn_fn(move || {
                         let room_ctx = Context::with_receiver(room_rx);
                         let service_ctx = Context::with_receiver(service_rx);
-    
+
                         let service_actor = ServiceActor::new(
                             &service_ctx,
                             room_id.clone(),
                             host_factory,
                             room_addr.clone().recipient(),
                         );
-        
+
                         let room_actor = RoomActor::new(
                             room_id.clone(),
                             service_addr.recipient(),
@@ -85,8 +85,8 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
                         );
 
                         room_ctx.run(room_actor);
-                        service_ctx.run(service_actor);        
-                    });    
+                        service_ctx.run(service_actor);
+                    });
                 }
 
                 entry.insert(room_addr.clone());

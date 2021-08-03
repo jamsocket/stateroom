@@ -1,5 +1,7 @@
 use crate::messages::{MessageData, MessageFromClient, MessageFromServer};
-use actix::{Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle, prelude::SendError};
+use actix::{
+    prelude::SendError, Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle,
+};
 use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceFactory, MessageRecipient};
 use std::{sync::Arc, time::Duration};
 
@@ -29,8 +31,10 @@ impl ServiceActorContext {
     fn try_send(&self, message: MessageFromServer) {
         match self.send_message_recipient.do_send(message) {
             Ok(_) => (),
-            Err(SendError::Closed(_)) => log::warn!("Attempted to send a message to a closed service."),
-            e => e.unwrap()
+            Err(SendError::Closed(_)) => {
+                log::warn!("Attempted to send a message to a closed service.")
+            }
+            e => e.unwrap(),
         }
     }
 }

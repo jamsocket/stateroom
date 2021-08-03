@@ -50,15 +50,13 @@ impl WasmHost {
 
         Ok((pt, len))
     }
-    
+
     fn try_message(&mut self, user: u32, message: &str) -> Result<()> {
         let (pt, len) = self.put_data(message.as_bytes())?;
 
-        self.fn_message
-            .call(&mut self.store, (user, pt, len))?;
+        self.fn_message.call(&mut self.store, (user, pt, len))?;
 
-        self.fn_free
-            .call(&mut self.store, (pt, len))?;
+        self.fn_free.call(&mut self.store, (pt, len))?;
 
         Ok(())
     }
@@ -69,8 +67,7 @@ impl WasmHost {
         self.fn_binary
             .call(&mut self.store, (user, pt as u32, len))?;
 
-        self.fn_free
-            .call(&mut self.store, (pt, len))?;
+        self.fn_free.call(&mut self.store, (pt, len))?;
 
         Ok(())
     }
@@ -234,7 +231,8 @@ impl WasmHost {
 
         let instance = linker.instantiate(&mut store, &module)?;
 
-        let initialize = instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_FN_INITIALIZE)?;
+        let initialize =
+            instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_FN_INITIALIZE)?;
 
         let fn_malloc = instance.get_typed_func::<u32, u32, _>(&mut store, EXT_FN_MALLOC)?;
 
@@ -248,7 +246,7 @@ impl WasmHost {
             let room_id = room_id.as_bytes();
             let len = room_id.len() as u32;
             let pt = fn_malloc.call(&mut store, len)?;
-    
+
             memory.write(&mut store, pt as usize, &room_id)?;
             initialize.call(&mut store, (pt, len))?;
 
