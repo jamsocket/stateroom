@@ -1,10 +1,6 @@
 [workspace]
 
 members = [
-    "examples/binary-echo",
-    "examples/clock",
-    "examples/echo-server",
-    "examples/randomness",
     "jamsocket",
     "jamsocket-cli",
     "jamsocket-server",
