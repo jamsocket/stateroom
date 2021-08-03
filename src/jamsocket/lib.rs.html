@@ -179,6 +179,12 @@
 <span id="179">179</span>
 <span id="180">180</span>
 <span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
 </pre><pre class="rust">
 <span class="doccomment">//! Jamsocket is a minimalist framework for developing stateful [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) applications.</span>
 <span class="doccomment">//!</span>
@@ -334,31 +340,37 @@
 <span class="doccomment">/// Combines a [SimpleJamsocketService] with an owned [JamsocketContext] in order to implement</span>
 <span class="doccomment">/// [JamsocketService].</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WrappedJamsocketService</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">SimpleJamsocketService</span>, <span class="ident">C</span>: <span class="ident">JamsocketContext</span><span class="op">&gt;</span> {
+    <span class="ident">service</span>: <span class="ident">S</span>,
     <span class="ident">context</span>: <span class="ident">C</span>,
-    <span class="ident">model</span>: <span class="ident">S</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">SimpleJamsocketService</span>, <span class="ident">C</span>: <span class="ident">JamsocketContext</span><span class="op">&gt;</span> <span class="ident">WrappedJamsocketService</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">C</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">service</span>: <span class="ident">S</span>, <span class="ident">context</span>: <span class="ident">C</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">WrappedJamsocketService</span> { <span class="ident">service</span>, <span class="ident">context</span> }
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">SimpleJamsocketService</span>, <span class="ident">C</span>: <span class="ident">JamsocketContext</span><span class="op">&gt;</span> <span class="ident">JamsocketService</span>
     <span class="kw">for</span> <span class="ident">WrappedJamsocketService</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
 {
     <span class="kw">fn</span> <span class="ident">connect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>) {
-        <span class="self">self</span>.<span class="ident">model</span>.<span class="ident">connect</span>(<span class="ident">user</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
+        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">connect</span>(<span class="ident">user</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">disconnect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>) {
-        <span class="self">self</span>.<span class="ident">model</span>.<span class="ident">disconnect</span>(<span class="ident">user</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
+        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">disconnect</span>(<span class="ident">user</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="self">self</span>.<span class="ident">model</span>.<span class="ident">message</span>(<span class="ident">user</span>, <span class="ident">message</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
+        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">message</span>(<span class="ident">user</span>, <span class="ident">message</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">timer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">model</span>.<span class="ident">timer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
+        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">timer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">binary</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
-        <span class="self">self</span>.<span class="ident">model</span>.<span class="ident">binary</span>(<span class="ident">user</span>, <span class="ident">message</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>)
+        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">binary</span>(<span class="ident">user</span>, <span class="ident">message</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>)
     }
 }
 </pre></div>
