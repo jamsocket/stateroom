@@ -1,12 +1,15 @@
 pub use crate::room_id::{RoomIdGenerator, RoomIdStrategy, UuidRoomIdGenerator};
 use crate::service_actor::{ServiceActor, ServiceActorContext};
 use crate::{RoomActor, ServerSettings};
-use actix::{Actor, Addr, AsyncContext};
+use actix::dev::channel::channel;
+use actix::{Addr, Context};
 use actix_web::error::{ErrorBadRequest, ErrorConflict, ErrorInternalServerError, ErrorNotFound};
 use actix_web::Result;
 use async_std::sync::{Mutex, RwLock};
 use jamsocket::JamsocketServiceFactory;
 use std::collections::HashMap;
+
+const MAILBOX_SIZE: usize = 16;
 
 pub struct ServerState<T: JamsocketServiceFactory<ServiceActorContext>> {
     mapping: RwLock<HashMap<String, Addr<RoomActor>>>,
@@ -51,30 +54,34 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
                 }
             }
             std::collections::hash_map::Entry::Vacant(entry) => {
-                let room_actor = {
-                    RoomActor::create(|room_actor_context| {
-                        let service_actor = ServiceActor::create(|service_actor_context| {
-                            ServiceActor::new(
-                                service_actor_context,
-                                room_id.to_string(),
-                                &self.host_factory,
-                                room_actor_context.address().recipient(),
-                            )
-                            .unwrap()
-                        });
+                let (room_tx, room_rx) = channel(MAILBOX_SIZE);
+                let (service_tx, service_rx) = channel(MAILBOX_SIZE);
 
-                        RoomActor::new(
-                            room_id.to_string(),
-                            service_actor.recipient(),
-                            self.settings.shutdown_policy,
-                        )
-                    })
-                };
+                let room_ctx = Context::with_receiver(room_rx);
+                let room_addr = Addr::new(room_tx);
+                let service_ctx = Context::with_receiver(service_rx);
+                let service_addr = Addr::new(service_tx);
 
-                entry.insert(room_actor.clone());
+                let service_actor = ServiceActor::new(
+                    &service_ctx,
+                    room_id.to_string(),
+                    &self.host_factory,
+                    room_addr.clone().recipient(),
+                );
+
+                let room_actor = RoomActor::new(
+                    room_id.to_string(),
+                    service_addr.recipient(),
+                    self.settings.shutdown_policy,
+                );
+
+                room_ctx.run(room_actor);
+                service_ctx.run(service_actor);
+
+                entry.insert(room_addr.clone());
 
                 log::info!("Created room: {}", &room_id);
-                Ok(room_actor)
+                Ok(room_addr)
             }
         }
     }

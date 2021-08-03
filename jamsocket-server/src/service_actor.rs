@@ -1,6 +1,5 @@
 use crate::messages::{MessageData, MessageFromClient, MessageFromServer};
 use actix::{Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle, prelude::SendError};
-use anyhow::Result;
 use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceFactory, MessageRecipient};
 use std::time::Duration;
 
@@ -60,21 +59,21 @@ impl JamsocketContext for ServiceActorContext {
 
 impl<T: JamsocketService> ServiceActor<T> {
     pub fn new(
-        ctx: &mut Context<Self>,
+        ctx: &Context<Self>,
         room_id: String,
         service_constructor: &impl JamsocketServiceFactory<ServiceActorContext, Service = T>,
         recipient: Recipient<MessageFromServer>,
-    ) -> Result<Self> {
+    ) -> Self {
         let host_context = ServiceActorContext {
             set_timer_recipient: ctx.address().recipient(),
             send_message_recipient: recipient,
         };
         let service = service_constructor.build(&room_id, host_context);
 
-        Ok(ServiceActor {
+        ServiceActor {
             service,
             timer_handle: None,
-        })
+        }
     }
 }
 
