@@ -24,7 +24,6 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
             use super::#name;
             use jamsocket_wasm::prelude::{
                 MessageRecipient,
-                JamsocketServiceFactory,
                 SimpleJamsocketService,
                 JamsocketContext
             };
@@ -81,8 +80,11 @@ pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
             // Functions provided to the host.
             #[no_mangle]
-            extern "C" fn initialize() {
-                let mut c = #name::default();
+            extern "C" fn initialize(room_id_ptr: *const u8, room_id_len: usize) {
+                let room_id = unsafe {
+                    String::from_utf8(std::slice::from_raw_parts(room_id_ptr, room_id_len).to_vec()).map_err(|e| format!("Error parsing UTF-8 from host {:?}", e)).unwrap()
+                };
+                let mut c = #name::new(&room_id, &GlobalJamsocketContext);
 
                 unsafe {
                     SERVER_STATE.replace(c);

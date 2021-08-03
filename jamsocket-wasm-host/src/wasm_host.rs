@@ -42,31 +42,35 @@ pub struct WasmHost {
 }
 
 impl WasmHost {
-    pub fn try_message(&mut self, user: u32, message: &str) -> Result<()> {
-        let pt = self.fn_malloc.call(&mut self.store, message.len() as u32)?;
+    fn put_data(&mut self, data: &[u8]) -> Result<(u32, u32)> {
+        let len = data.len() as u32;
+        let pt = self.fn_malloc.call(&mut self.store, len)?;
 
-        self.memory
-            .write(&mut self.store, pt as usize, &message.as_bytes())?;
+        self.memory.write(&mut self.store, pt as usize, &data)?;
+
+        Ok((pt, len))
+    }
+    
+    fn try_message(&mut self, user: u32, message: &str) -> Result<()> {
+        let (pt, len) = self.put_data(message.as_bytes())?;
 
         self.fn_message
-            .call(&mut self.store, (user, pt as u32, message.len() as u32))?;
+            .call(&mut self.store, (user, pt, len))?;
 
         self.fn_free
-            .call(&mut self.store, (pt, message.len() as u32))?;
+            .call(&mut self.store, (pt, len))?;
 
         Ok(())
     }
 
-    pub fn try_binary(&mut self, user: u32, message: &[u8]) -> Result<()> {
-        let pt = self.fn_malloc.call(&mut self.store, message.len() as u32)?;
-
-        self.memory.write(&mut self.store, pt as usize, &message)?;
+    fn try_binary(&mut self, user: u32, message: &[u8]) -> Result<()> {
+        let (pt, len) = self.put_data(message)?;
 
         self.fn_binary
-            .call(&mut self.store, (user, pt as u32, message.len() as u32))?;
+            .call(&mut self.store, (user, pt as u32, len))?;
 
         self.fn_free
-            .call(&mut self.store, (pt, message.len() as u32))?;
+            .call(&mut self.store, (pt, len))?;
 
         Ok(())
     }
@@ -119,16 +123,10 @@ fn get_string<'a, T>(
     start: u32,
     len: u32,
 ) -> &'a str {
-    // TODO: refactor to use get_u8_vec
-    let data = memory
-        .data(caller)
-        .get(start as usize..(start + len) as usize);
-    match data {
-        Some(data) => match std::str::from_utf8(data) {
-            Ok(s) => s,
-            Err(_) => panic!(),
-        },
-        None => panic!(),
+    let data = get_u8_vec(caller, memory, start, len);
+    match std::str::from_utf8(data) {
+        Ok(s) => s,
+        Err(_) => panic!(),
     }
 }
 
@@ -175,7 +173,7 @@ pub fn get_global<T>(
 
 impl WasmHost {
     pub fn new(
-        _room_id: &str,
+        room_id: &str,
         module: &Module,
         engine: &Engine,
         context: Arc<impl JamsocketContext>,
@@ -236,14 +234,26 @@ impl WasmHost {
 
         let instance = linker.instantiate(&mut store, &module)?;
 
-        let initialize = instance.get_typed_func::<(), (), _>(&mut store, EXT_FN_INITIALIZE)?;
+        let initialize = instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_FN_INITIALIZE)?;
 
-        // TODO: pass room_id to initialize.
-        initialize.call(&mut store, ())?;
+        let fn_malloc = instance.get_typed_func::<u32, u32, _>(&mut store, EXT_FN_MALLOC)?;
+
+        let fn_free = instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_FN_FREE)?;
 
         let mut memory = instance
             .get_memory(&mut store, EXT_MEMORY)
             .ok_or(WasmRuntimeError::CouldNotImportMemory)?;
+
+        {
+            let room_id = room_id.as_bytes();
+            let len = room_id.len() as u32;
+            let pt = fn_malloc.call(&mut store, len)?;
+    
+            memory.write(&mut store, pt as usize, &room_id)?;
+            initialize.call(&mut store, (pt, len))?;
+
+            fn_free.call(&mut store, (pt, len))?;
+        }
 
         if get_global(&mut store, &mut memory, &instance, EXT_JAMSOCKET_VERSION)?
             != EXPECTED_API_VERSION
@@ -260,10 +270,6 @@ impl WasmHost {
         let fn_connect = instance.get_typed_func::<u32, (), _>(&mut store, EXT_FN_CONNECT)?;
 
         let fn_disconnect = instance.get_typed_func::<u32, (), _>(&mut store, EXT_FN_DISCONNECT)?;
-
-        let fn_malloc = instance.get_typed_func::<u32, u32, _>(&mut store, EXT_FN_MALLOC)?;
-
-        let fn_free = instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_FN_FREE)?;
 
         let fn_timer = instance.get_typed_func::<(), (), _>(&mut store, EXT_FN_TIMER)?;
 

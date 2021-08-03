@@ -2,10 +2,13 @@ use bytemuck::cast;
 use jamsocket_wasm::prelude::*;
 
 #[jamsocket_wasm]
-#[derive(Default)]
 struct RandomServer;
 
 impl SimpleJamsocketService for RandomServer {
+    fn new(_: &str, _: &impl JamsocketContext) -> Self {
+        RandomServer
+    }
+
     fn connect(&mut self, user: u32, ctx: &impl JamsocketContext) {
         let mut buf: [u8; 4] = [0, 0, 0, 0];
         unsafe {

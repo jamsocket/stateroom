@@ -17,6 +17,10 @@
 //! }
 //!
 //! impl SimpleJamsocketService for ChatServer {
+//!     fn new(room_id: &str, _: &impl JamsocketContext) -> Self {
+//!         Default::default()
+//!     }
+//!
 //!     /// This is called when a user connects.
 //!     fn connect(&mut self, user: u32, ctx: &impl JamsocketContext) {
 //!         let username = format!("user{}", user);
@@ -89,9 +93,9 @@ pub trait JamsocketContext: Unpin + 'static + Send + Sync {
 ///
 /// See module documentation for usage examples.
 #[allow(unused_variables)]
-pub trait SimpleJamsocketService: Default + Unpin + Send + Sync + 'static {
+pub trait SimpleJamsocketService: Unpin + Send + Sync + 'static {
     /// Called when the service is created, before any client has had a chance to connect.
-    fn initialize(&mut self, room_id: &str, context: &impl JamsocketContext) {}
+    fn new(room_id: &str, context: &impl JamsocketContext) -> Self;
 
     /// Called each time a client connects to the service.
     fn connect(&mut self, user: u32, context: &impl JamsocketContext) {}
