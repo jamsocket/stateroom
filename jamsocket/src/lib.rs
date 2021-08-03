@@ -152,30 +152,36 @@ pub trait JamsocketServiceFactory<C: JamsocketContext>: Send + Sync + 'static {
 /// Combines a [SimpleJamsocketService] with an owned [JamsocketContext] in order to implement
 /// [JamsocketService].
 pub struct WrappedJamsocketService<S: SimpleJamsocketService, C: JamsocketContext> {
+    service: S,
     context: C,
-    model: S,
+}
+
+impl<S: SimpleJamsocketService, C: JamsocketContext> WrappedJamsocketService<S, C> {
+    pub fn new(service: S, context: C) -> Self {
+        WrappedJamsocketService { service, context }
+    }
 }
 
 impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketService
     for WrappedJamsocketService<T, C>
 {
     fn connect(&mut self, user: u32) {
-        self.model.connect(user, &self.context);
+        self.service.connect(user, &self.context);
     }
 
     fn disconnect(&mut self, user: u32) {
-        self.model.disconnect(user, &self.context);
+        self.service.disconnect(user, &self.context);
     }
 
     fn message(&mut self, user: u32, message: &str) {
-        self.model.message(user, message, &self.context);
+        self.service.message(user, message, &self.context);
     }
 
     fn timer(&mut self) {
-        self.model.timer(&self.context);
+        self.service.timer(&self.context);
     }
 
     fn binary(&mut self, user: u32, message: &[u8]) {
-        self.model.binary(user, message, &self.context)
+        self.service.binary(user, message, &self.context)
     }
 }
