@@ -175,6 +175,10 @@
 <span id="175">175</span>
 <span id="176">176</span>
 <span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
 </pre><pre class="rust">
 <span class="doccomment">//! Jamsocket is a minimalist framework for developing stateful [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) applications.</span>
 <span class="doccomment">//!</span>
@@ -195,6 +199,10 @@
 <span class="doccomment">//! }</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! impl SimpleJamsocketService for ChatServer {</span>
+<span class="doccomment">//!     fn new(room_id: &amp;str, _: &amp;impl JamsocketContext) -&gt; Self {</span>
+<span class="doccomment">//!         Default::default()</span>
+<span class="doccomment">//!     }</span>
+<span class="doccomment">//!</span>
 <span class="doccomment">//!     /// This is called when a user connects.</span>
 <span class="doccomment">//!     fn connect(&amp;mut self, user: u32, ctx: &amp;impl JamsocketContext) {</span>
 <span class="doccomment">//!         let username = format!(&quot;user{}&quot;, user);</span>
@@ -267,9 +275,9 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// See module documentation for usage examples.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_variables</span>)]</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SimpleJamsocketService</span>: <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SimpleJamsocketService</span>: <span class="ident">Unpin</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> {
     <span class="doccomment">/// Called when the service is created, before any client has had a chance to connect.</span>
-    <span class="kw">fn</span> <span class="ident">initialize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">room_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">room_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Called each time a client connects to the service.</span>
     <span class="kw">fn</span> <span class="ident">connect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
