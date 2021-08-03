@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["jamsocket_server"] = [{"text":"impl <a class=\"trait\" href=\"jamsocket/trait.JamsocketContext.html\" title=\"trait jamsocket::JamsocketContext\">JamsocketContext</a> for <a class=\"struct\" href=\"jamsocket_server/struct.ServiceActorContext.html\" title=\"struct jamsocket_server::ServiceActorContext\">ServiceActorContext</a>","synthetic":false,"types":["jamsocket_server::service_actor::ServiceActorContext"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
