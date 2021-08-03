@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["binary_echo","clock","echo_server","jamsocket","jamsocket_cli","jamsocket_server","jamsocket_wasm","jamsocket_wasm_host","jamsocket_wasm_macro","randomness"];
+window.ALL_CRATES = ["jamsocket","jamsocket_cli","jamsocket_server","jamsocket_wasm","jamsocket_wasm_host","jamsocket_wasm_macro"];
