@@ -202,6 +202,7 @@
 <span id="202">202</span>
 <span id="203">203</span>
 <span id="204">204</span>
+<span id="205">205</span>
 </pre><pre class="rust">
 <span class="kw">mod</span> <span class="ident">client_socket_connection</span>;
 <span class="kw">mod</span> <span class="ident">messages</span>;
@@ -212,7 +213,8 @@
 <span class="kw">mod</span> <span class="ident">shutdown_policy</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::room_id</span>::{
-    <span class="ident">RoomIdGenerator</span>, <span class="ident">RoomIdStrategy</span>, <span class="ident">ShortRoomIdGenerator</span>, <span class="ident">UuidRoomIdGenerator</span>,
+    <span class="ident">RoomIdGenerator</span>, <span class="ident">RoomIdStrategy</span>, <span class="ident">ShortRoomIdGenerator</span>, <span class="ident">ShortRoomIdGeneratorFactory</span>,
+    <span class="ident">UuidRoomIdGenerator</span>, <span class="ident">UuidRoomIdGeneratorFactory</span>,
 };
 <span class="kw">use</span> <span class="ident">actix_web::error::ErrorInternalServerError</span>;
 <span class="kw">use</span> <span class="ident">actix_web::web</span>::{<span class="self">self</span>, <span class="ident">get</span>, <span class="ident">post</span>};
