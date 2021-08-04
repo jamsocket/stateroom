@@ -27,7 +27,7 @@ pub trait RoomIdGenerator: Debug + Send + Sync {
 }
 
 #[derive(Debug)]
-struct ShortRoomIdGenerator {
+pub struct ShortRoomIdGenerator {
     state: u64,
     offset: u64,
     m: u64,
@@ -78,7 +78,7 @@ impl RoomIdGeneratorFactory for ShortRoomIdGeneratorFactory {
 }
 
 #[derive(Debug)]
-struct UuidRoomIdGeneratorFactory;
+pub struct UuidRoomIdGeneratorFactory;
 
 impl RoomIdGeneratorFactory for UuidRoomIdGeneratorFactory {
     fn build(&self) -> Box<dyn RoomIdGenerator> {

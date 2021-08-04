@@ -6,7 +6,9 @@ mod server_state;
 mod service_actor;
 mod shutdown_policy;
 
-pub use crate::room_id::{RoomIdGenerator, RoomIdStrategy, UuidRoomIdGenerator};
+pub use crate::room_id::{
+    RoomIdGenerator, RoomIdStrategy, ShortRoomIdGenerator, UuidRoomIdGenerator,
+};
 use actix_web::error::ErrorInternalServerError;
 use actix_web::web::{self, get, post};
 use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
@@ -104,10 +106,13 @@ impl Server {
     /// - `/new_room` (POST): create a new room, if not in `explicit` room creation mode.
     /// - `/ws/{room_id}` (GET): initiate a WebSocket connection to the given room. If the room
     ///     does not exist and the server is in `implicit` room creation mode, it will be created.
-    pub fn serve<F: JamsocketServiceFactory<ServiceActorContext>>(self, host_factory: F) -> std::io::Result<()> {
+    pub fn serve<F: JamsocketServiceFactory<ServiceActorContext>>(
+        self,
+        host_factory: F,
+    ) -> std::io::Result<()> {
         let host = format!("127.0.0.1:{}", self.port);
         let room_mapper = Data::new(ServerState::new(host_factory, self));
-    
+
         actix_web::rt::System::new().block_on(async move {
             let server = HttpServer::new(move || {
                 App::new()
@@ -122,7 +127,7 @@ impl Server {
             })
             .bind(&host)
             .unwrap();
-    
+
             log::info!("Listening at {}", &host);
             server.run().await
         })
