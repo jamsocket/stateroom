@@ -276,7 +276,7 @@
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">ShortRoomIdGenerator</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ShortRoomIdGenerator</span> {
     <span class="ident">state</span>: <span class="ident">u64</span>,
     <span class="ident">offset</span>: <span class="ident">u64</span>,
     <span class="ident">m</span>: <span class="ident">u64</span>,
@@ -327,7 +327,7 @@
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">UuidRoomIdGeneratorFactory</span>;
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UuidRoomIdGeneratorFactory</span>;
 
 <span class="kw">impl</span> <span class="ident">RoomIdGeneratorFactory</span> <span class="kw">for</span> <span class="ident">UuidRoomIdGeneratorFactory</span> {
     <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RoomIdGenerator</span><span class="op">&gt;</span> {
