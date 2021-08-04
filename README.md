@@ -4,6 +4,7 @@
 
 [![docs.rs](https://img.shields.io/badge/docs-latest-orange)](https://jamsocket.github.io/jamsocket/jamsocket/index.html)
 [![wokflow state](https://github.com/jamsocket/jamsocket/workflows/test/badge.svg)](https://github.com/jamsocket/jamsocket/actions/workflows/test.yml)
+[![wokflow state](https://github.com/jamsocket/jamsocket/workflows/docs/badge.svg)](https://github.com/jamsocket/jamsocket/actions/workflows/docs.yml)
 
 Jamsocket is a lightweight framework for building applications that are served over
 [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
