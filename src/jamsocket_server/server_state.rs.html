@@ -134,7 +134,7 @@
 </pre><pre class="rust">
 <span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::room_id</span>::{<span class="ident">RoomIdGenerator</span>, <span class="ident">RoomIdStrategy</span>, <span class="ident">UuidRoomIdGenerator</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::service_actor</span>::{<span class="ident">ServiceActor</span>, <span class="ident">ServiceActorContext</span>};
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">RoomActor</span>, <span class="ident">ServerSettings</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">RoomActor</span>, <span class="ident">Server</span>};
 <span class="kw">use</span> <span class="ident">actix::dev::channel::channel</span>;
 <span class="kw">use</span> <span class="ident">actix</span>::{<span class="ident">Addr</span>, <span class="ident">Arbiter</span>, <span class="ident">Context</span>};
 <span class="kw">use</span> <span class="ident">actix_web::error</span>::{<span class="ident">ErrorBadRequest</span>, <span class="ident">ErrorConflict</span>, <span class="ident">ErrorInternalServerError</span>, <span class="ident">ErrorNotFound</span>};
@@ -149,12 +149,12 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="ident">mapping</span>: <span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Addr</span><span class="op">&lt;</span><span class="ident">RoomActor</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">generator</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RoomIdGenerator</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">settings</span>: <span class="ident">ServerSettings</span>,
+    <span class="kw">pub</span> <span class="ident">settings</span>: <span class="ident">Server</span>,
     <span class="ident">host_factory</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">host_factory</span>: <span class="ident">T</span>, <span class="ident">settings</span>: <span class="ident">ServerSettings</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">host_factory</span>: <span class="ident">T</span>, <span class="ident">settings</span>: <span class="ident">Server</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">ServerState</span> {
             <span class="ident">mapping</span>: <span class="ident">Default::default</span>(),
             <span class="ident">generator</span>: <span class="ident">settings</span>.<span class="ident">room_id_strategy</span>.<span class="ident">try_generator</span>().<span class="ident">map</span>(<span class="ident">Mutex::new</span>),
