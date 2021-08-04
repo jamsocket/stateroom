@@ -7,7 +7,8 @@ mod service_actor;
 mod shutdown_policy;
 
 pub use crate::room_id::{
-    RoomIdGenerator, RoomIdStrategy, ShortRoomIdGenerator, UuidRoomIdGenerator,
+    RoomIdGenerator, RoomIdStrategy, ShortRoomIdGenerator, ShortRoomIdGeneratorFactory,
+    UuidRoomIdGenerator, UuidRoomIdGeneratorFactory,
 };
 use actix_web::error::ErrorInternalServerError;
 use actix_web::web::{self, get, post};

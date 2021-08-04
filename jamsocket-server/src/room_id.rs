@@ -68,7 +68,13 @@ impl ShortRoomIdGenerator {
 }
 
 #[derive(Debug)]
-struct ShortRoomIdGeneratorFactory(pub usize);
+pub struct ShortRoomIdGeneratorFactory(pub usize);
+
+impl ShortRoomIdGeneratorFactory {
+    pub fn new(length: usize) -> Self {
+        ShortRoomIdGeneratorFactory(length)
+    }
+}
 
 impl RoomIdGeneratorFactory for ShortRoomIdGeneratorFactory {
     fn build(&self) -> Box<dyn RoomIdGenerator> {
