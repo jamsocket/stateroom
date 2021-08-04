@@ -18,16 +18,10 @@ pub use client_socket_connection::ClientSocketConnection;
 use jamsocket::{JamsocketServiceFactory, SimpleJamsocketService, SimpleJamsocketServiceFactory};
 pub use messages::{AssignUserId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
-use serde::{Deserialize, Serialize};
 use server_state::ServerState;
 pub use service_actor::ServiceActorContext;
 pub use shutdown_policy::ServiceShutdownPolicy;
 use std::time::{Duration, Instant};
-
-#[derive(Serialize, Deserialize)]
-struct NewRoom {
-    room_id: String,
-}
 
 async fn status() -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().body("ok"))
@@ -141,7 +135,7 @@ async fn new_room<T: JamsocketServiceFactory<ServiceActorContext>>(
     let server_state: &Data<ServerState<T>> = req.app_data().unwrap();
     let room_id = server_state.new_room_generated().await?;
 
-    Ok(HttpResponse::Ok().json(NewRoom { room_id }))
+    Ok(HttpResponse::Ok().body(room_id))
 }
 
 async fn new_room_explicit<T: JamsocketServiceFactory<ServiceActorContext>>(
@@ -151,9 +145,7 @@ async fn new_room_explicit<T: JamsocketServiceFactory<ServiceActorContext>>(
     let server_state: &Data<ServerState<T>> = req.app_data().unwrap();
     server_state.explicit_new_room(room_id.as_ref()).await?;
 
-    Ok(HttpResponse::Ok().json(NewRoom {
-        room_id: room_id.to_string(),
-    }))
+    Ok(HttpResponse::Ok().body(room_id.to_string()))
 }
 
 async fn websocket<T: JamsocketServiceFactory<ServiceActorContext>>(
