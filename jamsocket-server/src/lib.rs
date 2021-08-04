@@ -31,7 +31,7 @@ async fn status() -> Result<HttpResponse, Error> {
 }
 
 /// Settings used by the server.
-pub struct ServerSettings {
+pub struct Server {
     /// The duration of time between server-initiated WebSocket heartbeats.
     pub heartbeat_interval: Duration,
 
@@ -45,6 +45,88 @@ pub struct ServerSettings {
     pub port: u32,
 
     pub shutdown_policy: ServiceShutdownPolicy,
+}
+
+impl Default for Server {
+    fn default() -> Self {
+        Server {
+            heartbeat_interval: Duration::from_secs(30),
+            heartbeat_timeout: Duration::from_secs(300),
+            port: 8080,
+            room_id_strategy: Default::default(),
+            shutdown_policy: ServiceShutdownPolicy::Never,
+        }
+    }
+}
+
+impl Server {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn with_heartbeat_interval(mut self, duration_seconds: u64) -> Self {
+        self.heartbeat_interval = Duration::from_secs(duration_seconds);
+        self
+    }
+
+    pub fn with_heartbeat_timeout(mut self, duration_seconds: u64) -> Self {
+        self.heartbeat_timeout = Duration::from_secs(duration_seconds);
+        self
+    }
+
+    pub fn with_port(mut self, port: u32) -> Self {
+        self.port = port;
+        self
+    }
+
+    pub fn with_room_id_strategy(mut self, room_id_strategy: RoomIdStrategy) -> Self {
+        self.room_id_strategy = room_id_strategy;
+        self
+    }
+
+    pub fn with_shutdown_policy(mut self, shutdown_policy: ServiceShutdownPolicy) -> Self {
+        self.shutdown_policy = shutdown_policy;
+        self
+    }
+
+    pub fn serve_default<F: SimpleJamsocketService>(self) -> std::io::Result<()> {
+        let host_factory: SimpleJamsocketServiceFactory<F, ServiceActorContext> =
+            Default::default();
+
+        self.serve(host_factory)
+    }
+
+    /// Start a server given a cloneable [JamsocketServiceBuilder].
+    ///
+    /// This function blocks until the server is terminated. While it is running, the following
+    /// endpoints are available:
+    /// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)
+    /// - `/new_room` (POST): create a new room, if not in `explicit` room creation mode.
+    /// - `/ws/{room_id}` (GET): initiate a WebSocket connection to the given room. If the room
+    ///     does not exist and the server is in `implicit` room creation mode, it will be created.
+    pub fn serve<F: JamsocketServiceFactory<ServiceActorContext>>(self, host_factory: F) -> std::io::Result<()> {
+        let host = format!("127.0.0.1:{}", self.port);
+        let room_mapper = Data::new(ServerState::new(host_factory, self));
+    
+        actix_web::rt::System::new().block_on(async move {
+            let server = HttpServer::new(move || {
+                App::new()
+                    .app_data(room_mapper.clone())
+                    .route("/status", get().to(status))
+                    .route("/new_room", post().to(new_room::<F>))
+                    .route("/ws/{room_id}", get().to(websocket::<F>))
+                    .route("/ws/{room_id}", post().to(new_room_explicit::<F>))
+                    // TODO: don't hard-code this
+                    .service(actix_files::Files::new("client/", "./static-client"))
+                    .service(actix_files::Files::new("/", "./static").index_file("index.html"))
+            })
+            .bind(&host)
+            .unwrap();
+    
+            log::info!("Listening at {}", &host);
+            server.run().await
+        })
+    }
 }
 
 async fn new_room<T: JamsocketServiceFactory<ServiceActorContext>>(
@@ -114,53 +196,4 @@ async fn websocket<T: JamsocketServiceFactory<ServiceActorContext>>(
         }
         Err(e) => Err(e),
     }
-}
-
-/// Start a server given a cloneable [JamsocketServiceBuilder] and a [ServerSettings] object.
-///
-/// This function blocks until the server is terminated. While it is running, the following
-/// endpoints are available:
-/// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)
-/// - `/new_room` (POST): create a new room, if not in `explicit` room creation mode.
-/// - `/ws/{room_id}` (GET): initiate a WebSocket connection to the given room. If the room
-///     does not exist and the server is in `implicit` room creation mode, it will be created.
-pub fn do_serve<T: JamsocketServiceFactory<ServiceActorContext>>(
-    host_factory: T,
-    server_settings: ServerSettings,
-) -> std::io::Result<()> {
-    let host = format!("127.0.0.1:{}", server_settings.port);
-    let room_mapper = Data::new(ServerState::new(host_factory, server_settings));
-
-    actix_web::rt::System::new().block_on(async move {
-        let server = HttpServer::new(move || {
-            App::new()
-                .app_data(room_mapper.clone())
-                .route("/status", get().to(status))
-                .route("/new_room", post().to(new_room::<T>))
-                .route("/ws/{room_id}", get().to(websocket::<T>))
-                .route("/ws/{room_id}", post().to(new_room_explicit::<T>))
-                // TODO: don't hard-code this
-                .service(actix_files::Files::new("client/", "./static-client"))
-                .service(actix_files::Files::new("/", "./static").index_file("index.html"))
-        })
-        .bind(&host)
-        .unwrap();
-
-        log::info!("Listening at {}", &host);
-        server.run().await
-    })
-}
-
-pub fn serve<F: SimpleJamsocketService>() -> std::io::Result<()> {
-    let host_factory: SimpleJamsocketServiceFactory<F, ServiceActorContext> = Default::default();
-
-    let server_settings = ServerSettings {
-        heartbeat_interval: Duration::from_secs(30),
-        heartbeat_timeout: Duration::from_secs(120),
-        port: 8080,
-        room_id_strategy: Default::default(),
-        shutdown_policy: ServiceShutdownPolicy::Never,
-    };
-
-    do_serve(host_factory, server_settings)
 }

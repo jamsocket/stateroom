@@ -1,6 +1,6 @@
 pub use crate::room_id::{RoomIdGenerator, RoomIdStrategy, UuidRoomIdGenerator};
 use crate::service_actor::{ServiceActor, ServiceActorContext};
-use crate::{RoomActor, ServerSettings};
+use crate::{RoomActor, Server};
 use actix::dev::channel::channel;
 use actix::{Addr, Arbiter, Context};
 use actix_web::error::{ErrorBadRequest, ErrorConflict, ErrorInternalServerError, ErrorNotFound};
@@ -15,12 +15,12 @@ const MAILBOX_SIZE: usize = 16;
 pub struct ServerState<T: JamsocketServiceFactory<ServiceActorContext>> {
     mapping: RwLock<HashMap<String, Addr<RoomActor>>>,
     generator: Option<Mutex<Box<dyn RoomIdGenerator>>>,
-    pub settings: ServerSettings,
+    pub settings: Server,
     host_factory: Arc<T>,
 }
 
 impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
-    pub fn new(host_factory: T, settings: ServerSettings) -> Self {
+    pub fn new(host_factory: T, settings: Server) -> Self {
         ServerState {
             mapping: Default::default(),
             generator: settings.room_id_strategy.try_generator().map(Mutex::new),
