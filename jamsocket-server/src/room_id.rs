@@ -52,7 +52,7 @@ impl RoomIdGenerator for ShortRoomIdGenerator {
 }
 
 impl ShortRoomIdGenerator {
-    fn new(length: usize) -> Self {
+    pub fn new(length: usize) -> Self {
         let mut rng = thread_rng();
         let m = 26u64.pow(length as u32);
         let offset = rng.gen_range(0..m);
