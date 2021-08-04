@@ -12,7 +12,7 @@ use actix_web::web::{self, get, post};
 use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use actix_web_actors::ws;
 pub use client_socket_connection::ClientSocketConnection;
-use jamsocket::JamsocketServiceFactory;
+use jamsocket::{JamsocketServiceFactory, SimpleJamsocketService, SimpleJamsocketServiceFactory};
 pub use messages::{AssignUserId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
 use serde::{Deserialize, Serialize};
@@ -149,4 +149,18 @@ pub fn do_serve<T: JamsocketServiceFactory<ServiceActorContext>>(
         log::info!("Listening at {}", &host);
         server.run().await
     })
+}
+
+pub fn serve<F: SimpleJamsocketService>() -> std::io::Result<()> {
+    let host_factory: SimpleJamsocketServiceFactory<F, ServiceActorContext> = Default::default();
+
+    let server_settings = ServerSettings {
+        heartbeat_interval: Duration::from_secs(30),
+        heartbeat_timeout: Duration::from_secs(120),
+        port: 8080,
+        room_id_strategy: Default::default(),
+        shutdown_policy: ServiceShutdownPolicy::Never,
+    };
+
+    do_serve(host_factory, server_settings)
 }

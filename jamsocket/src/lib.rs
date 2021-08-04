@@ -61,6 +61,8 @@
 //!     }
 //! }
 
+use std::marker::PhantomData;
+
 pub use message_recipient::MessageRecipient;
 
 mod message_recipient;
@@ -147,6 +149,35 @@ pub trait JamsocketServiceFactory<C: JamsocketContext>: Send + Sync + 'static {
 
     /// Non-destructively build a [JamsocketService] from `self`.
     fn build(&self, room_id: &str, context: C) -> Self::Service;
+}
+
+pub struct SimpleJamsocketServiceFactory<S: SimpleJamsocketService, C: JamsocketContext> {
+    ph_c: PhantomData<C>,
+    ph_s: PhantomData<S>,
+}
+
+impl<S: SimpleJamsocketService, C: JamsocketContext> Default
+    for SimpleJamsocketServiceFactory<S, C>
+{
+    fn default() -> Self {
+        SimpleJamsocketServiceFactory {
+            ph_c: Default::default(),
+            ph_s: Default::default(),
+        }
+    }
+}
+
+impl<S: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceFactory<C>
+    for SimpleJamsocketServiceFactory<S, C>
+{
+    type Service = WrappedJamsocketService<S, C>;
+
+    fn build(&self, room_id: &str, context: C) -> Self::Service {
+        WrappedJamsocketService {
+            service: S::new(room_id, &context),
+            context,
+        }
+    }
 }
 
 /// Combines a [SimpleJamsocketService] with an owned [JamsocketContext] in order to implement

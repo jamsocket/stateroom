@@ -19,7 +19,8 @@ fn get_name(item: &proc_macro2::TokenStream) -> Option<Ident> {
 }
 
 fn jamsocket_wasm_impl(item: proc_macro2::TokenStream) -> proc_macro2::TokenStream {
-    let name = get_name(&item).expect("Can only use #[jamsocket_wasm] on a struct, enum, or type alias.");
+    let name =
+        get_name(&item).expect("Can only use #[jamsocket_wasm] on a struct, enum, or type alias.");
 
     quote! {
         #item
@@ -221,11 +222,9 @@ mod test {
             .to_string()
         );
 
-        assert!(
-            get_name(&quote! {
-                impl Foo {}
-            })
-            .is_none()
-        );
+        assert!(get_name(&quote! {
+            impl Foo {}
+        })
+        .is_none());
     }
 }
