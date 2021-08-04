@@ -29,7 +29,7 @@ Every client connection is a connection to a particular room.
 
 The simplest way to get started with Jamsocket is to implement the `SimpleJamsocketService` trait. There's only one function that you *must* implement, the constructor `new`. This method is passed in a string representing a unique identifier for the room being constructed (as mentioned above, an instance is constructed for every room). It is also passed a reference to a `JamsocketContext`, which we can ignore for now.
 
-```
+```rust
 use jamsocket::*;
 
 struct EchoServer;
@@ -45,7 +45,7 @@ This service will compile, but it doesn't actually live up to its name, because 
 
 To fix this, implement the `message` function:
 
-```
+```rust
 impl SimpleJamsocketService for EchoServer {
     fn new(_: &str, _: &impl JamsocketContext) -> Self {
         EchoServer
@@ -66,7 +66,7 @@ all connected users in the same room. If you've ever yelled in a cave, this prob
 of "echo" better than the implementation above. To do this, we simply replace `user` with 
 `MessageRecipient::Broadcast`. 
 
-```
+```rust
 fn message(&mut self, user: u32, message: &str, ctx: &impl JamsocketContext) {
     ctx.send_message(MessageRecipient::Broadcast, &format!("echo: {}", message));
 }
@@ -83,7 +83,7 @@ To actually connect to a `JamsocketService`, we need to serve it. We have two ch
 
 To do #1, we can use the `serve` method of `jamsocket_server`.
 
-```
+```rust
 use jamsocket_server::*;
 
 fn main() -> std::io::Result<()> {
@@ -96,7 +96,7 @@ fn main() -> std::io::Result<()> {
 To do #2, we instead annotate the struct that implements `SimpleJamsocketService`, and
 compile to the `wasm32-wasi` target.
 
-```
+```rust
 use jamsocket_wasm::jamsocket_wasm;
 
 #[jamsocket_wasm]
@@ -107,7 +107,7 @@ struct EchoServer;
 
 We can then use `jamsocket-cli` to serve it:
 
-```
+```bash
 $ jamsocket-cli serve path/to/output.wasm
 ```
 
