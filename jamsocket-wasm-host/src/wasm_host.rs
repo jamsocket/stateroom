@@ -19,8 +19,8 @@ const EXT_FN_SEND_BINARY: &str = "send_binary";
 const EXT_FN_SET_TIMER: &str = "set_timer";
 const EXT_FN_TIMER: &str = "timer";
 const EXT_FN_INITIALIZE: &str = "initialize";
-const EXT_FN_MALLOC: &str = "malloc";
-const EXT_FN_FREE: &str = "free";
+const EXT_FN_MALLOC: &str = "jam_malloc";
+const EXT_FN_FREE: &str = "jam_free";
 const EXT_JAMSOCKET_VERSION: &str = "JAMSOCKET_API_VERSION";
 const EXT_JAMSOCKET_PROTOCOL: &str = "JAMSOCKET_API_PROTOCOL";
 

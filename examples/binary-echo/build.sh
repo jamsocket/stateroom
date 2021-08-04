@@ -4,9 +4,9 @@ set -e
 
 rm -f out.wasm out.wat
 
-cargo build --release --target wasm32-unknown-unknown
+cargo build --release --target wasm32-wasi
 
-wasm-opt -O2 target/wasm32-unknown-unknown/release/binary_echo.wasm -o out.wasm
+wasm-opt -O2 target/wasm32-wasi/release/binary_echo.wasm -o out.wasm
 
 wasm2wat out.wasm -o out.wat
 

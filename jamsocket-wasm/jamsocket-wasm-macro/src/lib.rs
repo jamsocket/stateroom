@@ -146,13 +146,13 @@ fn jamsocket_wasm_impl(item: proc_macro2::TokenStream) -> proc_macro2::TokenStre
             }
 
             #[no_mangle]
-            pub unsafe extern "C" fn malloc(size: u32) -> *mut u8 {
+            pub unsafe extern "C" fn jam_malloc(size: u32) -> *mut u8 {
                 let layout = core::alloc::Layout::from_size_align_unchecked(size as usize, 0);
                 alloc::alloc::alloc(layout)
             }
 
             #[no_mangle]
-            pub unsafe extern "C" fn free(ptr: *mut u8, size: u32) {
+            pub unsafe extern "C" fn jam_free(ptr: *mut u8, size: u32) {
                 let layout = core::alloc::Layout::from_size_align_unchecked(size as usize, 0);
                 alloc::alloc::dealloc(ptr, layout);
             }
