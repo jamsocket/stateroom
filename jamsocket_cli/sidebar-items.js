@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["main",""]],"mod":[["cli_opts",""],["serve",""]]});
+initSidebarItems({"fn":[["serve",""]],"mod":[["cli_opts",""]]});
