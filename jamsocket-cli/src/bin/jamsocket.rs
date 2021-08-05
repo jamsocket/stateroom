@@ -1,12 +1,9 @@
 //! # `jamsocket-cli`: a command-line interface to Jamsocket
 
-mod cli_opts;
-mod serve;
-
 use clap::Clap;
-use cli_opts::{Opts, SubCommand};
 use env_logger::Builder;
-use serve::serve;
+use jamsocket_cli::cli_opts::{Opts, SubCommand};
+use jamsocket_cli::serve;
 use std::io::Result;
 
 fn main() -> Result<()> {
