@@ -9,23 +9,40 @@ use wasmtime_wasi::WasiCtx;
 use crate::WasmRuntimeError;
 
 const ENV: &str = "env";
-const EXT_MEMORY: &str = "memory";
-const EXT_FN_CONNECT: &str = "connect";
-const EXT_FN_DISCONNECT: &str = "disconnect";
-const EXT_FN_BINARY: &str = "binary";
-const EXT_FN_MESSAGE: &str = "message";
-const EXT_FN_SEND_MESSAGE: &str = "send_message";
-const EXT_FN_SEND_BINARY: &str = "send_binary";
-const EXT_FN_SET_TIMER: &str = "set_timer";
-const EXT_FN_TIMER: &str = "timer";
-const EXT_FN_INITIALIZE: &str = "initialize";
-const EXT_FN_MALLOC: &str = "jam_malloc";
-const EXT_FN_FREE: &str = "jam_free";
+const EXT_IMPORT_SEND_MESSAGE: &str = "send_message";
+const EXT_IMPORT_SEND_BINARY: &str = "send_binary";
+const EXT_IMPORT_SET_TIMER: &str = "set_timer";
+const EXT_EXPORT_MEMORY: &str = "memory";
+const EXT_EXPORT_CONNECT: &str = "connect";
+const EXT_EXPORT_DISCONNECT: &str = "disconnect";
+const EXT_EXPORT_BINARY: &str = "binary";
+const EXT_EXPORT_MESSAGE: &str = "message";
+const EXT_EXPORT_TIMER: &str = "timer";
+const EXT_EXPORT_INITIALIZE: &str = "initialize";
+const EXT_EXPORT_MALLOC: &str = "jam_malloc";
+const EXT_EXPORT_FREE: &str = "jam_free";
 const EXT_JAMSOCKET_VERSION: &str = "JAMSOCKET_API_VERSION";
 const EXT_JAMSOCKET_PROTOCOL: &str = "JAMSOCKET_API_PROTOCOL";
 
 const EXPECTED_API_VERSION: i32 = 1;
 const EXPECTED_PROTOCOL_VERSION: i32 = 0;
+
+pub const EXPECTED_IMPORTS: &[&str] = &[
+    EXT_IMPORT_SEND_BINARY,
+    EXT_IMPORT_SEND_MESSAGE,
+    EXT_IMPORT_SET_TIMER,
+];
+
+pub const EXPECTED_EXPORTS: &[&str] = &[
+    EXT_EXPORT_BINARY,
+    EXT_EXPORT_CONNECT,
+    EXT_EXPORT_FREE,
+    EXT_EXPORT_INITIALIZE,
+    EXT_EXPORT_MALLOC,
+    EXT_EXPORT_MEMORY,
+    EXT_EXPORT_MESSAGE,
+    EXT_EXPORT_TIMER,
+];
 
 /// Hosts a [jamsocket::JamsocketService] implemented by a WebAssembly module.
 pub struct WasmHost {
@@ -46,7 +63,7 @@ impl WasmHost {
         let len = data.len() as u32;
         let pt = self.fn_malloc.call(&mut self.store, len)?;
 
-        self.memory.write(&mut self.store, pt as usize, &data)?;
+        self.memory.write(&mut self.store, pt as usize, data)?;
 
         Ok((pt, len))
     }
@@ -107,7 +124,7 @@ impl JamsocketService for WasmHost {
 
 #[inline]
 fn get_memory<T>(caller: &mut Caller<'_, T>) -> Memory {
-    match caller.get_export(EXT_MEMORY) {
+    match caller.get_export(EXT_EXPORT_MEMORY) {
         Some(Extern::Memory(mem)) => mem,
         _ => panic!(),
     }
@@ -177,8 +194,8 @@ impl WasmHost {
     ) -> Result<Self> {
         let wasi = WasiCtxBuilder::new().build();
 
-        let mut store = Store::new(&engine, wasi);
-        let mut linker = Linker::new(&engine);
+        let mut store = Store::new(engine, wasi);
+        let mut linker = Linker::new(engine);
         wasmtime_wasi::add_to_linker(&mut linker, |s| s)?;
 
         {
@@ -186,7 +203,7 @@ impl WasmHost {
             let context = context.clone();
             linker.func_wrap(
                 ENV,
-                EXT_FN_SEND_MESSAGE,
+                EXT_IMPORT_SEND_MESSAGE,
                 move |mut caller: Caller<'_, WasiCtx>, user: u32, start: u32, len: u32| {
                     let memory = get_memory(&mut caller);
                     let message = get_string(&caller, &memory, start, len);
@@ -203,7 +220,7 @@ impl WasmHost {
             let context = context.clone();
             linker.func_wrap(
                 ENV,
-                EXT_FN_SEND_BINARY,
+                EXT_IMPORT_SEND_BINARY,
                 move |mut caller: Caller<'_, WasiCtx>, user: u32, start: u32, len: u32| {
                     let memory = get_memory(&mut caller);
                     let message = get_u8_vec(&caller, &memory, start, len);
@@ -220,7 +237,7 @@ impl WasmHost {
             let context = context.clone();
             linker.func_wrap(
                 ENV,
-                EXT_FN_SET_TIMER,
+                EXT_IMPORT_SET_TIMER,
                 move |_: Caller<'_, WasiCtx>, duration_ms: u32| {
                     context.set_timer(duration_ms);
 
@@ -229,17 +246,17 @@ impl WasmHost {
             )?;
         }
 
-        let instance = linker.instantiate(&mut store, &module)?;
+        let instance = linker.instantiate(&mut store, module)?;
 
         let initialize =
-            instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_FN_INITIALIZE)?;
+            instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_EXPORT_INITIALIZE)?;
 
-        let fn_malloc = instance.get_typed_func::<u32, u32, _>(&mut store, EXT_FN_MALLOC)?;
+        let fn_malloc = instance.get_typed_func::<u32, u32, _>(&mut store, EXT_EXPORT_MALLOC)?;
 
-        let fn_free = instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_FN_FREE)?;
+        let fn_free = instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_EXPORT_FREE)?;
 
         let mut memory = instance
-            .get_memory(&mut store, EXT_MEMORY)
+            .get_memory(&mut store, EXT_EXPORT_MEMORY)
             .ok_or(WasmRuntimeError::CouldNotImportMemory)?;
 
         {
@@ -247,7 +264,7 @@ impl WasmHost {
             let len = room_id.len() as u32;
             let pt = fn_malloc.call(&mut store, len)?;
 
-            memory.write(&mut store, pt as usize, &room_id)?;
+            memory.write(&mut store, pt as usize, room_id)?;
             initialize.call(&mut store, (pt, len))?;
 
             fn_free.call(&mut store, (pt, len))?;
@@ -265,17 +282,18 @@ impl WasmHost {
             return Err(WasmRuntimeError::InvalidProtocolVersion.into());
         }
 
-        let fn_connect = instance.get_typed_func::<u32, (), _>(&mut store, EXT_FN_CONNECT)?;
+        let fn_connect = instance.get_typed_func::<u32, (), _>(&mut store, EXT_EXPORT_CONNECT)?;
 
-        let fn_disconnect = instance.get_typed_func::<u32, (), _>(&mut store, EXT_FN_DISCONNECT)?;
+        let fn_disconnect =
+            instance.get_typed_func::<u32, (), _>(&mut store, EXT_EXPORT_DISCONNECT)?;
 
-        let fn_timer = instance.get_typed_func::<(), (), _>(&mut store, EXT_FN_TIMER)?;
+        let fn_timer = instance.get_typed_func::<(), (), _>(&mut store, EXT_EXPORT_TIMER)?;
 
         let fn_message =
-            instance.get_typed_func::<(u32, u32, u32), (), _>(&mut store, EXT_FN_MESSAGE)?;
+            instance.get_typed_func::<(u32, u32, u32), (), _>(&mut store, EXT_EXPORT_MESSAGE)?;
 
         let fn_binary =
-            instance.get_typed_func::<(u32, u32, u32), (), _>(&mut store, EXT_FN_BINARY)?;
+            instance.get_typed_func::<(u32, u32, u32), (), _>(&mut store, EXT_EXPORT_BINARY)?;
 
         Ok(WasmHost {
             store,

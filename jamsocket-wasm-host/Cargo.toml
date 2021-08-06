@@ -11,6 +11,7 @@ byteorder = "1.4.3"
 jamsocket = {path="../jamsocket"}
 wasmtime-wasi = "0.28.0"
 log = "0.4.14"
+walrus = "0.19.0"
 
 [dependencies.wasmtime]
 version = "0.28.0"

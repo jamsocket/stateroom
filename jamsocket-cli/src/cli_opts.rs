@@ -39,6 +39,9 @@ pub struct ServeCommand {
 
     #[clap(short, long, default_value = "300sec")]
     pub shutdown_policy: ServiceShutdownPolicy,
+
+    #[clap(short, long)]
+    pub disable_preprocess: bool,
 }
 
 #[derive(Clap)]

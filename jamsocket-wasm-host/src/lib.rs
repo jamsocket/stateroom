@@ -9,6 +9,7 @@ use std::{
 pub use wasm_host::WasmHost;
 pub use wasm_host_factory::WasmHostFactory;
 
+mod process_module;
 mod wasm_host;
 mod wasm_host_factory;
 

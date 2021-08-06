@@ -1,4 +1,5 @@
-use crate::wasm_host::WasmHost;
+use crate::{process_module::load_module_bytes, wasm_host::WasmHost};
+use anyhow::Result;
 use jamsocket::{JamsocketContext, JamsocketServiceFactory};
 use std::sync::Arc;
 use wasmtime::{Engine, Module};
@@ -29,14 +30,17 @@ impl<T: JamsocketContext> JamsocketServiceFactory<T> for WasmHostFactory {
 }
 
 impl WasmHostFactory {
-    pub fn new(wasm_file: &str) -> Self {
+    pub fn new(wasm_file: &str, preprocess: bool) -> Result<Self> {
         let engine = Engine::default();
         log::info!("Loading WebAssembly module {}", &wasm_file);
-        let module = Module::from_file(&engine, wasm_file).unwrap();
 
-        WasmHostFactory {
+        let bytes = load_module_bytes(wasm_file, preprocess)?;
+
+        let module = Module::from_binary(&engine, &bytes)?;
+
+        Ok(WasmHostFactory {
             engine: Arc::new(engine),
             module: Arc::new(module),
-        }
+        })
     }
 }
