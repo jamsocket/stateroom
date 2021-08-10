@@ -53,7 +53,7 @@ pub fn dev() -> anyhow::Result<()> {
     let config = locate_config()?; // TODO: default to a configuration if file not found.
 
     log::info!("Building service");
-    let service_wasm = run_cargo_build_command(&config.service.package, "wasm32-wasi", false)
+    let service_wasm = run_cargo_build_command(&config.service.package, "wasm32-wasi", true)
         .expect("Error building service.");
 
     let host_factory = WasmHostFactory::new(service_wasm.to_str().unwrap());
@@ -61,7 +61,7 @@ pub fn dev() -> anyhow::Result<()> {
     let client_path = if let Some(client_config) = config.client {
         log::info!("Building client");
         let client_wasm_path =
-            run_cargo_build_command(&client_config.package, "wasm32-unknown-unknown", false)
+            run_cargo_build_command(&client_config.package, "wasm32-unknown-unknown", true)
                 .expect("Error building client.");
 
         Bindgen::new()
@@ -79,6 +79,7 @@ pub fn dev() -> anyhow::Result<()> {
     Server::default()
         .with_static_path(config.static_files)
         .with_client_path(client_path)
+        .with_room_id_strategy(config.service.room_strategy)
         .serve(host_factory)
         .map_err(|e| e.into())
 }
