@@ -1,3 +1,4 @@
+use serde::Deserialize;
 use std::{fmt::Display, str::FromStr};
 
 #[derive(Debug, PartialEq)]
@@ -15,11 +16,17 @@ impl Display for BadShutdownPolicyName {
 
 impl std::error::Error for BadShutdownPolicyName {}
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug, Deserialize)]
 pub enum ServiceShutdownPolicy {
     Never,
     Immediate,
     AfterSeconds(u32),
+}
+
+impl Default for ServiceShutdownPolicy {
+    fn default() -> Self {
+        ServiceShutdownPolicy::Immediate
+    }
 }
 
 impl FromStr for ServiceShutdownPolicy {

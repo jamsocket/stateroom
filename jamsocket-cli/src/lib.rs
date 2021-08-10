@@ -1,4 +1,6 @@
 pub mod cli_opts;
-mod serve;
+mod commands;
+mod config;
 
-pub use serve::serve;
+pub use commands::serve::serve;
+pub use commands::dev::dev;
