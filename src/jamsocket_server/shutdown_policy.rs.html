@@ -77,7 +77,15 @@
 <span id="77">77</span>
 <span id="78">78</span>
 <span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
 </pre><pre class="rust">
+<span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fmt::Display</span>, <span class="ident">str::FromStr</span>};
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
@@ -95,11 +103,17 @@
 
 <span class="kw">impl</span> <span class="ident">std::error::Error</span> <span class="kw">for</span> <span class="ident">BadShutdownPolicyName</span> {}
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ServiceShutdownPolicy</span> {
     <span class="ident">Never</span>,
     <span class="ident">Immediate</span>,
     <span class="ident">AfterSeconds</span>(<span class="ident">u32</span>),
+}
+
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">ServiceShutdownPolicy</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="ident">ServiceShutdownPolicy::Immediate</span>
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">ServiceShutdownPolicy</span> {
