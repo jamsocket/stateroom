@@ -1,9 +1,13 @@
 use crate::config::JamsocketConfig;
 use convert_case::{Case, Casing};
+use core::panic;
 use jamsocket_server::Server;
 use jamsocket_wasm_host::WasmHostFactory;
-use core::panic;
-use std::{fs::read_to_string, path::{Path, PathBuf}, process::Command};
+use std::{
+    fs::read_to_string,
+    path::{Path, PathBuf},
+    process::Command,
+};
 use wasm_bindgen_cli_support::Bindgen;
 
 fn locate_config() -> anyhow::Result<JamsocketConfig> {
@@ -46,10 +50,7 @@ fn run_cargo_build_command(package: &str, target: &str, release: bool) -> std::i
 }
 
 pub fn dev() -> anyhow::Result<()> {
-    let config = locate_config()?;
-
-    log::info!("Found config: {:?}", &config);
-    let mut static_paths: Vec<(String, String)> = Vec::new();
+    let config = locate_config()?; // TODO: default to a configuration if file not found.
 
     log::info!("Building service");
     let service_wasm = run_cargo_build_command(&config.service.package, "wasm32-wasi", false)
@@ -57,20 +58,27 @@ pub fn dev() -> anyhow::Result<()> {
 
     let host_factory = WasmHostFactory::new(service_wasm.to_str().unwrap());
 
-    if let Some(client_config) = config.client {
+    let client_path = if let Some(client_config) = config.client {
         log::info!("Building client");
         let client_wasm_path =
             run_cargo_build_command(&client_config.package, "wasm32-unknown-unknown", false)
                 .expect("Error building client.");
-        
-        Bindgen::new().input_path(client_wasm_path).generate("client-pkg")?;
 
-        static_paths.push(("/client".to_string(), "client-pkg".to_string()));
-    }
+        Bindgen::new()
+            .input_path(client_wasm_path)
+            .web(true)?
+            .emit_start(false)
+            .generate("client-pkg")?;
 
-    if let Some(static_dir) = config.static_files {
-        static_paths.push(("/".to_string(), static_dir.to_string()));
-    }
+        // TODO: run wasm-opt
+        Some("client-pkg".to_string())
+    } else {
+        None
+    };
 
-    Server::default().with_static_paths(static_paths).serve(host_factory).map_err(|e| e.into())
+    Server::default()
+        .with_static_path(config.static_files)
+        .with_client_path(client_path)
+        .serve(host_factory)
+        .map_err(|e| e.into())
 }

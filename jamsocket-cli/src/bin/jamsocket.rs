@@ -3,7 +3,7 @@
 use clap::Clap;
 use env_logger::Builder;
 use jamsocket_cli::cli_opts::{Opts, SubCommand};
-use jamsocket_cli::{serve, dev};
+use jamsocket_cli::{dev, serve};
 
 fn main() -> anyhow::Result<()> {
     let mut builder = Builder::new();

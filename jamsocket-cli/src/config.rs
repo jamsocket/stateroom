@@ -1,5 +1,5 @@
 use jamsocket_server::{RoomIdStrategy, ServiceShutdownPolicy};
-use serde::{Deserialize};
+use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct JamsocketConfig {
@@ -12,13 +12,11 @@ pub struct JamsocketConfig {
 pub struct ClientConfig {
     pub package: String,
     pub optimization_level: Option<String>,
-    pub url_path: String,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct ServiceConfig {
     pub package: String,
-    pub url_path: String,
 
     #[serde(default)]
     pub room_strategy: RoomIdStrategy,

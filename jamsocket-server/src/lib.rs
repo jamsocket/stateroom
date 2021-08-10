@@ -21,7 +21,6 @@ pub use room_actor::RoomActor;
 use server_state::ServerState;
 pub use service_actor::ServiceActorContext;
 pub use shutdown_policy::ServiceShutdownPolicy;
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 async fn status() -> Result<HttpResponse, Error> {
@@ -44,21 +43,21 @@ pub struct Server {
 
     pub shutdown_policy: ServiceShutdownPolicy,
 
-    pub static_paths: Vec<(String, String)>,
+    pub static_path: Option<String>,
+
+    pub client_path: Option<String>,
 }
 
 impl Default for Server {
     fn default() -> Self {
-        let mut static_paths = Vec::new();
-        static_paths.push(("client/".to_string(), "static-client".to_string()));
-        static_paths.push(("/".to_string(), "static".to_string()));
         Server {
             heartbeat_interval: Duration::from_secs(30),
             heartbeat_timeout: Duration::from_secs(300),
             port: 8080,
             room_id_strategy: Default::default(),
             shutdown_policy: ServiceShutdownPolicy::Never,
-            static_paths,
+            static_path: None,
+            client_path: None,
         }
     }
 }
@@ -68,8 +67,13 @@ impl Server {
         Default::default()
     }
 
-    pub fn with_static_paths(mut self, static_paths: Vec<(String, String)>) -> Self {
-        self.static_paths = static_paths;
+    pub fn with_static_path(mut self, static_path: Option<String>) -> Self {
+        self.static_path = static_path;
+        self
+    }
+
+    pub fn with_client_path(mut self, client_path: Option<String>) -> Self {
+        self.client_path = client_path;
         self
     }
 
@@ -118,20 +122,24 @@ impl Server {
         host_factory: F,
     ) -> std::io::Result<()> {
         let host = format!("127.0.0.1:{}", self.port);
-        let static_paths = Arc::new(self.static_paths.clone());
-        let room_mapper = Data::new(ServerState::new(host_factory, self));
+        let server_state = Data::new(ServerState::new(host_factory, self));
 
         actix_web::rt::System::new().block_on(async move {
             let server = HttpServer::new(move || {
                 let mut app = App::new()
-                    .app_data(room_mapper.clone())
+                    .app_data(server_state.clone())
                     .route("/status", get().to(status))
                     .route("/new_room", post().to(new_room::<F>))
                     .route("/ws/{room_id}", get().to(websocket::<F>))
                     .route("/ws/{room_id}", post().to(new_room_explicit::<F>));
 
-                for (url_path, file_path) in static_paths.iter() {
-                    app = app.service(actix_files::Files::new(url_path, file_path).index_file("index.html"));
+                if let Some(client_path) = &server_state.settings.client_path {
+                    //let client_dir = Path::new(client_path).parent().unwrap();
+                    app = app.service(actix_files::Files::new("/client", client_path));
+                }
+
+                if let Some(static_path) = &server_state.settings.static_path {
+                    app = app.service(actix_files::Files::new("/", static_path).index_file("index.html"));
                 }
 
                 app
