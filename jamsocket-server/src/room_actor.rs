@@ -106,7 +106,7 @@ impl Handler<MessageFromClient> for RoomActor {
                     self.shutdown_handle.take().map(|t| ctx.cancel_future(t));
                 }
                 MessageFromClient::Disconnect(u) => {
-                    self.connections.remove(&u);
+                    self.connections.remove(u);
 
                     if self.connections.is_empty() {
                         if self.shutdown_policy != ServiceShutdownPolicy::Immediate {

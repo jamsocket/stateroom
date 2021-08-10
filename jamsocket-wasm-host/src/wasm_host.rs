@@ -46,7 +46,7 @@ impl WasmHost {
         let len = data.len() as u32;
         let pt = self.fn_malloc.call(&mut self.store, len)?;
 
-        self.memory.write(&mut self.store, pt as usize, &data)?;
+        self.memory.write(&mut self.store, pt as usize, data)?;
 
         Ok((pt, len))
     }
@@ -177,8 +177,8 @@ impl WasmHost {
     ) -> Result<Self> {
         let wasi = WasiCtxBuilder::new().build();
 
-        let mut store = Store::new(&engine, wasi);
-        let mut linker = Linker::new(&engine);
+        let mut store = Store::new(engine, wasi);
+        let mut linker = Linker::new(engine);
         wasmtime_wasi::add_to_linker(&mut linker, |s| s)?;
 
         {
@@ -229,7 +229,7 @@ impl WasmHost {
             )?;
         }
 
-        let instance = linker.instantiate(&mut store, &module)?;
+        let instance = linker.instantiate(&mut store, module)?;
 
         let initialize =
             instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_FN_INITIALIZE)?;
@@ -247,7 +247,7 @@ impl WasmHost {
             let len = room_id.len() as u32;
             let pt = fn_malloc.call(&mut store, len)?;
 
-            memory.write(&mut store, pt as usize, &room_id)?;
+            memory.write(&mut store, pt as usize, room_id)?;
             initialize.call(&mut store, (pt, len))?;
 
             fn_free.call(&mut store, (pt, len))?;

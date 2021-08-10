@@ -4,7 +4,7 @@ use crate::cli_opts::ServeCommand;
 use jamsocket_server::Server;
 use jamsocket_wasm_host::WasmHostFactory;
 
-pub fn serve(serve_opts: ServeCommand) -> std::io::Result<()> {
+pub fn serve(serve_opts: ServeCommand) -> anyhow::Result<()> {
     let ServeCommand {
         module,
         port,
@@ -21,7 +21,8 @@ pub fn serve(serve_opts: ServeCommand) -> std::io::Result<()> {
         port,
         room_id_strategy: rooms,
         shutdown_policy,
+        ..Server::default() // TODO: allow static paths to be passed
     };
 
-    server_settings.serve(host_factory)
+    server_settings.serve(host_factory).map_err(|e| e.into())
 }

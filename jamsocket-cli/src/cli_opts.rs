@@ -11,8 +11,8 @@ pub struct Opts {
 pub enum SubCommand {
     /// Run a dev server to host a given Jamsocket module.
     Serve(ServeCommand),
-    /// Validate a given Jamsocket module.
-    Validate(ValidateCommand),
+
+    Dev,
 }
 
 #[derive(Clap)]
@@ -39,10 +39,4 @@ pub struct ServeCommand {
 
     #[clap(short, long, default_value = "300sec")]
     pub shutdown_policy: ServiceShutdownPolicy,
-}
-
-#[derive(Clap)]
-pub struct ValidateCommand {
-    /// The module (.wasm file) to validate.
-    pub module: String,
 }
