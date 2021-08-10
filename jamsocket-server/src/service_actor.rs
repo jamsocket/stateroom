@@ -113,6 +113,8 @@ impl<T: JamsocketService> Handler<SetTimer> for ServiceActor<T> {
     type Result = ();
 
     fn handle(&mut self, SetTimer(duration_ms): SetTimer, ctx: &mut Self::Context) -> Self::Result {
+        log::info!("Timer set for {} ms.", duration_ms);
+        
         if let Some(timer_handle) = self.timer_handle {
             ctx.cancel_future(timer_handle);
         }
@@ -127,6 +129,7 @@ impl<T: JamsocketService> Handler<TimerFinished> for ServiceActor<T> {
     type Result = ();
 
     fn handle(&mut self, _: TimerFinished, _: &mut Self::Context) -> Self::Result {
+        log::info!("Timer finished.");
         self.service.timer();
     }
 }
