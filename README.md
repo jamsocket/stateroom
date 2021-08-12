@@ -3,7 +3,8 @@
 # Jamsocket
 
 [![crates.io](https://img.shields.io/crates/v/jamsocket.svg)](https://crates.io/crates/jamsocket)
-[![docs.rs](https://img.shields.io/badge/docs-latest-orange)](https://jamsocket.github.io/jamsocket/jamsocket/index.html)
+[![docs.rs](https://img.shields.io/badge/docs-release-brightgreen)](https://docs.rs/jamsocket/0.1.0/jamsocket/)
+[![docs-latest](https://img.shields.io/badge/docs-latest-orange)](https://jamsocket.github.io/jamsocket/jamsocket/index.html)
 [![wokflow state](https://github.com/jamsocket/jamsocket/workflows/test/badge.svg)](https://github.com/jamsocket/jamsocket/actions/workflows/test.yml)
 [![wokflow state](https://github.com/jamsocket/jamsocket/workflows/docs/badge.svg)](https://github.com/jamsocket/jamsocket/actions/workflows/docs.yml)
 
