@@ -88,7 +88,8 @@ $ jamsocket dev
 status message `ok`. Open up developer tools in your browser and type:
 
 ```javascript
-let ws = new WebSocket('ws://localhost:8080/ws/1'); ws.onmessage = (c) => console.log(c.data);
+let ws = new WebSocket('ws://localhost:8080/ws/1');
+ws.onmessage = (c) => console.log(c.data);
 ```
 
 This connects to your service, creating a new room with the id `1` if one doesn't exist
