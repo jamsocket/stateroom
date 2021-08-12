@@ -50,7 +50,7 @@
         <span class="ident">port</span>,
         <span class="ident">room_id_strategy</span>: <span class="ident">rooms</span>,
         <span class="ident">shutdown_policy</span>,
-        ..<span class="ident">Server::default</span>() <span class="comment">// TODO: allow static paths to be passed</span>
+        ..<span class="ident">Server::default</span>()
     };
 
     <span class="ident">server_settings</span>.<span class="ident">serve</span>(<span class="ident">host_factory</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">into</span>())

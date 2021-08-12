@@ -24,30 +24,88 @@
 <span id="24">24</span>
 <span id="25">25</span>
 <span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">jamsocket_server</span>::{<span class="ident">RoomIdStrategy</span>, <span class="ident">ServiceShutdownPolicy</span>};
 <span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
 
+<span class="doccomment">/// Represents a `jamsocket.toml` file, used to configure</span>
+<span class="doccomment">/// a Jamsocket server.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">JamsocketConfig</span> {
+    <span class="doccomment">/// Directory to serve static files from.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If this is provided, the server will attempt to serve HTTP requests</span>
+    <span class="doccomment">/// relative to this directory, if they do not match other paths.</span>
     <span class="kw">pub</span> <span class="ident">static_files</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+
+    <span class="doccomment">/// Optional configuration for building a WebAssembly module for the</span>
+    <span class="doccomment">/// client.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This allows you to use `jamsocket dev` to build both the server- and</span>
+    <span class="doccomment">/// client-side code from the same workspace in one command.</span>
     <span class="kw">pub</span> <span class="ident">client</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ClientConfig</span><span class="op">&gt;</span>,
+
+    <span class="doccomment">/// Configuration for building the WebAssembly module to serve.</span>
     <span class="kw">pub</span> <span class="ident">service</span>: <span class="ident">ServiceConfig</span>,
 }
 
+<span class="doccomment">/// Configuration for generating a client-side WebAssembly module.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ClientConfig</span> {
+    <span class="doccomment">/// The name of the package to build.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Must be discoverable by cargo from the directory that `jamsocket`</span>
+    <span class="doccomment">/// is run from (i.e. `cargo build -p &lt;package&gt;` should succeed)</span>
     <span class="kw">pub</span> <span class="ident">package</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">optimization_level</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
+<span class="doccomment">/// Configuration for generating and serving a Jamsocket service module.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ServiceConfig</span> {
+    <span class="doccomment">/// The name of the package to build.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Must be discoverable by cargo from the directory that `jamsocket`</span>
+    <span class="doccomment">/// is run from (i.e. `cargo build -p &lt;package&gt;` should succeed)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If this is empty, builds the package we are in (i.e. the package that</span>
+    <span class="doccomment">/// `cargo build` builds.)</span>
     <span class="kw">pub</span> <span class="ident">package</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 
+    <span class="doccomment">/// The strategy used for generating room IDs.</span>
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
     <span class="kw">pub</span> <span class="ident">room_strategy</span>: <span class="ident">RoomIdStrategy</span>,
 
+    <span class="doccomment">/// Specifies how empty rooms are handled.</span>
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
     <span class="kw">pub</span> <span class="ident">shutdown_policy</span>: <span class="ident">ServiceShutdownPolicy</span>,
 }
