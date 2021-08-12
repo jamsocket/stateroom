@@ -43,6 +43,8 @@ fn run_cargo_build_command(
 
     for message in cargo_metadata::Message::parse_stream(reader) {
         match message.unwrap() {
+            // TODO: handle error when toolchain is not installed, and retry after
+            // attempting to install toolchain.
             Message::CompilerArtifact(artifact) => {
                 for filename in artifact.filenames {
                     // TODO: investigate why `.as_str()` is required. `Utf8Path` has
@@ -62,7 +64,7 @@ fn run_cargo_build_command(
         }
     }
 
-    build_command.wait().expect("h1");
+    build_command.wait().expect("Build command encountered unknown error.");
 
     let result = match &found_wasm_modules.as_slice() {
         &[] => panic!("No wasm files built."),

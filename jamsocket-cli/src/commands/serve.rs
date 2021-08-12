@@ -21,7 +21,7 @@ pub fn serve(serve_opts: ServeCommand) -> anyhow::Result<()> {
         port,
         room_id_strategy: rooms,
         shutdown_policy,
-        ..Server::default() // TODO: allow static paths to be passed
+        ..Server::default()
     };
 
     server_settings.serve(host_factory).map_err(|e| e.into())

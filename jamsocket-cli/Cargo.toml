@@ -2,6 +2,11 @@
 name = "jamsocket-cli"
 version = "0.1.0"
 edition = "2018"
+readme = "README.md"
+repository = "https://github.com/jamsocket/jamsocket"
+license = "MIT OR Apache-2.0"
+keywords = ["websocket"]
+description = "Command-line tool for developing Jamsocket applications"
 
 [dependencies]
 jamsocket = {path="../jamsocket"}
