@@ -7,3 +7,4 @@ readme = "../README.md"
 repository = "https://github.com/jamsocket/jamsocket"
 license = "MIT OR Apache-2.0"
 keywords = ["websocket"]
+description = "A lightweight framework for building WebSocket services."
