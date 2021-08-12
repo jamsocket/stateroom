@@ -379,26 +379,26 @@
     }
 }
 
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new_room</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new_room</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">req</span>: <span class="ident">HttpRequest</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">actix_web::Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">room_id</span> <span class="op">=</span> <span class="ident">server_state</span>.<span class="ident">new_room_generated</span>().<span class="kw">await</span><span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::Ok</span>().<span class="ident">body</span>(<span class="ident">room_id</span>))
 }
 
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new_room_explicit</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new_room_explicit</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">req</span>: <span class="ident">HttpRequest</span>,
     <span class="ident">room_id</span>: <span class="ident">web::Path</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">actix_web::Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">unwrap</span>();
     <span class="ident">server_state</span>.<span class="ident">explicit_new_room</span>(<span class="ident">room_id</span>.<span class="ident">as_ref</span>()).<span class="kw">await</span><span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::Ok</span>().<span class="ident">body</span>(<span class="ident">room_id</span>.<span class="ident">to_string</span>()))
 }
 
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">websocket</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">websocket</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
     <span class="ident">req</span>: <span class="ident">HttpRequest</span>,
     <span class="ident">stream</span>: <span class="ident">web::Payload</span>,
     <span class="ident">room_id</span>: <span class="ident">web::Path</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
@@ -409,7 +409,7 @@
         <span class="string">&quot;&lt;unknown&gt;&quot;</span>.<span class="ident">to_string</span>()
     };
 
-    <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">room_addr</span> <span class="op">=</span> <span class="ident">server_state</span>.<span class="ident">connect_room</span>(<span class="ident">room_id</span>.<span class="ident">as_ref</span>()).<span class="kw">await</span><span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">client_id</span> <span class="op">=</span> <span class="ident">room_addr</span>
