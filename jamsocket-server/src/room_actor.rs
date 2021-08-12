@@ -1,9 +1,12 @@
 use crate::{
-    messages::{AssignUserId, MessageFromClient, MessageFromServer},
+    messages::{AssignClientId, MessageFromClient, MessageFromServer},
     ServiceShutdownPolicy,
 };
-use actix::{Actor, ActorContext, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
-use jamsocket::MessageRecipient;
+use actix::{
+    dev::MessageResponse, Actor, ActorContext, AsyncContext, Context, Handler, Message, Recipient,
+    SpawnHandle,
+};
+use jamsocket::{ClientId, MessageRecipient};
 use std::{collections::HashMap, time::Duration};
 
 /// Actor model representation of a “room”. A room is a set of clients
@@ -13,7 +16,7 @@ use std::{collections::HashMap, time::Duration};
 pub struct RoomActor {
     room_id: String,
     service_actor: Option<Recipient<MessageFromClient>>,
-    connections: HashMap<u32, Recipient<MessageFromServer>>,
+    connections: HashMap<ClientId, Recipient<MessageFromServer>>,
     /// User IDs are assigned sequentially within the context of each room,
     /// ensuring that they never overlap. `next_id` stores the next ID that
     /// will be assigned.
@@ -71,13 +74,13 @@ impl Handler<MessageFromServer> for RoomActor {
     type Result = ();
 
     fn handle(&mut self, message: MessageFromServer, _ctx: &mut Context<Self>) {
-        match message.to_user {
+        match message.to_client {
             MessageRecipient::Broadcast => {
                 for addr in self.connections.values() {
                     addr.do_send(message.clone()).unwrap();
                 }
             }
-            MessageRecipient::User(u) => {
+            MessageRecipient::Client(u) => {
                 if let Some(client_connection) = self.connections.get(&u) {
                     client_connection.do_send(message).unwrap();
                 } else {
@@ -97,16 +100,16 @@ impl Handler<MessageFromClient> for RoomActor {
     fn handle(&mut self, message: MessageFromClient, ctx: &mut Context<Self>) {
         if let Some(service_actor) = &self.service_actor {
             match &message {
-                MessageFromClient::Connect(u, resp) => {
-                    self.connections.insert(*u, resp.clone());
+                MessageFromClient::Connect(client, resp) => {
+                    self.connections.insert(*client, resp.clone());
                     service_actor.do_send(message).unwrap();
 
                     // If this task was scheduled to shut down becuse the room is empty,
                     // cancel that.
                     self.shutdown_handle.take().map(|t| ctx.cancel_future(t));
                 }
-                MessageFromClient::Disconnect(u) => {
-                    self.connections.remove(u);
+                MessageFromClient::Disconnect(client_id) => {
+                    self.connections.remove(client_id);
 
                     if self.connections.is_empty() {
                         if self.shutdown_policy != ServiceShutdownPolicy::Immediate {
@@ -130,14 +133,26 @@ impl Handler<MessageFromClient> for RoomActor {
     }
 }
 
-impl Handler<AssignUserId> for RoomActor {
-    type Result = u32;
+impl MessageResponse<RoomActor, AssignClientId> for ClientId {
+    fn handle(self, _: &mut Context<RoomActor>, tx: Option<actix::dev::OneshotSender<ClientId>>) {
+        if let Some(tx) = tx {
+            if let Err(e) = tx.send(self) {
+                // TODO: checking this avoids a linter warning, but I need to better
+                // understand the series of events that would lead to this triggering.
+                log::warn!("Error returning response to AssignClientId: {:?}", e);
+            }
+        }
+    }
+}
 
-    fn handle(&mut self, _: AssignUserId, _ctx: &mut Context<Self>) -> u32 {
+impl Handler<AssignClientId> for RoomActor {
+    type Result = ClientId;
+
+    fn handle(&mut self, _: AssignClientId, _ctx: &mut Context<Self>) -> ClientId {
         let result = self.next_id;
         self.next_id += 1;
 
-        result
+        result.into()
     }
 }
 
