@@ -27,6 +27,10 @@ pub trait RoomIdGenerator: Debug + Send + Sync {
     fn generate(&mut self) -> String;
 }
 
+/// Generates short, upper-case alphabetical IDs of a given length.
+///
+/// The ID generation algorithm is designed not to reuse an ID until
+/// all potential IDs have been exhausted.
 #[derive(Debug)]
 pub struct ShortRoomIdGenerator {
     state: u64,
@@ -53,6 +57,10 @@ impl RoomIdGenerator for ShortRoomIdGenerator {
 }
 
 impl ShortRoomIdGenerator {
+    /// Construct a ShortRoomIdGenerator for the given length.
+    ///
+    /// Calls to this constructor are non-deterministic, because
+    /// some random entropy is baked into the generator.
     pub fn new(length: usize) -> Self {
         let mut rng = thread_rng();
         let m = 26u64.pow(length as u32);
@@ -68,6 +76,7 @@ impl ShortRoomIdGenerator {
     }
 }
 
+/// Factory for creating a [[ShortRoomIdGenerator]].
 #[derive(Debug)]
 pub struct ShortRoomIdGeneratorFactory(pub usize);
 

@@ -16,10 +16,21 @@ impl Display for BadShutdownPolicyName {
 
 impl std::error::Error for BadShutdownPolicyName {}
 
+/// Determines how a server will behave when a room is empty (all clients have left).
+///
+/// Depending on this value, the server may shut down the room immediately, after a
+/// given timeout, or never.
 #[derive(Clone, Copy, PartialEq, Debug, Deserialize)]
 pub enum ServiceShutdownPolicy {
+    /// Never garbage collect rooms. This is mostly for development, or for when you
+    /// have a fixed set of rooms.
     Never,
+
+    /// Immediately delete rooms when they become empty.
     Immediate,
+
+    /// Delete empty rooms if they stay empty for the given number of seconds. This
+    /// gives clients a chance to reconnect without losing state.
     AfterSeconds(u32),
 }
 

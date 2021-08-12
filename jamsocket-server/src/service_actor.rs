@@ -21,6 +21,8 @@ impl Message for TimerFinished {
     type Result = ();
 }
 
+/// A [JamsocketContext] implementation for [JamsocketService]s hosted in the
+/// context of a [ServiceActor].
 #[derive(Clone)]
 pub struct ServiceActorContext {
     set_timer_recipient: Recipient<SetTimer>,

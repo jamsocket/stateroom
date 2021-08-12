@@ -30,21 +30,28 @@ async fn status() -> Result<HttpResponse, Error> {
 /// Settings used by the server.
 pub struct Server {
     /// The duration of time between server-initiated WebSocket heartbeats.
+    ///
+    /// Defaults to 30 seconds.
     pub heartbeat_interval: Duration,
 
     /// The minimum amount of time between client heartbeats before a connection is dropped.
+    ///
+    /// Defaults to 5 minutes.
     pub heartbeat_timeout: Duration,
 
     /// The method by which new rooms are created and assigned names.
     pub room_id_strategy: RoomIdStrategy,
 
-    /// The port to run the server on.
+    /// The port to run the server on. Defaults to 8080.
     pub port: u32,
 
+    /// How the server decides to shut down a room once it is empty.
     pub shutdown_policy: ServiceShutdownPolicy,
 
+    /// A local filesystem path to serve static files from, or None (default).
     pub static_path: Option<String>,
 
+    /// A local filesystem path to serve from /client, or None (default).
     pub client_path: Option<String>,
 }
 

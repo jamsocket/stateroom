@@ -21,6 +21,8 @@ impl Message for MessageFromClient {
     type Result = ();
 }
 
+/// Message received or to be sent over a WebSocket connection, which may be
+/// textual or binary.
 #[derive(Debug, Clone)]
 pub enum MessageData {
     String(String),
