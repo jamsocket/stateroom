@@ -221,6 +221,13 @@
 <span id="221">221</span>
 <span id="222">222</span>
 <span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
 </pre><pre class="rust">
 <span class="kw">mod</span> <span class="ident">client_socket_connection</span>;
 <span class="kw">mod</span> <span class="ident">messages</span>;
@@ -254,21 +261,28 @@
 <span class="doccomment">/// Settings used by the server.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Server</span> {
     <span class="doccomment">/// The duration of time between server-initiated WebSocket heartbeats.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Defaults to 30 seconds.</span>
     <span class="kw">pub</span> <span class="ident">heartbeat_interval</span>: <span class="ident">Duration</span>,
 
     <span class="doccomment">/// The minimum amount of time between client heartbeats before a connection is dropped.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Defaults to 5 minutes.</span>
     <span class="kw">pub</span> <span class="ident">heartbeat_timeout</span>: <span class="ident">Duration</span>,
 
     <span class="doccomment">/// The method by which new rooms are created and assigned names.</span>
     <span class="kw">pub</span> <span class="ident">room_id_strategy</span>: <span class="ident">RoomIdStrategy</span>,
 
-    <span class="doccomment">/// The port to run the server on.</span>
+    <span class="doccomment">/// The port to run the server on. Defaults to 8080.</span>
     <span class="kw">pub</span> <span class="ident">port</span>: <span class="ident">u32</span>,
 
+    <span class="doccomment">/// How the server decides to shut down a room once it is empty.</span>
     <span class="kw">pub</span> <span class="ident">shutdown_policy</span>: <span class="ident">ServiceShutdownPolicy</span>,
 
+    <span class="doccomment">/// A local filesystem path to serve static files from, or None (default).</span>
     <span class="kw">pub</span> <span class="ident">static_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 
+    <span class="doccomment">/// A local filesystem path to serve from /client, or None (default).</span>
     <span class="kw">pub</span> <span class="ident">client_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 

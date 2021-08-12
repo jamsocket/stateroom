@@ -134,6 +134,8 @@
 <span id="134">134</span>
 <span id="135">135</span>
 <span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::messages</span>::{<span class="ident">MessageData</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>};
 <span class="kw">use</span> <span class="ident">actix</span>::{
@@ -158,6 +160,8 @@
     <span class="kw">type</span> <span class="prelude-ty">Result</span> <span class="op">=</span> ();
 }
 
+<span class="doccomment">/// A [JamsocketContext] implementation for [JamsocketService]s hosted in the</span>
+<span class="doccomment">/// context of a [ServiceActor].</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ServiceActorContext</span> {
     <span class="ident">set_timer_recipient</span>: <span class="ident">Recipient</span><span class="op">&lt;</span><span class="ident">SetTimer</span><span class="op">&gt;</span>,

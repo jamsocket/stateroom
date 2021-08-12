@@ -280,6 +280,15 @@
 <span id="280">280</span>
 <span id="281">281</span>
 <span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">rand</span>::{<span class="ident">thread_rng</span>, <span class="ident">Rng</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">de::Visitor</span>, <span class="ident">Deserialize</span>};
@@ -310,6 +319,10 @@
     <span class="kw">fn</span> <span class="ident">generate</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span>;
 }
 
+<span class="doccomment">/// Generates short, upper-case alphabetical IDs of a given length.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The ID generation algorithm is designed not to reuse an ID until</span>
+<span class="doccomment">/// all potential IDs have been exhausted.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ShortRoomIdGenerator</span> {
     <span class="ident">state</span>: <span class="ident">u64</span>,
@@ -336,6 +349,10 @@
 }
 
 <span class="kw">impl</span> <span class="ident">ShortRoomIdGenerator</span> {
+    <span class="doccomment">/// Construct a ShortRoomIdGenerator for the given length.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Calls to this constructor are non-deterministic, because</span>
+    <span class="doccomment">/// some random entropy is baked into the generator.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">length</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">thread_rng</span>();
         <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="number">26u64</span>.<span class="ident">pow</span>(<span class="ident">length</span> <span class="kw">as</span> <span class="ident">u32</span>);
@@ -351,6 +368,7 @@
     }
 }
 
+<span class="doccomment">/// Factory for creating a [[ShortRoomIdGenerator]].</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ShortRoomIdGeneratorFactory</span>(<span class="kw">pub</span> <span class="ident">usize</span>);
 
