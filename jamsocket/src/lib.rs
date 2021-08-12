@@ -1,6 +1,6 @@
 //! Jamsocket is a minimalist framework for developing stateful [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) applications.
 //!
-//! Jamsocket apps implement the `JamsocketService` trait, which provides a way for the
+//! Jamsocket apps implement the [SimpleJamsocketService] trait, which provides a way for the
 //! app to hook into events when clients connect, disconnect, and send messages. Additionally,
 //! Jamsocket provides a simple mechanism for invoking events in the future with a timer.
 //!
@@ -61,9 +61,8 @@
 //!     }
 //! }
 
-use std::marker::PhantomData;
-
 pub use message_recipient::MessageRecipient;
+use std::marker::PhantomData;
 
 mod message_recipient;
 
@@ -117,11 +116,8 @@ pub trait SimpleJamsocketService: Unpin + Send + Sync + 'static {
     fn timer(&mut self, context: &impl JamsocketContext) {}
 }
 
-/// The main interface to a Jamsocket service.
-///
-/// If the service wishes to send messages *back* to the calling environment, it is expected to own
-/// or borrow a [JamsocketContext] object, but the details are left up to the implementer. See
-/// [WrappedJamsocketService] for an example.
+/// The host interface to a Jamsocket service. Implementations should instead implement the trait
+/// [SimpleJamsocketService].
 #[allow(unused_variables)]
 pub trait JamsocketService: Send + Sync + Unpin + 'static {
     /// Called each time a client connects to the service.
