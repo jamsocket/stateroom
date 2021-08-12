@@ -66,9 +66,9 @@ dependencies = [
 
 [[package]]
 name = "actix-http"
-version = "3.0.0-beta.8"
+version = "3.0.0-beta.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3cd16d6b846983ffabfd081e1a67abd7698094fcbe7b3d9bcf1acbc6f546a516"
+checksum = "01260589f1aafad11224002741eb37bc603b4ce55b4e3556d2b2122f9aac7c51"
 dependencies = [
  "actix-codec",
  "actix-rt",
@@ -526,9 +526,9 @@ dependencies = [
 
 [[package]]
 name = "bitflags"
-version = "1.2.1"
+version = "1.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
+checksum = "2da1976d75adbe5fbc88130ecd119529cf1cc6a93ae1546d8696ee66f0d21af1"
 
 [[package]]
 name = "block-buffer"
@@ -1450,9 +1450,9 @@ dependencies = [
 
 [[package]]
 name = "jobserver"
-version = "0.1.22"
+version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "972f5ae5d1cb9c6ae417789196c803205313edde988685da5e3aae0827b9e7fd"
+checksum = "f5ca711fd837261e14ec9e674f092cbb931d3fa1482b017ae59328ddc6f3212b"
 dependencies = [
  "libc",
 ]
@@ -1495,9 +1495,9 @@ checksum = "3576a87f2ba00f6f106fdfcd16db1d698d648a26ad8e0573cad8537c3c362d2a"
 
 [[package]]
 name = "libc"
-version = "0.2.98"
+version = "0.2.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "320cfe77175da3a483efed4bc0adc1968ca050b098ce4f2f1c13a56626128790"
+checksum = "a7f823d141fe0a24df1e23b4af4e3c7ba9e5966ec514ea068c93024aa7deb765"
 
 [[package]]
 name = "local-channel"
@@ -1547,9 +1547,9 @@ dependencies = [
 
 [[package]]
 name = "matches"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ffc5c5338469d4d3ea17d269fa8ea3512ad247247c30bd2df69e68309ed0a08"
+checksum = "a3e378b66a060d48947b590737b30a1be76706c8dd7b8ba0f2fe3989c68a853f"
 
 [[package]]
 name = "maybe-owned"
@@ -1924,9 +1924,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.2.9"
+version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ab49abadf3f9e1c4bc499e8845e152ad87d2ad2d30371841171169e9d75feee"
+checksum = "8383f39639269cde97d255a32bdb68c047337295414940c68bdd30c2e13203ff"
 dependencies = [
  "bitflags",
 ]
@@ -2192,9 +2192,9 @@ dependencies = [
 
 [[package]]
 name = "slab"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f173ac3d1a7e3b28003f40de0b5ce7fe2710f9b9dc3fc38664cebee46b3b6527"
+checksum = "c307a32c1c5c437f38c7fd45d753050587732ba8628319fbdf12a7e289ccc590"
 
 [[package]]
 name = "smallvec"
@@ -3062,20 +3062,20 @@ dependencies = [
 
 [[package]]
 name = "wast"
-version = "36.0.0"
+version = "37.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b5d7ba374a364571da1cb0a379a3dc302582a2d9937a183bfe35b68ad5bb9c4"
+checksum = "9bc7b9a76845047ded00e031754ff410afee0d50fbdf62b55bdeecd245063d68"
 dependencies = [
  "leb128",
 ]
 
 [[package]]
 name = "wat"
-version = "1.0.38"
+version = "1.0.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16383df7f0e3901484c2dda6294ed6895caa3627ce4f6584141dcf30a33a23e6"
+checksum = "2ab2cc8d9a69d1ab28a41d9149bb06bb927aba8fc9d56625f8b597a564c83f50"
 dependencies = [
- "wast 36.0.0",
+ "wast 37.0.0",
 ]
 
 [[package]]

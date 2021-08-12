@@ -136,3 +136,8 @@ will probably be [`jamsocket-cli`](/jamsocket-cli), which provides a command-lin
 - [`jamsocket-server`](https://jamsocket.github.io/jamsocket/jamsocket_server/index.html) provides [Actix](https://actix.rs/) actors to facilitate serving Jamsocket services in a WebSocket server.
 - [`jamsocket-wasm`](https://jamsocket.github.io/jamsocket/jamsocket_wasm/index.html) provides a macro for generating WebAssembly modules from Jamsocket services.
 - [`jamsocket-wasm-host`](https://jamsocket.github.io/jamsocket/jamsocket_wasm_host/index.html) provides a way to import Jamsocket services from WebAssembly modules.
+
+## See Also
+
+[Aper](https://github.com/aper-dev/aper) is a state synchronization library which
+works with Jamsocket. 

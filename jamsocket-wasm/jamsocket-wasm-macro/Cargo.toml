@@ -3,6 +3,11 @@ name = "jamsocket-wasm-macro"
 version = "0.1.0"
 authors = ["Paul Butler <paulgb@gmail.com>"]
 edition = "2018"
+readme = "README.md"
+repository = "https://github.com/jamsocket/jamsocket"
+license = "MIT OR Apache-2.0"
+keywords = ["websocket", "webassembly"]
+description = "A macro for building a Jamsocket service as a WebAssembly module."
 
 [lib]
 proc-macro = true
