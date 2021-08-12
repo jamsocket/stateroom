@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["jamsocket"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.StructuralEq.html\" title=\"trait core::marker::StructuralEq\">StructuralEq</a> for <a class=\"struct\" href=\"jamsocket/struct.ClientId.html\" title=\"struct jamsocket::ClientId\">ClientId</a>","synthetic":false,"types":["jamsocket::client_id::ClientId"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -212,6 +212,8 @@
 <span id="212">212</span>
 <span id="213">213</span>
 <span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
 </pre><pre class="rust">
 <span class="doccomment">//! Jamsocket is a minimalist framework for developing stateful [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) applications.</span>
 <span class="doccomment">//!</span>
@@ -227,8 +229,8 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! #[derive(Default)]</span>
 <span class="doccomment">//! struct ChatServer {</span>
-<span class="doccomment">//!     /// The server&#39;s only state is a mapping of user ID to username.</span>
-<span class="doccomment">//!     user_to_nickname: HashMap&lt;u32, String&gt;,</span>
+<span class="doccomment">//!     /// The server&#39;s only state is a mapping of client ID to username.</span>
+<span class="doccomment">//!     client_to_nickname: HashMap&lt;ClientId, String&gt;,</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! impl SimpleJamsocketService for ChatServer {</span>
@@ -237,11 +239,11 @@
 <span class="doccomment">//!     }</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     /// This is called when a user connects.</span>
-<span class="doccomment">//!     fn connect(&amp;mut self, user: u32, ctx: &amp;impl JamsocketContext) {</span>
-<span class="doccomment">//!         let username = format!(&quot;user{}&quot;, user);</span>
+<span class="doccomment">//!     fn connect(&amp;mut self, client: ClientId, ctx: &amp;impl JamsocketContext) {</span>
+<span class="doccomment">//!         let username = format!(&quot;client{}&quot;, u32::from(client));</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!         // Send a welcome message.</span>
-<span class="doccomment">//!         ctx.send_message(user,</span>
+<span class="doccomment">//!         ctx.send_message(client,</span>
 <span class="doccomment">//!             &amp;format!(&quot;Welcome to the chat! Your name is {}. \</span>
 <span class="doccomment">//!                      Send /nick &lt;username&gt; to change it.&quot;,</span>
 <span class="doccomment">//!                      &amp;username));</span>
@@ -252,8 +254,8 @@
 <span class="doccomment">//!     }</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     /// This is called when a user disconnects.</span>
-<span class="doccomment">//!     fn disconnect(&amp;mut self, user: u32, ctx: &amp;impl JamsocketContext) {</span>
-<span class="doccomment">//!         let username = self.user_to_nickname.remove(&amp;user).unwrap();</span>
+<span class="doccomment">//!     fn disconnect(&amp;mut self, client: ClientId, ctx: &amp;impl JamsocketContext) {</span>
+<span class="doccomment">//!         let username = self.client_to_nickname.remove(&amp;client).unwrap();</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!         // Alert all remaining users that a user has left.</span>
 <span class="doccomment">//!         ctx.send_message(MessageRecipient::Broadcast,</span>
@@ -261,24 +263,26 @@
 <span class="doccomment">//!     }</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//!     /// This is called when a user sends a message.</span>
-<span class="doccomment">//!     fn message(&amp;mut self, user: u32, message: &amp;str, ctx: &amp;impl JamsocketContext) {</span>
+<span class="doccomment">//!     fn message(&amp;mut self, client: ClientId, message: &amp;str, ctx: &amp;impl JamsocketContext) {</span>
 <span class="doccomment">//!         if let Some(new_nick) = message.strip_prefix(&quot;/nick &quot;) {</span>
 <span class="doccomment">//!             // This message is a /nick command, so process accordingly.</span>
-<span class="doccomment">//!             let old_nick = self.user_to_nickname.insert(user, new_nick.to_string()).unwrap();</span>
+<span class="doccomment">//!             let old_nick = self.client_to_nickname.insert(client, new_nick.to_string()).unwrap();</span>
 <span class="doccomment">//!             ctx.send_message(MessageRecipient::Broadcast,</span>
 <span class="doccomment">//!                &amp;format!(&quot;{} is now known as {}&quot;, old_nick, new_nick));</span>
 <span class="doccomment">//!         } else {</span>
 <span class="doccomment">//!             // Broadcast the message to all connected users, prefixed by the username.</span>
-<span class="doccomment">//!             let username = self.user_to_nickname.get(&amp;user).unwrap();</span>
+<span class="doccomment">//!             let username = self.client_to_nickname.get(&amp;client).unwrap();</span>
 <span class="doccomment">//!             ctx.send_message(MessageRecipient::Broadcast,</span>
 <span class="doccomment">//!                &amp;format!(&quot;{}: {}&quot;, username, message));</span>
 <span class="doccomment">//!         }</span>
 <span class="doccomment">//!     }</span>
 <span class="doccomment">//! }</span>
 
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">client_id::ClientId</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">message_recipient::MessageRecipient</span>;
 <span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
 
+<span class="kw">mod</span> <span class="ident">client_id</span>;
 <span class="kw">mod</span> <span class="ident">message_recipient</span>;
 
 <span class="doccomment">/// Provides an interface for a [JamsocketService] instance to send messages back to its host environment.</span>
@@ -314,17 +318,17 @@
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">room_id</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Called each time a client connects to the service.</span>
-    <span class="kw">fn</span> <span class="ident">connect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
+    <span class="kw">fn</span> <span class="ident">connect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
 
     <span class="doccomment">/// Called each time a client disconnects from the service, unless that disconnection</span>
     <span class="doccomment">/// will cause the service to be destroyed.</span>
-    <span class="kw">fn</span> <span class="ident">disconnect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
+    <span class="kw">fn</span> <span class="ident">disconnect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
 
     <span class="doccomment">/// Called each time a client sends a text message to the service.</span>
-    <span class="kw">fn</span> <span class="ident">message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
+    <span class="kw">fn</span> <span class="ident">message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
 
     <span class="doccomment">/// Called each time a client sends a binary message to the service.</span>
-    <span class="kw">fn</span> <span class="ident">binary</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
+    <span class="kw">fn</span> <span class="ident">binary</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
 
     <span class="doccomment">/// Called when [JamsocketContext::set_timer] has been called on this service&#39;s context,</span>
     <span class="doccomment">/// after the provided duration.</span>
@@ -336,17 +340,17 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_variables</span>)]</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">JamsocketService</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> {
     <span class="doccomment">/// Called each time a client connects to the service.</span>
-    <span class="kw">fn</span> <span class="ident">connect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>);
+    <span class="kw">fn</span> <span class="ident">connect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>);
 
     <span class="doccomment">/// Called each time a client disconnects from the service, unless that disconnection</span>
     <span class="doccomment">/// will cause the service to be destroyed.</span>
-    <span class="kw">fn</span> <span class="ident">disconnect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>);
+    <span class="kw">fn</span> <span class="ident">disconnect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>);
 
     <span class="doccomment">/// Called each time a client sends a text message to the service.</span>
-    <span class="kw">fn</span> <span class="ident">message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>);
+    <span class="kw">fn</span> <span class="ident">message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>);
 
     <span class="doccomment">/// Called each time a client sends a binary message to the service.</span>
-    <span class="kw">fn</span> <span class="ident">binary</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]);
+    <span class="kw">fn</span> <span class="ident">binary</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]);
 
     <span class="doccomment">/// Called when [JamsocketContext::set_timer] has been called on this service&#39;s context,</span>
     <span class="doccomment">/// after the provided duration.</span>
@@ -407,24 +411,24 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">SimpleJamsocketService</span>, <span class="ident">C</span>: <span class="ident">JamsocketContext</span><span class="op">&gt;</span> <span class="ident">JamsocketService</span>
     <span class="kw">for</span> <span class="ident">WrappedJamsocketService</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
 {
-    <span class="kw">fn</span> <span class="ident">connect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>) {
-        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">connect</span>(<span class="ident">user</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
+    <span class="kw">fn</span> <span class="ident">connect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>) {
+        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">connect</span>(<span class="ident">client</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
     }
 
-    <span class="kw">fn</span> <span class="ident">disconnect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>) {
-        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">disconnect</span>(<span class="ident">user</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
+    <span class="kw">fn</span> <span class="ident">disconnect</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>) {
+        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">disconnect</span>(<span class="ident">client</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
     }
 
-    <span class="kw">fn</span> <span class="ident">message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">message</span>(<span class="ident">user</span>, <span class="ident">message</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
+    <span class="kw">fn</span> <span class="ident">message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
+        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">message</span>(<span class="ident">client</span>, <span class="ident">message</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">timer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
         <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">timer</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>);
     }
 
-    <span class="kw">fn</span> <span class="ident">binary</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">user</span>: <span class="ident">u32</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
-        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">binary</span>(<span class="ident">user</span>, <span class="ident">message</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>)
+    <span class="kw">fn</span> <span class="ident">binary</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client</span>: <span class="ident">ClientId</span>, <span class="ident">message</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) {
+        <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">binary</span>(<span class="ident">client</span>, <span class="ident">message</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">context</span>)
     }
 }
 </pre></div>
