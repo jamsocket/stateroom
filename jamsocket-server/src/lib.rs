@@ -155,26 +155,26 @@ impl Server {
     }
 }
 
-async fn new_room<T: JamsocketServiceFactory<ServiceActorContext>>(
+async fn new_room<F: JamsocketServiceFactory<ServiceActorContext>>(
     req: HttpRequest,
 ) -> actix_web::Result<HttpResponse> {
-    let server_state: &Data<ServerState<T>> = req.app_data().unwrap();
+    let server_state: &Data<ServerState<F>> = req.app_data().unwrap();
     let room_id = server_state.new_room_generated().await?;
 
     Ok(HttpResponse::Ok().body(room_id))
 }
 
-async fn new_room_explicit<T: JamsocketServiceFactory<ServiceActorContext>>(
+async fn new_room_explicit<F: JamsocketServiceFactory<ServiceActorContext>>(
     req: HttpRequest,
     room_id: web::Path<String>,
 ) -> actix_web::Result<HttpResponse> {
-    let server_state: &Data<ServerState<T>> = req.app_data().unwrap();
+    let server_state: &Data<ServerState<F>> = req.app_data().unwrap();
     server_state.explicit_new_room(room_id.as_ref()).await?;
 
     Ok(HttpResponse::Ok().body(room_id.to_string()))
 }
 
-async fn websocket<T: JamsocketServiceFactory<ServiceActorContext>>(
+async fn websocket<F: JamsocketServiceFactory<ServiceActorContext>>(
     req: HttpRequest,
     stream: web::Payload,
     room_id: web::Path<String>,
@@ -185,7 +185,7 @@ async fn websocket<T: JamsocketServiceFactory<ServiceActorContext>>(
         "<unknown>".to_string()
     };
 
-    let server_state: &Data<ServerState<T>> = req.app_data().unwrap();
+    let server_state: &Data<ServerState<F>> = req.app_data().unwrap();
     let room_addr = server_state.connect_room(room_id.as_ref()).await?;
 
     let client_id = room_addr

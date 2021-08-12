@@ -150,8 +150,8 @@ pub trait JamsocketServiceFactory<C: JamsocketContext>: Send + Sync + 'static {
 }
 
 pub struct SimpleJamsocketServiceFactory<S: SimpleJamsocketService, C: JamsocketContext> {
-    ph_c: PhantomData<C>,
-    ph_s: PhantomData<S>,
+    _c: PhantomData<C>,
+    _s: PhantomData<S>,
 }
 
 impl<S: SimpleJamsocketService, C: JamsocketContext> Default
@@ -159,8 +159,8 @@ impl<S: SimpleJamsocketService, C: JamsocketContext> Default
 {
     fn default() -> Self {
         SimpleJamsocketServiceFactory {
-            ph_c: Default::default(),
-            ph_s: Default::default(),
+            _c: Default::default(),
+            _s: Default::default(),
         }
     }
 }
@@ -191,8 +191,8 @@ impl<S: SimpleJamsocketService, C: JamsocketContext> WrappedJamsocketService<S, 
     }
 }
 
-impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketService
-    for WrappedJamsocketService<T, C>
+impl<S: SimpleJamsocketService, C: JamsocketContext> JamsocketService
+    for WrappedJamsocketService<S, C>
 {
     fn connect(&mut self, client: ClientId) {
         self.service.connect(client, &self.context);

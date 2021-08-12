@@ -5,8 +5,8 @@ use actix::{
 use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceFactory, MessageRecipient};
 use std::{sync::Arc, time::Duration};
 
-pub struct ServiceActor<T: JamsocketService> {
-    service: T,
+pub struct ServiceActor<J: JamsocketService> {
+    service: J,
     timer_handle: Option<SpawnHandle>,
 }
 
@@ -61,11 +61,11 @@ impl JamsocketContext for ServiceActorContext {
     }
 }
 
-impl<T: JamsocketService> ServiceActor<T> {
+impl<J: JamsocketService> ServiceActor<J> {
     pub fn new(
         ctx: &Context<Self>,
         room_id: String,
-        service_constructor: Arc<impl JamsocketServiceFactory<ServiceActorContext, Service = T>>,
+        service_constructor: Arc<impl JamsocketServiceFactory<ServiceActorContext, Service = J>>,
         recipient: Recipient<MessageFromServer>,
     ) -> Self {
         let host_context = ServiceActorContext {
@@ -81,7 +81,7 @@ impl<T: JamsocketService> ServiceActor<T> {
     }
 }
 
-impl<T: JamsocketService> Actor for ServiceActor<T> {
+impl<J: JamsocketService> Actor for ServiceActor<J> {
     type Context = Context<Self>;
 
     fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::Running {
@@ -90,7 +90,7 @@ impl<T: JamsocketService> Actor for ServiceActor<T> {
     }
 }
 
-impl<T: JamsocketService> Handler<MessageFromClient> for ServiceActor<T> {
+impl<J: JamsocketService> Handler<MessageFromClient> for ServiceActor<J> {
     type Result = ();
 
     fn handle(&mut self, msg: MessageFromClient, _ctx: &mut Self::Context) -> Self::Result {
@@ -109,7 +109,7 @@ impl<T: JamsocketService> Handler<MessageFromClient> for ServiceActor<T> {
     }
 }
 
-impl<T: JamsocketService> Handler<SetTimer> for ServiceActor<T> {
+impl<J: JamsocketService> Handler<SetTimer> for ServiceActor<J> {
     type Result = ();
 
     fn handle(&mut self, SetTimer(duration_ms): SetTimer, ctx: &mut Self::Context) -> Self::Result {
@@ -125,7 +125,7 @@ impl<T: JamsocketService> Handler<SetTimer> for ServiceActor<T> {
     }
 }
 
-impl<T: JamsocketService> Handler<TimerFinished> for ServiceActor<T> {
+impl<J: JamsocketService> Handler<TimerFinished> for ServiceActor<J> {
     type Result = ();
 
     fn handle(&mut self, _: TimerFinished, _: &mut Self::Context) -> Self::Result {
