@@ -1,47 +1,55 @@
+use crate::ClientId;
+
 /// Represents the recipient(s) of a message.
 ///
-/// Messages may either be sent to a particular user by numeric id
-/// (`MessageRecipient::User(3)`), or be broadcast to all connected users
+/// Messages may either be sent to a particular client by numeric id
+/// (`MessageRecipient::Client(3)`), or be broadcast to all connected clients
 /// (`MessageRecipient::Broadcast`).]
 #[derive(Debug, Clone, PartialEq)]
 pub enum MessageRecipient {
     Broadcast,
-    User(u32),
+    Client(ClientId),
 }
 
 impl MessageRecipient {
     pub fn encode_u32(&self) -> u32 {
         match self {
             Self::Broadcast => 0,
-            Self::User(u) => *u,
+            Self::Client(c) => (*c).into(),
         }
     }
 
-    pub fn decode_u32(d: u32) -> Self {
-        match d {
+    pub fn decode_u32(enc_client_id: u32) -> Self {
+        match enc_client_id {
             0 => Self::Broadcast,
-            u => Self::User(u),
+            c => Self::Client(c.into()),
         }
     }
 }
 
-impl From<u32> for MessageRecipient {
-    fn from(u: u32) -> Self {
-        MessageRecipient::User(u)
+impl From<ClientId> for MessageRecipient {
+    fn from(c: ClientId) -> Self {
+        MessageRecipient::Client(c)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::MessageRecipient;
+    use crate::{ClientId, MessageRecipient};
 
     #[test]
     fn test_decode() {
         assert_eq!(MessageRecipient::Broadcast, MessageRecipient::decode_u32(0));
-        assert_eq!(MessageRecipient::User(3), MessageRecipient::decode_u32(3));
-        assert_eq!(MessageRecipient::User(9), 9.into());
+        assert_eq!(
+            MessageRecipient::Client(3.into()),
+            MessageRecipient::decode_u32(3)
+        );
+        assert_eq!(
+            MessageRecipient::Client(9.into()),
+            ClientId::from(9u32).into()
+        );
 
         assert_eq!(0, MessageRecipient::Broadcast.encode_u32());
-        assert_eq!(443, MessageRecipient::User(443).encode_u32());
+        assert_eq!(443, MessageRecipient::Client(443.into()).encode_u32());
     }
 }

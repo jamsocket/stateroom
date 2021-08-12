@@ -8,14 +8,14 @@ impl SimpleJamsocketService for BinaryEcho {
         BinaryEcho
     }
 
-    fn message(&mut self, _: u32, message: &str, ctx: &impl JamsocketContext) {
+    fn message(&mut self, _: ClientId, message: &str, ctx: &impl JamsocketContext) {
         ctx.send_binary(
             MessageRecipient::Broadcast,
             message.as_bytes(),
         );
     }
 
-    fn binary(&mut self, _: u32, message: &[u8], ctx: &impl JamsocketContext) {
+    fn binary(&mut self, _: ClientId, message: &[u8], ctx: &impl JamsocketContext) {
         ctx.send_message(
             MessageRecipient::Broadcast,
             &format!("Received binary data: {:?}", &message),

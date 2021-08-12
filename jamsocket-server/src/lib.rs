@@ -16,7 +16,7 @@ use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Re
 use actix_web_actors::ws;
 pub use client_socket_connection::ClientSocketConnection;
 use jamsocket::{JamsocketServiceFactory, SimpleJamsocketService, SimpleJamsocketServiceFactory};
-pub use messages::{AssignUserId, MessageFromClient, MessageFromServer};
+pub use messages::{AssignClientId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
 use server_state::ServerState;
 pub use service_actor::ServiceActorContext;
@@ -139,7 +139,9 @@ impl Server {
                 }
 
                 if let Some(static_path) = &server_state.settings.static_path {
-                    app = app.service(actix_files::Files::new("/", static_path).index_file("index.html"));
+                    app = app.service(
+                        actix_files::Files::new("/", static_path).index_file("index.html"),
+                    );
                 }
 
                 app
@@ -186,15 +188,15 @@ async fn websocket<T: JamsocketServiceFactory<ServiceActorContext>>(
     let server_state: &Data<ServerState<T>> = req.app_data().unwrap();
     let room_addr = server_state.connect_room(room_id.as_ref()).await?;
 
-    let user = room_addr
-        .send(AssignUserId)
+    let client_id = room_addr
+        .send(AssignClientId)
         .await
         .map_err(|_| ErrorInternalServerError("Error getting room."))?;
 
     match ws::start_with_addr(
         ClientSocketConnection {
             room: room_addr.clone().recipient(),
-            user,
+            client_id,
             ip: ip.clone(),
             room_id: room_id.clone(),
             last_seen: Instant::now(),
@@ -207,12 +209,12 @@ async fn websocket<T: JamsocketServiceFactory<ServiceActorContext>>(
     ) {
         Ok((addr, resp)) => {
             log::info!(
-                "New connection from IP {} to room {} (user {})",
+                "New connection from IP {} to room {} (user {:?})",
                 &ip,
                 &room_id,
-                user
+                client_id
             );
-            room_addr.do_send(MessageFromClient::Connect(user, addr.recipient()));
+            room_addr.do_send(MessageFromClient::Connect(client_id, addr.recipient()));
 
             Ok(resp)
         }

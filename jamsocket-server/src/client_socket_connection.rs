@@ -1,13 +1,14 @@
 use crate::messages::{MessageData, MessageFromClient, MessageFromServer};
 use actix::{Actor, ActorContext, AsyncContext, Handler, Recipient, SpawnHandle, StreamHandler};
 use actix_web_actors::ws;
+use jamsocket::ClientId;
 use std::time::{Duration, Instant};
 
 /// Represents a connection from a service to a client, which consists of a
 /// message receiver and a user ID.
 pub struct ClientSocketConnection {
     pub room: Recipient<MessageFromClient>,
-    pub user: u32,
+    pub client_id: ClientId,
     pub room_id: String,
     pub ip: String,
     pub last_seen: Instant,
@@ -21,9 +22,9 @@ impl ClientSocketConnection {
         self.interval_handle = Some(ctx.run_interval(self.heartbeat_interval, |act, ctx| {
             if Instant::now() - act.last_seen > act.heartbeat_timeout {
                 log::warn!(
-                    "Stopping ClientSocketConnection {} (IP: {}) from room {} \
+                    "Stopping ClientSocketConnection {:?} (IP: {}) from room {} \
                     because heartbeat not responded.",
-                    act.user,
+                    act.client_id,
                     act.ip,
                     act.room_id,
                 );
@@ -38,7 +39,7 @@ impl ClientSocketConnection {
         self.interval_handle.map(|d| ctx.cancel_future(d));
 
         self.room
-            .do_send(MessageFromClient::Disconnect(self.user))
+            .do_send(MessageFromClient::Disconnect(self.client_id))
             .unwrap();
 
         ctx.stop();
@@ -71,22 +72,22 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
             Ok(ws::Message::Pong(_)) => self.last_seen = Instant::now(),
             Ok(ws::Message::Text(text)) => {
                 let message = MessageFromClient::Message {
-                    from_user: self.user,
+                    from_client: self.client_id,
                     data: MessageData::String(text.to_string()),
                 };
                 self.room.do_send(message).unwrap();
             }
             Ok(ws::Message::Binary(data)) => {
                 let message = MessageFromClient::Message {
-                    from_user: self.user,
+                    from_client: self.client_id,
                     data: MessageData::Binary(data.to_vec()),
                 };
                 self.room.do_send(message).unwrap();
             }
             Ok(ws::Message::Close(_)) => {
                 log::info!(
-                    "User {} (IP: {}) has disconnected from room {}",
-                    self.user,
+                    "User {:?} (IP: {}) has disconnected from room {}",
+                    self.client_id,
                     &self.ip,
                     &self.room_id
                 );

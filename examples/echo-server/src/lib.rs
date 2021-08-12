@@ -8,18 +8,18 @@ impl SimpleJamsocketService for EchoServer {
         EchoServer
     }
 
-    fn connect(&mut self, user: u32, ctx: &impl JamsocketContext) {
-        ctx.send_message(user, &format!("User {} connected.", user));
+    fn connect(&mut self, client_id: ClientId, ctx: &impl JamsocketContext) {
+        ctx.send_message(client_id, &format!("User {:?} connected.", client_id));
     }
 
-    fn message(&mut self, user: u32, message: &str, ctx: &impl JamsocketContext) {
+    fn message(&mut self, client_id: ClientId, message: &str, ctx: &impl JamsocketContext) {
         ctx.send_message(
             MessageRecipient::Broadcast,
-            &format!("User {} sent '{}'", user, message),
+            &format!("User {:?} sent '{}'", client_id, message),
         );
     }
 
-    fn disconnect(&mut self, user: u32, ctx: &impl JamsocketContext) {
-        ctx.send_message(MessageRecipient::Broadcast, &format!("User {} left.", user));
+    fn disconnect(&mut self, client_id: ClientId, ctx: &impl JamsocketContext) {
+        ctx.send_message(MessageRecipient::Broadcast, &format!("User {:?} left.", client_id));
     }
 }

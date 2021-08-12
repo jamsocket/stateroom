@@ -8,8 +8,8 @@ impl SimpleJamsocketService for EchoServer {
         EchoServer
     }
 
-    fn message(&mut self, user: u32, message: &str, ctx: &impl JamsocketContext) {
-        ctx.send_message(user, &format!("echo: {}", message));
+    fn message(&mut self, client: ClientId, message: &str, ctx: &impl JamsocketContext) {
+        ctx.send_message(client, &format!("echo: {}", message));
     }
 }
 

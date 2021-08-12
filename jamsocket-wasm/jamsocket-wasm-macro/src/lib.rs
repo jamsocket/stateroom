@@ -32,7 +32,8 @@ fn jamsocket_wasm_impl(item: proc_macro2::TokenStream) -> proc_macro2::TokenStre
             use jamsocket_wasm::prelude::{
                 MessageRecipient,
                 SimpleJamsocketService,
-                JamsocketContext
+                JamsocketContext,
+                ClientId,
             };
 
             // Instance-global jamsocket service.
@@ -77,9 +78,9 @@ fn jamsocket_wasm_impl(item: proc_macro2::TokenStream) -> proc_macro2::TokenStre
             // Functions implemented by the host.
             mod ffi {
                 extern "C" {
-                    pub fn send_message(user: u32, message: u32, message_len: u32);
+                    pub fn send_message(client: u32, message: u32, message_len: u32);
 
-                    pub fn send_binary(user: u32, message: u32, message_len: u32);
+                    pub fn send_binary(client: u32, message: u32, message_len: u32);
 
                     pub fn set_timer(ms_delay: u32);
                 }
@@ -99,17 +100,17 @@ fn jamsocket_wasm_impl(item: proc_macro2::TokenStream) -> proc_macro2::TokenStre
             }
 
             #[no_mangle]
-            extern "C" fn connect(user: u32) {
+            extern "C" fn connect(client_id: ClientId) {
                 match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => SimpleJamsocketService::connect(st, user, &GlobalJamsocketContext),
+                    Some(st) => SimpleJamsocketService::connect(st, client_id.into(), &GlobalJamsocketContext),
                     None => ()
                 }
             }
 
             #[no_mangle]
-            extern "C" fn disconnect(user: u32) {
+            extern "C" fn disconnect(client_id: ClientId) {
                 match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => SimpleJamsocketService::disconnect(st, user, &GlobalJamsocketContext),
+                    Some(st) => SimpleJamsocketService::disconnect(st, client_id.into(), &GlobalJamsocketContext),
                     None => ()
                 }
             }
@@ -123,24 +124,24 @@ fn jamsocket_wasm_impl(item: proc_macro2::TokenStream) -> proc_macro2::TokenStre
             }
 
             #[no_mangle]
-            extern "C" fn message(user: u32, ptr: *const u8, len: usize) {
+            extern "C" fn message(client_id: ClientId, ptr: *const u8, len: usize) {
                 unsafe {
                     let string = String::from_utf8(std::slice::from_raw_parts(ptr, len).to_vec()).map_err(|e| format!("Error parsing UTF-8 from host {:?}", e)).unwrap();
 
                     match SERVER_STATE.as_mut() {
-                        Some(st) => SimpleJamsocketService::message(st, user, &string, &GlobalJamsocketContext),
+                        Some(st) => SimpleJamsocketService::message(st, client_id.into(), &string, &GlobalJamsocketContext),
                         None => ()
                     }
                 }
             }
 
             #[no_mangle]
-            extern "C" fn binary(user: u32, ptr: *const u8, len: usize) {
+            extern "C" fn binary(client_id: ClientId, ptr: *const u8, len: usize) {
                 unsafe {
                     let data = std::slice::from_raw_parts(ptr, len);
 
                     match SERVER_STATE.as_mut() {
-                        Some(st) => SimpleJamsocketService::binary(st, user, data, &GlobalJamsocketContext),
+                        Some(st) => SimpleJamsocketService::binary(st, client_id.into(), data, &GlobalJamsocketContext),
                         None => ()
                     }
                 }

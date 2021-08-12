@@ -17,7 +17,7 @@ impl SimpleJamsocketService for CpuHog {
         CpuHog(room_id.to_string())
     }
 
-    fn connect(&mut self, _: u32, ctx: &impl JamsocketContext) {
+    fn connect(&mut self, _: ClientId, ctx: &impl JamsocketContext) {
         ctx.send_message(
             MessageRecipient::Broadcast,
             &format!("Connected to room {}", self.0),

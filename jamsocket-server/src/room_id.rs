@@ -1,5 +1,5 @@
 use rand::{thread_rng, Rng};
-use serde::{Deserialize, de::Visitor};
+use serde::{de::Visitor, Deserialize};
 use std::{
     fmt::{Debug, Display},
     str::FromStr,
@@ -127,8 +127,10 @@ impl<'de> Visitor<'de> for RoomIdStrategyVisitor {
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
-            E: serde::de::Error, {
-        RoomIdStrategy::from_str(v).map_err(|_| serde::de::Error::custom("Could not parse RoomIdStrategy."))
+        E: serde::de::Error,
+    {
+        RoomIdStrategy::from_str(v)
+            .map_err(|_| serde::de::Error::custom("Could not parse RoomIdStrategy."))
     }
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -139,7 +141,8 @@ impl<'de> Visitor<'de> for RoomIdStrategyVisitor {
 impl<'de> Deserialize<'de> for RoomIdStrategy {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de> {
+        D: serde::Deserializer<'de>,
+    {
         deserializer.deserialize_str(RoomIdStrategyVisitor)
     }
 }

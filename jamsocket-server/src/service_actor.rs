@@ -101,9 +101,9 @@ impl<T: JamsocketService> Handler<MessageFromClient> for ServiceActor<T> {
             MessageFromClient::Disconnect(u) => {
                 self.service.disconnect(u);
             }
-            MessageFromClient::Message { data, from_user } => match data {
-                MessageData::Binary(bin) => self.service.binary(from_user, &bin),
-                MessageData::String(st) => self.service.message(from_user, &st),
+            MessageFromClient::Message { data, from_client } => match data {
+                MessageData::Binary(bin) => self.service.binary(from_client, &bin),
+                MessageData::String(st) => self.service.message(from_client, &st),
             },
         }
     }
@@ -114,7 +114,7 @@ impl<T: JamsocketService> Handler<SetTimer> for ServiceActor<T> {
 
     fn handle(&mut self, SetTimer(duration_ms): SetTimer, ctx: &mut Self::Context) -> Self::Result {
         log::info!("Timer set for {} ms.", duration_ms);
-        
+
         if let Some(timer_handle) = self.timer_handle {
             ctx.cancel_future(timer_handle);
         }

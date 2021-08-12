@@ -1,6 +1,6 @@
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt};
-use jamsocket::{JamsocketContext, JamsocketService, MessageRecipient};
+use jamsocket::{ClientId, JamsocketContext, JamsocketService, MessageRecipient};
 use std::{borrow::BorrowMut, sync::Arc};
 use wasmtime::{Caller, Engine, Extern, Instance, Linker, Memory, Module, Store, TypedFunc, Val};
 use wasmtime_wasi::sync::WasiCtxBuilder;
@@ -51,21 +51,22 @@ impl WasmHost {
         Ok((pt, len))
     }
 
-    fn try_message(&mut self, user: u32, message: &str) -> Result<()> {
+    fn try_message(&mut self, client: ClientId, message: &str) -> Result<()> {
         let (pt, len) = self.put_data(message.as_bytes())?;
 
-        self.fn_message.call(&mut self.store, (user, pt, len))?;
+        self.fn_message
+            .call(&mut self.store, (client.into(), pt, len))?;
 
         self.fn_free.call(&mut self.store, (pt, len))?;
 
         Ok(())
     }
 
-    fn try_binary(&mut self, user: u32, message: &[u8]) -> Result<()> {
+    fn try_binary(&mut self, client: ClientId, message: &[u8]) -> Result<()> {
         let (pt, len) = self.put_data(message)?;
 
         self.fn_binary
-            .call(&mut self.store, (user, pt as u32, len))?;
+            .call(&mut self.store, (client.into(), pt as u32, len))?;
 
         self.fn_free.call(&mut self.store, (pt, len))?;
 
@@ -74,20 +75,20 @@ impl WasmHost {
 }
 
 impl JamsocketService for WasmHost {
-    fn message(&mut self, user: u32, message: &str) {
-        if let Err(e) = self.try_message(user, message) {
+    fn message(&mut self, client: ClientId, message: &str) {
+        if let Err(e) = self.try_message(client, message) {
             log::error!("Error calling `message` on wasm host. {:?}", &e);
         }
     }
 
-    fn connect(&mut self, user: u32) {
-        if let Err(e) = self.fn_connect.call(&mut self.store, user) {
+    fn connect(&mut self, client: ClientId) {
+        if let Err(e) = self.fn_connect.call(&mut self.store, client.into()) {
             log::error!("Error calling `connect` on wasm host. {:?}", &e);
         }
     }
 
-    fn disconnect(&mut self, user: u32) {
-        if let Err(e) = self.fn_disconnect.call(&mut self.store, user) {
+    fn disconnect(&mut self, client: ClientId) {
+        if let Err(e) = self.fn_disconnect.call(&mut self.store, client.into()) {
             log::error!("Error calling `disconnect` on wasm host. {:?}", &e);
         };
     }
@@ -98,8 +99,8 @@ impl JamsocketService for WasmHost {
         };
     }
 
-    fn binary(&mut self, user: u32, message: &[u8]) {
-        if let Err(e) = self.try_binary(user, message) {
+    fn binary(&mut self, client: ClientId, message: &[u8]) {
+        if let Err(e) = self.try_binary(client, message) {
             log::error!("Error calling `binary` on wasm host. {:?}", &e);
         };
     }
@@ -187,11 +188,11 @@ impl WasmHost {
             linker.func_wrap(
                 ENV,
                 EXT_FN_SEND_MESSAGE,
-                move |mut caller: Caller<'_, WasiCtx>, user: u32, start: u32, len: u32| {
+                move |mut caller: Caller<'_, WasiCtx>, client: u32, start: u32, len: u32| {
                     let memory = get_memory(&mut caller);
                     let message = get_string(&caller, &memory, start, len);
 
-                    context.send_message(MessageRecipient::decode_u32(user), message);
+                    context.send_message(MessageRecipient::decode_u32(client), message);
 
                     Ok(())
                 },
@@ -204,11 +205,11 @@ impl WasmHost {
             linker.func_wrap(
                 ENV,
                 EXT_FN_SEND_BINARY,
-                move |mut caller: Caller<'_, WasiCtx>, user: u32, start: u32, len: u32| {
+                move |mut caller: Caller<'_, WasiCtx>, client: u32, start: u32, len: u32| {
                     let memory = get_memory(&mut caller);
                     let message = get_u8_vec(&caller, &memory, start, len);
 
-                    context.send_binary(MessageRecipient::decode_u32(user), message);
+                    context.send_binary(MessageRecipient::decode_u32(client), message);
 
                     Ok(())
                 },

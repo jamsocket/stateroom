@@ -9,7 +9,7 @@ impl SimpleJamsocketService for RandomServer {
         RandomServer
     }
 
-    fn connect(&mut self, user: u32, ctx: &impl JamsocketContext) {
+    fn connect(&mut self, client_id: ClientId, ctx: &impl JamsocketContext) {
         let mut buf: [u8; 4] = [0, 0, 0, 0];
         unsafe {
             wasi::random_get(&mut buf[0] as *mut u8, 4).unwrap();
@@ -18,19 +18,19 @@ impl SimpleJamsocketService for RandomServer {
         let num: [u32; 1] = cast(buf);
 
         ctx.send_message(
-            user,
-            &format!("User {} connected. Random number: {}", user, num[0]),
+            client_id,
+            &format!("User {:?} connected. Random number: {}", client_id, num[0]),
         );
     }
 
-    fn message(&mut self, user: u32, message: &str, ctx: &impl JamsocketContext) {
+    fn message(&mut self, client_id: ClientId, message: &str, ctx: &impl JamsocketContext) {
         ctx.send_message(
             MessageRecipient::Broadcast,
-            &format!("User {} sent '{}'", user, message),
+            &format!("User {:?} sent '{}'", client_id, message),
         );
     }
 
-    fn disconnect(&mut self, user: u32, ctx: &impl JamsocketContext) {
-        ctx.send_message(MessageRecipient::Broadcast, &format!("User {} left.", user));
+    fn disconnect(&mut self, client_id: ClientId, ctx: &impl JamsocketContext) {
+        ctx.send_message(MessageRecipient::Broadcast, &format!("User {:?} left.", client_id));
     }
 }

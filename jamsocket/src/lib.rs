@@ -12,8 +12,8 @@
 //!
 //! #[derive(Default)]
 //! struct ChatServer {
-//!     /// The server's only state is a mapping of user ID to username.
-//!     user_to_nickname: HashMap<u32, String>,
+//!     /// The server's only state is a mapping of client ID to username.
+//!     client_to_nickname: HashMap<ClientId, String>,
 //! }
 //!
 //! impl SimpleJamsocketService for ChatServer {
@@ -22,11 +22,11 @@
 //!     }
 //!
 //!     /// This is called when a user connects.
-//!     fn connect(&mut self, user: u32, ctx: &impl JamsocketContext) {
-//!         let username = format!("user{}", user);
+//!     fn connect(&mut self, client: ClientId, ctx: &impl JamsocketContext) {
+//!         let username = format!("client{}", u32::from(client));
 //!
 //!         // Send a welcome message.
-//!         ctx.send_message(user,
+//!         ctx.send_message(client,
 //!             &format!("Welcome to the chat! Your name is {}. \
 //!                      Send /nick <username> to change it.",
 //!                      &username));
@@ -37,8 +37,8 @@
 //!     }
 //!
 //!     /// This is called when a user disconnects.
-//!     fn disconnect(&mut self, user: u32, ctx: &impl JamsocketContext) {
-//!         let username = self.user_to_nickname.remove(&user).unwrap();
+//!     fn disconnect(&mut self, client: ClientId, ctx: &impl JamsocketContext) {
+//!         let username = self.client_to_nickname.remove(&client).unwrap();
 //!
 //!         // Alert all remaining users that a user has left.
 //!         ctx.send_message(MessageRecipient::Broadcast,
@@ -46,24 +46,26 @@
 //!     }
 //!
 //!     /// This is called when a user sends a message.
-//!     fn message(&mut self, user: u32, message: &str, ctx: &impl JamsocketContext) {
+//!     fn message(&mut self, client: ClientId, message: &str, ctx: &impl JamsocketContext) {
 //!         if let Some(new_nick) = message.strip_prefix("/nick ") {
 //!             // This message is a /nick command, so process accordingly.
-//!             let old_nick = self.user_to_nickname.insert(user, new_nick.to_string()).unwrap();
+//!             let old_nick = self.client_to_nickname.insert(client, new_nick.to_string()).unwrap();
 //!             ctx.send_message(MessageRecipient::Broadcast,
 //!                &format!("{} is now known as {}", old_nick, new_nick));
 //!         } else {
 //!             // Broadcast the message to all connected users, prefixed by the username.
-//!             let username = self.user_to_nickname.get(&user).unwrap();
+//!             let username = self.client_to_nickname.get(&client).unwrap();
 //!             ctx.send_message(MessageRecipient::Broadcast,
 //!                &format!("{}: {}", username, message));
 //!         }
 //!     }
 //! }
 
+pub use client_id::ClientId;
 pub use message_recipient::MessageRecipient;
 use std::marker::PhantomData;
 
+mod client_id;
 mod message_recipient;
 
 /// Provides an interface for a [JamsocketService] instance to send messages back to its host environment.
@@ -99,17 +101,17 @@ pub trait SimpleJamsocketService: Unpin + Send + Sync + 'static {
     fn new(room_id: &str, context: &impl JamsocketContext) -> Self;
 
     /// Called each time a client connects to the service.
-    fn connect(&mut self, user: u32, context: &impl JamsocketContext) {}
+    fn connect(&mut self, client: ClientId, context: &impl JamsocketContext) {}
 
     /// Called each time a client disconnects from the service, unless that disconnection
     /// will cause the service to be destroyed.
-    fn disconnect(&mut self, user: u32, context: &impl JamsocketContext) {}
+    fn disconnect(&mut self, client: ClientId, context: &impl JamsocketContext) {}
 
     /// Called each time a client sends a text message to the service.
-    fn message(&mut self, user: u32, message: &str, context: &impl JamsocketContext) {}
+    fn message(&mut self, client: ClientId, message: &str, context: &impl JamsocketContext) {}
 
     /// Called each time a client sends a binary message to the service.
-    fn binary(&mut self, user: u32, message: &[u8], context: &impl JamsocketContext) {}
+    fn binary(&mut self, client: ClientId, message: &[u8], context: &impl JamsocketContext) {}
 
     /// Called when [JamsocketContext::set_timer] has been called on this service's context,
     /// after the provided duration.
@@ -121,17 +123,17 @@ pub trait SimpleJamsocketService: Unpin + Send + Sync + 'static {
 #[allow(unused_variables)]
 pub trait JamsocketService: Send + Sync + Unpin + 'static {
     /// Called each time a client connects to the service.
-    fn connect(&mut self, user: u32);
+    fn connect(&mut self, client: ClientId);
 
     /// Called each time a client disconnects from the service, unless that disconnection
     /// will cause the service to be destroyed.
-    fn disconnect(&mut self, user: u32);
+    fn disconnect(&mut self, client: ClientId);
 
     /// Called each time a client sends a text message to the service.
-    fn message(&mut self, user: u32, message: &str);
+    fn message(&mut self, client: ClientId, message: &str);
 
     /// Called each time a client sends a binary message to the service.
-    fn binary(&mut self, user: u32, message: &[u8]);
+    fn binary(&mut self, client: ClientId, message: &[u8]);
 
     /// Called when [JamsocketContext::set_timer] has been called on this service's context,
     /// after the provided duration.
@@ -192,23 +194,23 @@ impl<S: SimpleJamsocketService, C: JamsocketContext> WrappedJamsocketService<S, 
 impl<T: SimpleJamsocketService, C: JamsocketContext> JamsocketService
     for WrappedJamsocketService<T, C>
 {
-    fn connect(&mut self, user: u32) {
-        self.service.connect(user, &self.context);
+    fn connect(&mut self, client: ClientId) {
+        self.service.connect(client, &self.context);
     }
 
-    fn disconnect(&mut self, user: u32) {
-        self.service.disconnect(user, &self.context);
+    fn disconnect(&mut self, client: ClientId) {
+        self.service.disconnect(client, &self.context);
     }
 
-    fn message(&mut self, user: u32, message: &str) {
-        self.service.message(user, message, &self.context);
+    fn message(&mut self, client: ClientId, message: &str) {
+        self.service.message(client, message, &self.context);
     }
 
     fn timer(&mut self) {
         self.service.timer(&self.context);
     }
 
-    fn binary(&mut self, user: u32, message: &[u8]) {
-        self.service.binary(user, message, &self.context)
+    fn binary(&mut self, client: ClientId, message: &[u8]) {
+        self.service.binary(client, message, &self.context)
     }
 }
