@@ -149,6 +149,9 @@ pub trait JamsocketServiceFactory<C: JamsocketContext>: Send + Sync + 'static {
     fn build(&self, room_id: &str, context: C) -> Self::Service;
 }
 
+/// A [JamsocketServiceFactory] that passes through `build()` arguments directly to
+/// the associated [SimpleJamsocketService]'s `new()` constructor, and wraps the
+/// result in a [WrappedJamsocketService].
 pub struct SimpleJamsocketServiceFactory<S: SimpleJamsocketService, C: JamsocketContext> {
     _c: PhantomData<C>,
     _s: PhantomData<S>,
