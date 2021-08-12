@@ -6,7 +6,7 @@ edition = "2018"
 readme = "README.md"
 repository = "https://github.com/jamsocket/jamsocket"
 license = "MIT OR Apache-2.0"
-keywords = ["websocket", "webassembly"]
+keywords = ["websocket", "webassembly", "jamsocket"]
 description = "A macro for building a Jamsocket service as a WebAssembly module."
 
 [lib]

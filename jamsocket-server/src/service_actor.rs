@@ -115,13 +115,14 @@ impl<J: JamsocketService> Handler<SetTimer> for ServiceActor<J> {
     fn handle(&mut self, SetTimer(duration_ms): SetTimer, ctx: &mut Self::Context) -> Self::Result {
         log::info!("Timer set for {} ms.", duration_ms);
 
-        if let Some(timer_handle) = self.timer_handle {
+        if let Some(timer_handle) = self.timer_handle.take() {
             ctx.cancel_future(timer_handle);
         }
 
-        let handle = ctx.notify_later(TimerFinished, Duration::from_millis(duration_ms as u64));
-
-        self.timer_handle = Some(handle);
+        if duration_ms > 0 {
+            let handle = ctx.notify_later(TimerFinished, Duration::from_millis(duration_ms as u64));
+            self.timer_handle = Some(handle);
+        }
     }
 }
 
