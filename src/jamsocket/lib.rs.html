@@ -212,14 +212,10 @@
 <span id="212">212</span>
 <span id="213">213</span>
 <span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
 </pre><pre class="rust">
 <span class="doccomment">//! Jamsocket is a minimalist framework for developing stateful [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) applications.</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! Jamsocket apps implement the `JamsocketService` trait, which provides a way for the</span>
+<span class="doccomment">//! Jamsocket apps implement the [SimpleJamsocketService] trait, which provides a way for the</span>
 <span class="doccomment">//! app to hook into events when clients connect, disconnect, and send messages. Additionally,</span>
 <span class="doccomment">//! Jamsocket provides a simple mechanism for invoking events in the future with a timer.</span>
 <span class="doccomment">//!</span>
@@ -280,9 +276,8 @@
 <span class="doccomment">//!     }</span>
 <span class="doccomment">//! }</span>
 
-<span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
-
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">message_recipient::MessageRecipient</span>;
+<span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
 
 <span class="kw">mod</span> <span class="ident">message_recipient</span>;
 
@@ -336,11 +331,8 @@
     <span class="kw">fn</span> <span class="ident">timer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">context</span>: <span class="kw-2">&amp;</span><span class="kw">impl</span> <span class="ident">JamsocketContext</span>) {}
 }
 
-<span class="doccomment">/// The main interface to a Jamsocket service.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If the service wishes to send messages *back* to the calling environment, it is expected to own</span>
-<span class="doccomment">/// or borrow a [JamsocketContext] object, but the details are left up to the implementer. See</span>
-<span class="doccomment">/// [WrappedJamsocketService] for an example.</span>
+<span class="doccomment">/// The host interface to a Jamsocket service. Implementations should instead implement the trait</span>
+<span class="doccomment">/// [SimpleJamsocketService].</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_variables</span>)]</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">JamsocketService</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Unpin</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> {
     <span class="doccomment">/// Called each time a client connects to the service.</span>
