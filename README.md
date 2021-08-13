@@ -14,15 +14,23 @@ Jamsocket is a lightweight framework for building services that are accessed thr
 Services can either be native Rust code that runs in the server process, or be compiled into
 [WebAssembly](https://webassembly.org/) modules and loaded dynamically.
 
-## Concepts and Terminology
+## Concepts
+
+### Services
 
 A Jamsocket server hosts one or more **services**. Services determine how the server responds to various types of
 messages.
 
+### Clients
+
 External connections into a Jamsocket server are called **clients**. Usually, clients have a 1:1 correspondence with
 *users*, so the term *user* is (informally) interchangable with *client*.
 
-When clients connect to a Jamsocket server, they connect to a particular **room**. Each room has a 1:1 correspondence with an instance of your service. This means that all service state is scoped to a room. Additionally, client identifiers are scoped to a room, and when a service broadcasts a message it is delivered only to clients in that service instance's room. You can think of rooms as being isolated and independent of each other, analogous to rooms in a chat service.
+### Rooms
+
+When clients connect to a Jamsocket server, they connect to a particular **room**. Each room has a 1:1 correspondence with an instance of your service. This means that all service state is scoped to a room. Client identifiers are also scoped to a room, and when a service broadcasts a message it is delivered only to clients in that service instance's room.
+
+You can think of rooms as being isolated and independent of each other, analogous to rooms in a chat service.
 
 ## Usage
 
@@ -34,23 +42,28 @@ to every connected client.
 
 ```rust
 impl SimpleJamsocketService for SharedCounterServer {
-    fn new(_: &str, _: &impl JamsocketContext) -> Self {
+    fn new(_: &str,
+           _: &impl JamsocketContext) -> Self {
         SharedCounterServer(0)
     }
 
-    fn message(&mut self, _: ClientId, message: &str, ctx: &impl JamsocketContext) {
+    fn message(&mut self, _: ClientId,
+               message: &str,
+               ctx: &impl JamsocketContext) {
         match message {
             "increment" => self.0 += 1,
             "decrement" => self.0 -= 1,
             _ => (),
         }
 
-        ctx.send_message(MessageRecipient::Broadcast, &format!("new value: {}", self.0));
+        ctx.send_message(
+            MessageRecipient::Broadcast,
+            &format!("new value: {}", self.0));
     }
 }
 ```
 
-To serve this service, we will compile it to a WebAssembly module. We import the `#[jamsocket_wasm]`
+To serve this service, we will compile it into a WebAssembly module. We import the `#[jamsocket_wasm]`
 annotation macro and apply it to the existing `SharedCounterServer` declaration.
 
 ```rust
@@ -79,7 +92,7 @@ ws.onmessage = (c) => console.log(c.data);
 ```
 
 This connects to your service, creating a new room with the id `1` if one doesn't exist
-(with default server settings, any string is a vaild room ID and connecting to a non-existant
+(under default server settings, any string is a vaild room ID and connecting to a non-existant
 room will create it).
 
 Now, you can increment the counter by sending the `increment` message using the `ws` handle:
@@ -93,6 +106,8 @@ If everything is set up correctly, the result will be printed out:
 ```
 new value: 1
 ```
+
+If multiple clients are connected, each one will receive this message. Just like that, we have a mechanism for sharing some (very basic) application state between clients.
 
 ## Using without WebAssembly
 
