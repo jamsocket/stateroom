@@ -26,7 +26,7 @@ When clients connect to a Jamsocket server, they connect to a particular **room*
 
 ## Usage
 
-The simplest way to get started with Jamsocket is to implement the `SimpleJamsocketService` trait. There's only one function that you *must* implement, the constructor `new`. This method is passed in a string representing a unique identifier for the room being constructed (as mentioned above, an instance is constructed for every room). It is also passed a reference to a `JamsocketContext`, which we can ignore for now.
+To create a Jamsocket service, implement the `SimpleJamsocketService` trait. There's only one function that you *must* implement, the constructor `new`. This method is passed in a string representing a unique identifier for the room being constructed (as mentioned above, an instance is constructed for every room). It is also passed a reference to a `JamsocketContext`, which we can ignore for now.
 
 Let's implement a simple shared counter. Any connected client will be able to increment or decrement it by sending 
 `increment` or `decrement` messages (other messages will be ignored). Whenever the value is changed, we'll broadcast it 
