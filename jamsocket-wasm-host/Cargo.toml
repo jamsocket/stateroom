@@ -12,10 +12,10 @@ description = "A Jamsocket service implementation that takes a WebAssembly modul
 anyhow = "1.0.42"
 byteorder = "1.4.3"
 jamsocket = {path="../jamsocket", version="0.1.0"}
-wasmtime-wasi = "0.28.0"
+wasmtime-wasi = "0.29.0"
 log = "0.4.14"
 
 [dependencies.wasmtime]
-version = "0.28.0"
+version = "0.29.0"
 default-features = false
 features = ["async", "wat", "jitdump", "parallel-compilation"]
