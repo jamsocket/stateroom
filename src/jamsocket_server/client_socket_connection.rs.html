@@ -99,6 +99,17 @@
 <span id="99"> 99</span>
 <span id="100">100</span>
 <span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::messages</span>::{<span class="ident">MessageData</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>};
 <span class="kw">use</span> <span class="ident">actix</span>::{<span class="ident">Actor</span>, <span class="ident">ActorContext</span>, <span class="ident">AsyncContext</span>, <span class="ident">Handler</span>, <span class="ident">Recipient</span>, <span class="ident">SpawnHandle</span>, <span class="ident">StreamHandler</span>};
@@ -140,9 +151,16 @@
     <span class="kw">fn</span> <span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ctx</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ws::WebsocketContext</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>) {
         <span class="self">self</span>.<span class="ident">interval_handle</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">ctx</span>.<span class="ident">cancel_future</span>(<span class="ident">d</span>));
 
-        <span class="self">self</span>.<span class="ident">room</span>
+        <span class="kw">if</span> <span class="self">self</span>
+            .<span class="ident">room</span>
             .<span class="ident">do_send</span>(<span class="ident">MessageFromClient::Disconnect</span>(<span class="self">self</span>.<span class="ident">client_id</span>))
-            .<span class="ident">unwrap</span>();
+            .<span class="ident">is_err</span>()
+        {
+            <span class="macro">log::warn!</span>(
+                <span class="string">&quot;Could not send Disconnect message before closing room {}&quot;</span>,
+                <span class="self">self</span>.<span class="ident">room_id</span>
+            );
+        }
 
         <span class="ident">ctx</span>.<span class="ident">stop</span>();
     }
@@ -177,14 +195,18 @@
                     <span class="ident">from_client</span>: <span class="self">self</span>.<span class="ident">client_id</span>,
                     <span class="ident">data</span>: <span class="ident">MessageData::String</span>(<span class="ident">text</span>.<span class="ident">to_string</span>()),
                 };
-                <span class="self">self</span>.<span class="ident">room</span>.<span class="ident">do_send</span>(<span class="ident">message</span>).<span class="ident">unwrap</span>();
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">room</span>.<span class="ident">do_send</span>(<span class="ident">message</span>).<span class="ident">is_err</span>() {
+                    <span class="macro">log::warn!</span>(<span class="string">&quot;Error forwarding message to service in room {}&quot;</span>, <span class="self">self</span>.<span class="ident">room_id</span>);
+                }
             }
             <span class="prelude-val">Ok</span>(<span class="ident">ws::Message::Binary</span>(<span class="ident">data</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="ident">MessageFromClient::Message</span> {
                     <span class="ident">from_client</span>: <span class="self">self</span>.<span class="ident">client_id</span>,
                     <span class="ident">data</span>: <span class="ident">MessageData::Binary</span>(<span class="ident">data</span>.<span class="ident">to_vec</span>()),
                 };
-                <span class="self">self</span>.<span class="ident">room</span>.<span class="ident">do_send</span>(<span class="ident">message</span>).<span class="ident">unwrap</span>();
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">room</span>.<span class="ident">do_send</span>(<span class="ident">message</span>).<span class="ident">is_err</span>() {
+                    <span class="macro">log::warn!</span>(<span class="string">&quot;Error forwarding binary message to service in room {}&quot;</span>, <span class="self">self</span>.<span class="ident">room_id</span>);
+                }
             }
             <span class="prelude-val">Ok</span>(<span class="ident">ws::Message::Close</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="macro">log::info!</span>(

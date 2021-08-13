@@ -289,6 +289,10 @@
 <span id="289">289</span>
 <span id="290">290</span>
 <span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">rand</span>::{<span class="ident">thread_rng</span>, <span class="ident">Rng</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">de::Visitor</span>, <span class="ident">Deserialize</span>};
@@ -311,8 +315,8 @@
 
 <span class="kw">const</span> <span class="ident">ASCII_A</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x41</span>;
 
-<span class="kw">const</span> <span class="ident">SHORTEST_SHORT_NAME</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">3</span>;
-<span class="kw">const</span> <span class="ident">LONGEST_SHORT_NAME</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">13</span>;
+<span class="kw">const</span> <span class="ident">SHORTEST_SHORT_NAME</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">3</span>;
+<span class="kw">const</span> <span class="ident">LONGEST_SHORT_NAME</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">13</span>;
 
 <span class="doccomment">/// Trait for objects capable of generating a user ID.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">RoomIdGenerator</span>: <span class="ident">Debug</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> {
@@ -328,7 +332,7 @@
     <span class="ident">state</span>: <span class="ident">u64</span>,
     <span class="ident">offset</span>: <span class="ident">u64</span>,
     <span class="ident">m</span>: <span class="ident">u64</span>,
-    <span class="ident">length</span>: <span class="ident">usize</span>,
+    <span class="ident">length</span>: <span class="ident">u32</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">RoomIdGenerator</span> <span class="kw">for</span> <span class="ident">ShortRoomIdGenerator</span> {
@@ -336,11 +340,12 @@
         <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> (<span class="ident">LCG_MULTIPLIER</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">%</span> <span class="self">self</span>.<span class="ident">m</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">val</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">state</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">offset</span>) <span class="op">%</span> <span class="self">self</span>.<span class="ident">m</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chars</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="self">self</span>.<span class="ident">length</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chars</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">char</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="self">self</span>.<span class="ident">length</span> <span class="kw">as</span> <span class="ident">usize</span>);
 
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">length</span> {
+            <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cast_possible_truncation</span>)]</span>
             <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> (<span class="ident">val</span> <span class="op">%</span> <span class="number">26</span>) <span class="kw">as</span> <span class="ident">u32</span>;
-            <span class="ident">chars</span>.<span class="ident">push</span>(<span class="ident">char::from_u32</span>(<span class="ident">c</span> <span class="op">+</span> <span class="ident">ASCII_A</span>).<span class="ident">unwrap</span>());
+            <span class="ident">chars</span>.<span class="ident">push</span>(<span class="ident">char::from_u32</span>(<span class="ident">c</span> <span class="op">+</span> <span class="ident">ASCII_A</span>).<span class="ident">expect</span>(<span class="string">&quot;Should always be a valid ASCII character.&quot;</span>));
             <span class="ident">val</span> <span class="op">/</span><span class="op">=</span> <span class="number">26</span>;
         }
 
@@ -353,9 +358,10 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Calls to this constructor are non-deterministic, because</span>
     <span class="doccomment">/// some random entropy is baked into the generator.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">length</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">length</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">thread_rng</span>();
-        <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="number">26u64</span>.<span class="ident">pow</span>(<span class="ident">length</span> <span class="kw">as</span> <span class="ident">u32</span>);
+        <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="number">26_u64</span>.<span class="ident">pow</span>(<span class="ident">length</span> <span class="kw">as</span> <span class="ident">u32</span>);
         <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">0</span>..<span class="ident">m</span>);
         <span class="kw">let</span> <span class="ident">seed_state</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen_range</span>(<span class="number">0</span>..<span class="ident">m</span>);
 
@@ -370,10 +376,11 @@
 
 <span class="doccomment">/// Factory for creating a [[ShortRoomIdGenerator]].</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ShortRoomIdGeneratorFactory</span>(<span class="kw">pub</span> <span class="ident">usize</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ShortRoomIdGeneratorFactory</span>(<span class="kw">pub</span> <span class="ident">u32</span>);
 
 <span class="kw">impl</span> <span class="ident">ShortRoomIdGeneratorFactory</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">length</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">length</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">ShortRoomIdGeneratorFactory</span>(<span class="ident">length</span>)
     }
 }
@@ -449,22 +456,23 @@
 }
 
 <span class="kw">impl</span> <span class="ident">RoomIdStrategy</span> {
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">explicit_room_creation_allowed</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">RoomIdStrategy::Explicit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-            <span class="ident">RoomIdStrategy::Implicit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+            <span class="ident">RoomIdStrategy::Explicit</span> <span class="op">|</span> <span class="ident">RoomIdStrategy::Implicit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
             <span class="ident">RoomIdStrategy::Generator</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         }
     }
 
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">implicit_room_creation_allowed</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">RoomIdStrategy::Explicit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">RoomIdStrategy::Explicit</span> <span class="op">|</span> <span class="ident">RoomIdStrategy::Generator</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
             <span class="ident">RoomIdStrategy::Implicit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-            <span class="ident">RoomIdStrategy::Generator</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         }
     }
 
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_generator</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RoomIdGenerator</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">RoomIdStrategy::Explicit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
@@ -510,7 +518,7 @@
             ))),
             <span class="kw">_</span> <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&quot;short&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">num</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">strip_prefix</span>(<span class="string">&quot;short&quot;</span>) {
-                    <span class="kw">let</span> <span class="ident">n</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">num</span>.<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">BadGeneratorName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
+                    <span class="kw">let</span> <span class="ident">n</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">num</span>.<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">BadGeneratorName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
 
                     <span class="kw">if</span> <span class="op">!</span>(<span class="ident">SHORTEST_SHORT_NAME</span>..<span class="ident">LONGEST_SHORT_NAME</span>).<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">n</span>) {
                         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">BadGeneratorName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()));

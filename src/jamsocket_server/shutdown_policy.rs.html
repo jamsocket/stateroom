@@ -145,15 +145,15 @@
         <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">s</span> {
             <span class="string">&quot;never&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ServiceShutdownPolicy::Never</span>,
             <span class="string">&quot;immediate&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ServiceShutdownPolicy::Immediate</span>,
-            <span class="kw">_</span> <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">ends_with</span>(<span class="string">&quot;sec&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">v</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">s</span>
-                    .<span class="ident">strip_suffix</span>(<span class="string">&quot;sec&quot;</span>)
-                    .<span class="ident">unwrap</span>()
-                    .<span class="ident">parse</span>()
-                    .<span class="ident">map_err</span>(<span class="kw">move</span> <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">BadShutdownPolicyName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
-                <span class="ident">ServiceShutdownPolicy::AfterSeconds</span>(<span class="ident">v</span>)
+            <span class="ident">s</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">strip_suffix</span>(<span class="string">&quot;sec&quot;</span>) {
+                    <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">parse</span>()
+                        .<span class="ident">map_err</span>(<span class="kw">move</span> <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">BadShutdownPolicyName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
+                    <span class="ident">ServiceShutdownPolicy::AfterSeconds</span>(<span class="ident">v</span>)
+                } <span class="kw">else</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">BadShutdownPolicyName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>()))
+                }
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">BadShutdownPolicyName</span>(<span class="ident">s</span>.<span class="ident">to_string</span>())),
         })
     }
 }

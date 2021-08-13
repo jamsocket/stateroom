@@ -66,6 +66,8 @@
 <span id="66">66</span>
 <span id="67">67</span>
 <span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">actix</span>::{<span class="ident">Message</span>, <span class="ident">Recipient</span>};
 <span class="kw">use</span> <span class="ident">jamsocket</span>::{<span class="ident">ClientId</span>, <span class="ident">MessageRecipient</span>};
@@ -110,6 +112,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">MessageFromServer</span> {
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">to_client</span>: <span class="ident">MessageRecipient</span>, <span class="ident">data</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">MessageFromServer</span> {
             <span class="ident">to_client</span>,
@@ -117,6 +120,7 @@
         }
     }
 
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_binary</span>(<span class="ident">to_client</span>: <span class="ident">MessageRecipient</span>, <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">MessageFromServer</span> {
             <span class="ident">to_client</span>,
