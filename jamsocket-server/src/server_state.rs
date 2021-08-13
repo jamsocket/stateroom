@@ -22,7 +22,7 @@ pub struct ServerState<T: JamsocketServiceFactory<ServiceActorContext>> {
 impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
     pub fn new(host_factory: T, settings: Server) -> Self {
         ServerState {
-            mapping: Default::default(),
+            mapping: RwLock::default(),
             generator: settings.room_id_strategy.try_generator().map(Mutex::new),
             settings,
             host_factory: Arc::new(host_factory),
@@ -73,8 +73,8 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
 
                         let service_actor = ServiceActor::new(
                             &service_ctx,
-                            room_id.clone(),
-                            host_factory,
+                            &room_id,
+                            &host_factory,
                             room_addr.clone().recipient(),
                         );
 
@@ -85,7 +85,11 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
                         );
 
                         room_ctx.run(room_actor);
-                        service_ctx.run(service_actor);
+                        if let Some(service_actor) = service_actor {
+                            service_ctx.run(service_actor);
+                        } else {
+                            log::error!("Could not create service actor for room {}.", &room_id);
+                        }
                     });
                 }
 

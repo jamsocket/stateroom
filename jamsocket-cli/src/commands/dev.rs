@@ -1,9 +1,13 @@
 use crate::config::JamsocketConfig;
+use anyhow::{anyhow, Result};
 use cargo_metadata::Message;
-use core::panic;
 use jamsocket_server::Server;
 use jamsocket_wasm_host::WasmHostFactory;
-use std::{fs::read_to_string, path::PathBuf, process::{Command, Stdio}};
+use std::{
+    fs::read_to_string,
+    path::PathBuf,
+    process::{Command, Stdio},
+};
 use wasm_bindgen_cli_support::Bindgen;
 
 fn locate_config() -> anyhow::Result<JamsocketConfig> {
@@ -20,12 +24,12 @@ fn run_cargo_build_command(
     package: &Option<String>,
     target: &str,
     release: bool,
-) -> std::io::Result<PathBuf> {
+) -> Result<PathBuf> {
     let mut build_command = Command::new("cargo");
     build_command.stdout(Stdio::piped());
     build_command.arg("build");
     build_command.args(["--message-format", "json-render-diagnostics"]);
-    
+
     if let Some(package) = package {
         // If package is None, build the package we are in.
         build_command.args(["--package", package]);
@@ -37,39 +41,47 @@ fn run_cargo_build_command(
     }
 
     let mut build_command = build_command.spawn()?;
-    let reader = std::io::BufReader::new(build_command.stdout.take().unwrap());
+    let reader = std::io::BufReader::new(
+        build_command
+            .stdout
+            .take()
+            .ok_or_else(|| anyhow!("Could not read stdout stream."))?,
+    );
 
     let mut found_wasm_modules = Vec::new();
 
     for message in cargo_metadata::Message::parse_stream(reader) {
-        match message.unwrap() {
+        match message {
             // TODO: handle error when toolchain is not installed, and retry after
             // attempting to install toolchain.
-            Message::CompilerArtifact(artifact) => {
+            Ok(Message::CompilerArtifact(artifact)) => {
                 for filename in artifact.filenames {
-                    // TODO: investigate why `.as_str()` is required. `Utf8Path` has
-                    // a function called `ends_with()`, but it seems never to return
-                    // `true` here.
-                    if filename.as_str().ends_with(".wasm") {
+                    if filename
+                        .extension()
+                        .map_or(false, |ext| ext.to_ascii_lowercase() == "wasm")
+                    {
                         found_wasm_modules.push(filename);
                     }
                 }
             }
-            Message::BuildFinished(finished) => {
+            Ok(Message::BuildFinished(finished)) => {
                 if !finished.success {
-                    panic!("Build error.")
+                    return Err(anyhow!("Build error."));
                 }
             }
+            Err(e) => return Err(anyhow!("Unknown error during build: {:?}.", e)),
             _ => (),
         }
     }
 
-    build_command.wait().expect("Build command encountered unknown error.");
+    build_command
+        .wait()
+        .map_err(|e| anyhow!("Encountered OS error running build subprocess: {:?}", e))?;
 
-    let result = match &found_wasm_modules.as_slice() {
-        &[] => panic!("No wasm files built."),
-        &[a] => a,
-        _ => panic!("Found more than one wasm file and got confused."),
+    let result = match found_wasm_modules.as_slice() {
+        [] => return Err(anyhow!("No .wasm files emitted by build.")),
+        [a] => a,
+        _ => return Err(anyhow!("Multiple .wasm files emitted by build.")),
     };
 
     Ok(result.into())
@@ -79,10 +91,9 @@ pub fn dev() -> anyhow::Result<()> {
     let config = locate_config()?; // TODO: default to a configuration if file not found.
 
     log::info!("Building service");
-    let service_wasm = run_cargo_build_command(&config.service.package, "wasm32-wasi", true)
-        .expect("Error building service.");
+    let service_wasm = run_cargo_build_command(&config.service.package, "wasm32-wasi", true)?;
 
-    let host_factory = WasmHostFactory::new(service_wasm.to_str().unwrap());
+    let host_factory = WasmHostFactory::new(service_wasm)?;
 
     let client_path = if let Some(client_config) = config.client {
         log::info!("Building client");

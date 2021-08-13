@@ -146,7 +146,7 @@ pub trait JamsocketServiceFactory<C: JamsocketContext>: Send + Sync + 'static {
     type Service: JamsocketService;
 
     /// Non-destructively build a [JamsocketService] from `self`.
-    fn build(&self, room_id: &str, context: C) -> Self::Service;
+    fn build(&self, room_id: &str, context: C) -> Option<Self::Service>;
 }
 
 /// A [JamsocketServiceFactory] that passes through `build()` arguments directly to
@@ -162,8 +162,8 @@ impl<S: SimpleJamsocketService, C: JamsocketContext> Default
 {
     fn default() -> Self {
         SimpleJamsocketServiceFactory {
-            _c: Default::default(),
-            _s: Default::default(),
+            _c: PhantomData::default(),
+            _s: PhantomData::default(),
         }
     }
 }
@@ -173,11 +173,11 @@ impl<S: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceFactory<C>
 {
     type Service = WrappedJamsocketService<S, C>;
 
-    fn build(&self, room_id: &str, context: C) -> Self::Service {
-        WrappedJamsocketService {
+    fn build(&self, room_id: &str, context: C) -> Option<Self::Service> {
+        Some(WrappedJamsocketService {
             service: S::new(room_id, &context),
             context,
-        }
+        })
     }
 }
 
@@ -214,6 +214,6 @@ impl<S: SimpleJamsocketService, C: JamsocketContext> JamsocketService
     }
 
     fn binary(&mut self, client: ClientId, message: &[u8]) {
-        self.service.binary(client, message, &self.context)
+        self.service.binary(client, message, &self.context);
     }
 }

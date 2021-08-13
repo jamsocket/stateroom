@@ -34,9 +34,11 @@ impl ServiceActorContext {
         match self.send_message_recipient.do_send(message) {
             Ok(_) => (),
             Err(SendError::Closed(_)) => {
-                log::warn!("Attempted to send a message to a closed service.")
+                log::warn!("Attempted to send a message to a closed service.");
             }
-            e => e.unwrap(),
+            Err(e) => {
+                log::warn!("Encountered an error sending message to a service: {:?}", e);
+            }
         }
     }
 }
@@ -57,29 +59,33 @@ impl JamsocketContext for ServiceActorContext {
     }
 
     fn set_timer(&self, ms_delay: u32) {
-        self.set_timer_recipient
+        if self
+            .set_timer_recipient
             .do_send(SetTimer(ms_delay))
-            .unwrap();
+            .is_err()
+        {
+            log::warn!("Encountered an error sending SetTimer message.");
+        }
     }
 }
 
 impl<J: JamsocketService> ServiceActor<J> {
     pub fn new(
         ctx: &Context<Self>,
-        room_id: String,
-        service_constructor: Arc<impl JamsocketServiceFactory<ServiceActorContext, Service = J>>,
+        room_id: &str,
+        service_constructor: &Arc<impl JamsocketServiceFactory<ServiceActorContext, Service = J>>,
         recipient: Recipient<MessageFromServer>,
-    ) -> Self {
+    ) -> Option<Self> {
         let host_context = ServiceActorContext {
             set_timer_recipient: ctx.address().recipient(),
             send_message_recipient: recipient,
         };
-        let service = service_constructor.build(&room_id, host_context);
+        let service = service_constructor.build(room_id, host_context)?;
 
-        ServiceActor {
+        Some(ServiceActor {
             service,
             timer_handle: None,
-        }
+        })
     }
 }
 
@@ -122,7 +128,7 @@ impl<J: JamsocketService> Handler<SetTimer> for ServiceActor<J> {
         }
 
         if duration_ms > 0 {
-            let handle = ctx.notify_later(TimerFinished, Duration::from_millis(duration_ms as u64));
+            let handle = ctx.notify_later(TimerFinished, Duration::from_millis(u64::from(duration_ms)));
             self.timer_handle = Some(handle);
         }
     }

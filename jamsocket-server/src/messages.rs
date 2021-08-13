@@ -41,6 +41,7 @@ impl Message for MessageFromServer {
 }
 
 impl MessageFromServer {
+    #[must_use]
     pub fn new(to_client: MessageRecipient, data: String) -> Self {
         MessageFromServer {
             to_client,
@@ -48,6 +49,7 @@ impl MessageFromServer {
         }
     }
 
+    #[must_use]
     pub fn new_binary(to_client: MessageRecipient, data: Vec<u8>) -> Self {
         MessageFromServer {
             to_client,

@@ -12,6 +12,7 @@ pub enum MessageRecipient {
 }
 
 impl MessageRecipient {
+    #[must_use]
     pub fn encode_u32(&self) -> u32 {
         match self {
             Self::Broadcast => 0,
@@ -19,6 +20,7 @@ impl MessageRecipient {
         }
     }
 
+    #[must_use]
     pub fn decode_u32(enc_client_id: u32) -> Self {
         match enc_client_id {
             0 => Self::Broadcast,

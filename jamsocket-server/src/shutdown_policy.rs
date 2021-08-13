@@ -47,15 +47,15 @@ impl FromStr for ServiceShutdownPolicy {
         Ok(match s {
             "never" => ServiceShutdownPolicy::Never,
             "immediate" => ServiceShutdownPolicy::Immediate,
-            _ if s.ends_with("sec") => {
-                let v: u32 = s
-                    .strip_suffix("sec")
-                    .unwrap()
-                    .parse()
-                    .map_err(move |_| BadShutdownPolicyName(s.to_string()))?;
-                ServiceShutdownPolicy::AfterSeconds(v)
+            s => {
+                if let Some(v) = s.strip_suffix("sec") {
+                    let v = v.parse()
+                        .map_err(move |_| BadShutdownPolicyName(s.to_string()))?;
+                    ServiceShutdownPolicy::AfterSeconds(v)
+                } else {
+                    return Err(BadShutdownPolicyName(s.to_string()))
+                }
             }
-            _ => return Err(BadShutdownPolicyName(s.to_string())),
         })
     }
 }

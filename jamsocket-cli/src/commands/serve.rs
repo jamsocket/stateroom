@@ -14,7 +14,7 @@ pub fn serve(serve_opts: ServeCommand) -> anyhow::Result<()> {
         shutdown_policy,
     } = serve_opts;
 
-    let host_factory = WasmHostFactory::new(&module);
+    let host_factory = WasmHostFactory::new(&module)?;
     let server_settings = Server {
         heartbeat_interval: Duration::from_secs(heartbeat_interval),
         heartbeat_timeout: Duration::from_secs(heartbeat_timeout),

@@ -38,9 +38,16 @@ impl ClientSocketConnection {
     fn close(&self, ctx: &mut ws::WebsocketContext<Self>) {
         self.interval_handle.map(|d| ctx.cancel_future(d));
 
-        self.room
+        if self
+            .room
             .do_send(MessageFromClient::Disconnect(self.client_id))
-            .unwrap();
+            .is_err()
+        {
+            log::warn!(
+                "Could not send Disconnect message before closing room {}",
+                self.room_id
+            );
+        }
 
         ctx.stop();
     }
@@ -75,14 +82,18 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                     from_client: self.client_id,
                     data: MessageData::String(text.to_string()),
                 };
-                self.room.do_send(message).unwrap();
+                if self.room.do_send(message).is_err() {
+                    log::warn!("Error forwarding message to service in room {}", self.room_id);
+                }
             }
             Ok(ws::Message::Binary(data)) => {
                 let message = MessageFromClient::Message {
                     from_client: self.client_id,
                     data: MessageData::Binary(data.to_vec()),
                 };
-                self.room.do_send(message).unwrap();
+                if self.room.do_send(message).is_err() {
+                    log::warn!("Error forwarding binary message to service in room {}", self.room_id);
+                }
             }
             Ok(ws::Message::Close(_)) => {
                 log::info!(

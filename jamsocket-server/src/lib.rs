@@ -23,6 +23,7 @@ pub use service_actor::ServiceActorContext;
 pub use shutdown_policy::ServiceShutdownPolicy;
 use std::time::{Duration, Instant};
 
+#[allow(clippy::unused_async)]
 async fn status() -> Result<HttpResponse, Error> {
     Ok(HttpResponse::Ok().body("ok"))
 }
@@ -61,7 +62,7 @@ impl Default for Server {
             heartbeat_interval: Duration::from_secs(30),
             heartbeat_timeout: Duration::from_secs(300),
             port: 8080,
-            room_id_strategy: Default::default(),
+            room_id_strategy: RoomIdStrategy::default(),
             shutdown_policy: ServiceShutdownPolicy::Never,
             static_path: None,
             client_path: None,
@@ -70,40 +71,48 @@ impl Default for Server {
 }
 
 impl Server {
+    #[must_use]
     pub fn new() -> Self {
-        Default::default()
+        Server::default()
     }
 
+    #[must_use]
     pub fn with_static_path(mut self, static_path: Option<String>) -> Self {
         self.static_path = static_path;
         self
     }
 
+    #[must_use]
     pub fn with_client_path(mut self, client_path: Option<String>) -> Self {
         self.client_path = client_path;
         self
     }
 
+    #[must_use]
     pub fn with_heartbeat_interval(mut self, duration_seconds: u64) -> Self {
         self.heartbeat_interval = Duration::from_secs(duration_seconds);
         self
     }
 
+    #[must_use]
     pub fn with_heartbeat_timeout(mut self, duration_seconds: u64) -> Self {
         self.heartbeat_timeout = Duration::from_secs(duration_seconds);
         self
     }
 
+    #[must_use]
     pub fn with_port(mut self, port: u32) -> Self {
         self.port = port;
         self
     }
 
+    #[must_use]
     pub fn with_room_id_strategy(mut self, room_id_strategy: RoomIdStrategy) -> Self {
         self.room_id_strategy = room_id_strategy;
         self
     }
 
+    #[must_use]
     pub fn with_shutdown_policy(mut self, shutdown_policy: ServiceShutdownPolicy) -> Self {
         self.shutdown_policy = shutdown_policy;
         self
@@ -111,7 +120,7 @@ impl Server {
 
     pub fn serve_default<F: SimpleJamsocketService>(self) -> std::io::Result<()> {
         let host_factory: SimpleJamsocketServiceFactory<F, ServiceActorContext> =
-            Default::default();
+            SimpleJamsocketServiceFactory::default();
 
         self.serve(host_factory)
     }
@@ -153,8 +162,7 @@ impl Server {
 
                 app
             })
-            .bind(&host)
-            .unwrap();
+            .bind(&host)?;
 
             log::info!("Listening at {}", &host);
             server.run().await
@@ -165,7 +173,7 @@ impl Server {
 async fn new_room<F: JamsocketServiceFactory<ServiceActorContext>>(
     req: HttpRequest,
 ) -> actix_web::Result<HttpResponse> {
-    let server_state: &Data<ServerState<F>> = req.app_data().unwrap();
+    let server_state: &Data<ServerState<F>> = req.app_data().expect("Could not load ServerState.");
     let room_id = server_state.new_room_generated().await?;
 
     Ok(HttpResponse::Ok().body(room_id))
@@ -175,7 +183,7 @@ async fn new_room_explicit<F: JamsocketServiceFactory<ServiceActorContext>>(
     req: HttpRequest,
     room_id: web::Path<String>,
 ) -> actix_web::Result<HttpResponse> {
-    let server_state: &Data<ServerState<F>> = req.app_data().unwrap();
+    let server_state: &Data<ServerState<F>> = req.app_data().expect("Could not load ServerState.");
     server_state.explicit_new_room(room_id.as_ref()).await?;
 
     Ok(HttpResponse::Ok().body(room_id.to_string()))
@@ -186,13 +194,11 @@ async fn websocket<F: JamsocketServiceFactory<ServiceActorContext>>(
     stream: web::Payload,
     room_id: web::Path<String>,
 ) -> actix_web::Result<HttpResponse> {
-    let ip = if let Some(peer_addr) = req.peer_addr() {
-        peer_addr.ip().to_string()
-    } else {
-        "<unknown>".to_string()
-    };
+    let ip = req
+        .peer_addr()
+        .map_or_else(|| "<unknown>".to_string(), |a| a.ip().to_string());
 
-    let server_state: &Data<ServerState<F>> = req.app_data().unwrap();
+    let server_state: &Data<ServerState<F>> = req.app_data().expect("Could not load ServerState.");
     let room_addr = server_state.connect_room(room_id.as_ref()).await?;
 
     let client_id = room_addr

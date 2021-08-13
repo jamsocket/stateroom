@@ -19,8 +19,8 @@ const LCG_MULTIPLIER: u64 = 53;
 
 const ASCII_A: u32 = 0x41;
 
-const SHORTEST_SHORT_NAME: usize = 3;
-const LONGEST_SHORT_NAME: usize = 13;
+const SHORTEST_SHORT_NAME: u32 = 3;
+const LONGEST_SHORT_NAME: u32 = 13;
 
 /// Trait for objects capable of generating a user ID.
 pub trait RoomIdGenerator: Debug + Send + Sync {
@@ -36,7 +36,7 @@ pub struct ShortRoomIdGenerator {
     state: u64,
     offset: u64,
     m: u64,
-    length: usize,
+    length: u32,
 }
 
 impl RoomIdGenerator for ShortRoomIdGenerator {
@@ -44,11 +44,12 @@ impl RoomIdGenerator for ShortRoomIdGenerator {
         self.state = (LCG_MULTIPLIER * self.state + 1) % self.m;
         let mut val = (self.state + self.offset) % self.m;
 
-        let mut chars: Vec<char> = Vec::with_capacity(self.length);
+        let mut chars: Vec<char> = Vec::with_capacity(self.length as usize);
 
         for _ in 0..self.length {
+            #[allow(clippy::cast_possible_truncation)]
             let c = (val % 26) as u32;
-            chars.push(char::from_u32(c + ASCII_A).unwrap());
+            chars.push(char::from_u32(c + ASCII_A).expect("Should always be a valid ASCII character."));
             val /= 26;
         }
 
@@ -61,9 +62,10 @@ impl ShortRoomIdGenerator {
     ///
     /// Calls to this constructor are non-deterministic, because
     /// some random entropy is baked into the generator.
-    pub fn new(length: usize) -> Self {
+    #[must_use]
+    pub fn new(length: u32) -> Self {
         let mut rng = thread_rng();
-        let m = 26u64.pow(length as u32);
+        let m = 26_u64.pow(length as u32);
         let offset = rng.gen_range(0..m);
         let seed_state = rng.gen_range(0..m);
 
@@ -78,10 +80,11 @@ impl ShortRoomIdGenerator {
 
 /// Factory for creating a [[ShortRoomIdGenerator]].
 #[derive(Debug)]
-pub struct ShortRoomIdGeneratorFactory(pub usize);
+pub struct ShortRoomIdGeneratorFactory(pub u32);
 
 impl ShortRoomIdGeneratorFactory {
-    pub fn new(length: usize) -> Self {
+    #[must_use]
+    pub fn new(length: u32) -> Self {
         ShortRoomIdGeneratorFactory(length)
     }
 }
@@ -157,22 +160,23 @@ impl<'de> Deserialize<'de> for RoomIdStrategy {
 }
 
 impl RoomIdStrategy {
+    #[must_use]
     pub fn explicit_room_creation_allowed(&self) -> bool {
         match self {
-            RoomIdStrategy::Explicit => true,
-            RoomIdStrategy::Implicit => true,
+            RoomIdStrategy::Explicit | RoomIdStrategy::Implicit => true,
             RoomIdStrategy::Generator(_) => false,
         }
     }
 
+    #[must_use]
     pub fn implicit_room_creation_allowed(&self) -> bool {
         match self {
-            RoomIdStrategy::Explicit => false,
+            RoomIdStrategy::Explicit | RoomIdStrategy::Generator(_) => false,
             RoomIdStrategy::Implicit => true,
-            RoomIdStrategy::Generator(_) => false,
         }
     }
 
+    #[must_use]
     pub fn try_generator(&self) -> Option<Box<dyn RoomIdGenerator>> {
         match self {
             RoomIdStrategy::Explicit => None,
@@ -218,7 +222,7 @@ impl FromStr for RoomIdStrategy {
             ))),
             _ if s.starts_with("short") => {
                 if let Some(num) = s.strip_prefix("short") {
-                    let n: usize = num.parse().map_err(|_| BadGeneratorName(s.to_string()))?;
+                    let n: u32 = num.parse().map_err(|_| BadGeneratorName(s.to_string()))?;
 
                     if !(SHORTEST_SHORT_NAME..LONGEST_SHORT_NAME).contains(&n) {
                         return Err(BadGeneratorName(s.to_string()));

@@ -18,9 +18,10 @@ fn get_name(item: &proc_macro2::TokenStream) -> Option<Ident> {
     Some(ident)
 }
 
-fn jamsocket_wasm_impl(item: proc_macro2::TokenStream) -> proc_macro2::TokenStream {
+#[allow(clippy::too_many_lines)]
+fn jamsocket_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStream {
     let name =
-        get_name(&item).expect("Can only use #[jamsocket_wasm] on a struct, enum, or type alias.");
+        get_name(item).expect("Can only use #[jamsocket_wasm] on a struct, enum, or type alias.");
 
     quote! {
         #item
@@ -165,7 +166,8 @@ fn jamsocket_wasm_impl(item: proc_macro2::TokenStream) -> proc_macro2::TokenStre
 /// Exposes a `jamsocket_wasm::SimpleJamsocketService`-implementing trait as a WebAssembly module.
 #[proc_macro_attribute]
 pub fn jamsocket_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    jamsocket_wasm_impl(item.into()).into()
+    #[allow(clippy::needless_borrow)]
+    jamsocket_wasm_impl(&item.into()).into()
 }
 
 #[cfg(test)]

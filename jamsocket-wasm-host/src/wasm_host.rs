@@ -43,6 +43,7 @@ pub struct WasmHost {
 
 impl WasmHost {
     fn put_data(&mut self, data: &[u8]) -> Result<(u32, u32)> {
+        #[allow(clippy::cast_possible_truncation)]
         let len = data.len() as u32;
         let pt = self.fn_malloc.call(&mut self.store, len)?;
 
@@ -120,12 +121,9 @@ fn get_string<'a, T>(
     memory: &'a Memory,
     start: u32,
     len: u32,
-) -> &'a str {
+) -> Result<&'a str> {
     let data = get_u8_vec(caller, memory, start, len);
-    match std::str::from_utf8(data) {
-        Ok(s) => s,
-        Err(_) => panic!(),
-    }
+    std::str::from_utf8(data).map_err(|e| e.into())
 }
 
 #[inline]
@@ -150,7 +148,8 @@ pub fn get_global<T>(
     instance: &Instance,
     name: &str,
 ) -> Result<i32> {
-    let i = {
+    #[allow(clippy::cast_sign_loss)]
+    let i: u32 = {
         let mem_location = instance
             .get_global(store.borrow_mut(), name)
             .ok_or(WasmRuntimeError::CouldNotImportGlobal)?;
@@ -158,9 +157,10 @@ pub fn get_global<T>(
         match mem_location.get(store.borrow_mut()) {
             Val::I32(i) => Ok(i),
             _ => Err(WasmRuntimeError::CouldNotImportGlobal),
-        }?
+        }? as u32
     };
 
+    #[allow(clippy::cast_possible_truncation)]
     let mut value = memory
         .data(store)
         .get(i as usize..(i as usize + std::mem::size_of::<i32>()))
@@ -174,7 +174,7 @@ impl WasmHost {
         room_id: &str,
         module: &Module,
         engine: &Engine,
-        context: Arc<impl JamsocketContext>,
+        context: &Arc<impl JamsocketContext>,
     ) -> Result<Self> {
         let wasi = WasiCtxBuilder::new().build();
 
@@ -190,7 +190,7 @@ impl WasmHost {
                 EXT_FN_SEND_MESSAGE,
                 move |mut caller: Caller<'_, WasiCtx>, client: u32, start: u32, len: u32| {
                     let memory = get_memory(&mut caller);
-                    let message = get_string(&caller, &memory, start, len);
+                    let message = get_string(&caller, &memory, start, len)?;
 
                     context.send_message(MessageRecipient::decode_u32(client), message);
 
@@ -245,6 +245,7 @@ impl WasmHost {
 
         {
             let room_id = room_id.as_bytes();
+            #[allow(clippy::cast_possible_truncation)]
             let len = room_id.len() as u32;
             let pt = fn_malloc.call(&mut store, len)?;
 
