@@ -1,6 +1,6 @@
 [package]
 name = "jamsocket-server"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2018"
 readme = "README.md"
 repository = "https://github.com/jamsocket/jamsocket"
@@ -13,7 +13,7 @@ actix = "0.12.0"
 actix-web = "4.0.0-beta.8"
 actix-web-actors = "4.0.0-beta.6"
 anyhow = "1.0.42"
-jamsocket = {path="../jamsocket", version="0.1.0"}
+jamsocket = {path="../jamsocket", version="0.1.1"}
 uuid = { version = "0.8.2", features = ["v4"] }
 rand = "0.8.4"
 async-std = "1.9.0"
