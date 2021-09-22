@@ -1409,6 +1409,7 @@ dependencies = [
  "env_logger",
  "jamsocket",
  "jamsocket-server",
+ "jamsocket-stdio",
  "jamsocket-wasm-host",
  "log",
  "serde",

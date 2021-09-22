@@ -4,8 +4,16 @@ use interactive_process::InteractiveProcess;
 use jamsocket::{ClientId, JamsocketContext, JamsocketService, JamsocketServiceFactory, MessageRecipient};
 use serde::{Deserialize, Serialize};
 
-struct StdioProcessServiceFactory {
+pub struct StdioProcessServiceFactory {
     command: String,
+}
+
+impl StdioProcessServiceFactory {
+    pub fn new(command: &str) -> Self {
+        StdioProcessServiceFactory {
+            command: command.to_string(),
+        }
+    }
 }
 
 impl<T: JamsocketContext> JamsocketServiceFactory<T> for StdioProcessServiceFactory {
@@ -17,10 +25,10 @@ impl<T: JamsocketContext> JamsocketServiceFactory<T> for StdioProcessServiceFact
             let message: MessageFromProcess = serde_json::from_str(&line).expect("Couldn't parse message from process.");
 
             match message {
-                MessageFromProcess::Message(recipient, Message::Bytes(message)) => {
+                MessageFromProcess::Message {recipient, message: Message::Bytes(message)} => {
                     context.send_binary(recipient, &message)
                 },
-                MessageFromProcess::Message(recipient, Message::Text(message)) => {
+                MessageFromProcess::Message {recipient, message: Message::Text(message)} => {
                     context.send_message(recipient, &message)
                 },
             }
@@ -40,19 +48,21 @@ enum Message {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(tag="type")]
 enum MessageToProcess {
-    Connect(ClientId),
-    Disconnect(ClientId),
-    Message(ClientId, Message),
+    Connect {client: ClientId},
+    Disconnect {client: ClientId},
+    Message {client: ClientId, message: Message},
     Timer,
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(tag="type")]
 enum MessageFromProcess {
-    Message(MessageRecipient, Message),
+    Message {recipient: MessageRecipient, message: Message},
 }
 
-struct StdioProcessService {
+pub struct StdioProcessService {
     process: InteractiveProcess,
 
 }
@@ -67,25 +77,25 @@ impl StdioProcessService {
 
 impl JamsocketService for StdioProcessService {
     fn connect(&mut self, client: jamsocket::ClientId) {
-        self.send_to_process(MessageToProcess::Connect(client));
+        self.send_to_process(MessageToProcess::Connect {client});
     }
 
     fn disconnect(&mut self, client: jamsocket::ClientId) {
-        self.send_to_process(MessageToProcess::Disconnect(client));
+        self.send_to_process(MessageToProcess::Disconnect {client});
     }
 
-    fn message(&mut self, client: jamsocket::ClientId, message: &str) {
-        self.send_to_process(MessageToProcess::Message(
-            client,
-            Message::Text(message.to_string()),
-        ));
+    fn message(&mut self, sender: jamsocket::ClientId, message: &str) {
+        self.send_to_process(MessageToProcess::Message {
+            client: sender,
+            message: Message::Text(message.to_string()),
+        });
     }
 
-    fn binary(&mut self, client: jamsocket::ClientId, message: &[u8]) {
-        self.send_to_process(MessageToProcess::Message(
-            client,
-            Message::Bytes(message.to_vec()),
-        ));
+    fn binary(&mut self, sender: jamsocket::ClientId, message: &[u8]) {
+        self.send_to_process(MessageToProcess::Message {
+            client: sender,
+            message: Message::Bytes(message.to_vec()),
+        });
     }
 
     fn timer(&mut self) {
