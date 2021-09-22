@@ -142,6 +142,7 @@
 <span id="142">142</span>
 <span id="143">143</span>
 <span id="144">144</span>
+<span id="145">145</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::messages</span>::{<span class="ident">MessageData</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>};
 <span class="kw">use</span> <span class="ident">actix</span>::{
     <span class="ident">prelude::SendError</span>, <span class="ident">Actor</span>, <span class="ident">AsyncContext</span>, <span class="ident">Context</span>, <span class="ident">Handler</span>, <span class="ident">Message</span>, <span class="ident">Recipient</span>, <span class="ident">SpawnHandle</span>,
@@ -272,7 +273,8 @@
         }
 
         <span class="kw">if</span> <span class="ident">duration_ms</span> <span class="op">&gt;</span> <span class="number">0</span> {
-            <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">notify_later</span>(<span class="ident">TimerFinished</span>, <span class="ident">Duration::from_millis</span>(<span class="ident">u64::from</span>(<span class="ident">duration_ms</span>)));
+            <span class="kw">let</span> <span class="ident">handle</span> <span class="op">=</span>
+                <span class="ident">ctx</span>.<span class="ident">notify_later</span>(<span class="ident">TimerFinished</span>, <span class="ident">Duration::from_millis</span>(<span class="ident">u64::from</span>(<span class="ident">duration_ms</span>)));
             <span class="self">self</span>.<span class="ident">timer_handle</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">handle</span>);
         }
     }

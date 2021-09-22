@@ -217,6 +217,8 @@
 <span id="217">217</span>
 <span id="218">218</span>
 <span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Jamsocket is a minimalist framework for developing stateful [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) applications.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Jamsocket apps implement the [SimpleJamsocketService] trait, which provides a way for the</span>
@@ -282,10 +284,12 @@
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">client_id::ClientId</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">message_recipient::MessageRecipient</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">messages</span>::{<span class="ident">MessageFromProcess</span>, <span class="ident">MessagePayload</span>, <span class="ident">MessageToProcess</span>};
 <span class="kw">use</span> <span class="ident">std::marker::PhantomData</span>;
 
 <span class="kw">mod</span> <span class="ident">client_id</span>;
 <span class="kw">mod</span> <span class="ident">message_recipient</span>;
+<span class="kw">mod</span> <span class="ident">messages</span>;
 
 <span class="doccomment">/// Provides an interface for a [JamsocketService] instance to send messages back to its host environment.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">JamsocketContext</span>: <span class="ident">Unpin</span> <span class="op">+</span> <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> {
