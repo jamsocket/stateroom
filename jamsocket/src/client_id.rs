@@ -1,4 +1,9 @@
+#[cfg(feature="serde")]
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+
 pub struct ClientId(u32);
 
 impl From<ClientId> for u32 {

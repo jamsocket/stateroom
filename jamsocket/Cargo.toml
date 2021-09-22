@@ -8,3 +8,9 @@ repository = "https://github.com/jamsocket/jamsocket"
 license = "MIT OR Apache-2.0"
 keywords = ["websocket"]
 description = "A lightweight framework for building WebSocket services."
+
+[dependencies]
+serde = { version = "1.0.130", features = ["derive"], optional=true }
+
+[features]
+default = []
