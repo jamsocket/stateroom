@@ -6,8 +6,5 @@ exclude = [
 
 members = [
     "jamsocket",
-    "jamsocket-cli",
-    "jamsocket-server",
-    "jamsocket-wasm",
-    "jamsocket-wasm-host",
+    "jamsocket-*",
 ]
