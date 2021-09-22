@@ -1,5 +1,5 @@
 use crate::ClientId;
-#[cfg(feature="serde")]
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// Represents the recipient(s) of a message.

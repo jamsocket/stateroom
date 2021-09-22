@@ -29,7 +29,7 @@ pub fn serve(serve_opts: ServeCommand) -> anyhow::Result<()> {
         ..Server::default()
     };
 
-    if let Some("wasm") | Some("wat") = ext.as_deref() {
+    if let Some("wasm" | "wat") = ext.as_deref() {
         let host_factory = WasmHostFactory::new(&module)?;
         server_settings.serve(host_factory).map_err(|e| e.into())
     } else {

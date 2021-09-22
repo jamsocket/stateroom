@@ -79,14 +79,20 @@ impl Handler<MessageFromServer> for RoomActor {
             MessageRecipient::Broadcast => {
                 for addr in self.connections.values() {
                     if addr.do_send(message.clone()).is_err() {
-                        log::warn!("Could not forward server-sent message to client in room {}", self.room_id);
+                        log::warn!(
+                            "Could not forward server-sent message to client in room {}",
+                            self.room_id
+                        );
                     }
                 }
             }
             MessageRecipient::Client(u) => {
                 if let Some(client_connection) = self.connections.get(&u) {
                     if client_connection.do_send(message).is_err() {
-                        log::warn!("Could not forward server-sent binary message to client in room {}", self.room_id);
+                        log::warn!(
+                            "Could not forward server-sent binary message to client in room {}",
+                            self.room_id
+                        );
                     }
                 } else {
                     log::warn!(
@@ -108,7 +114,10 @@ impl Handler<MessageFromClient> for RoomActor {
                 MessageFromClient::Connect(client, resp) => {
                     self.connections.insert(*client, resp.clone());
                     if service_actor.do_send(message).is_err() {
-                        log::warn!("Couldn't forward client message to service in room {}", self.room_id);
+                        log::warn!(
+                            "Couldn't forward client message to service in room {}",
+                            self.room_id
+                        );
                     }
 
                     // If this task was scheduled to shut down becuse the room is empty,
@@ -119,12 +128,16 @@ impl Handler<MessageFromClient> for RoomActor {
                     self.connections.remove(client_id);
 
                     let empty_room = self.connections.is_empty();
-                    let send_message = !empty_room || self.shutdown_policy != ServiceShutdownPolicy::Immediate;
+                    let send_message =
+                        !empty_room || self.shutdown_policy != ServiceShutdownPolicy::Immediate;
 
                     #[allow(clippy::collapsible_if)]
                     if send_message {
                         if service_actor.do_send(message).is_err() {
-                            log::warn!("Couldn't forward client message to service in room {}", self.room_id);
+                            log::warn!(
+                                "Couldn't forward client message to service in room {}",
+                                self.room_id
+                            );
                         }
                     }
 
@@ -134,7 +147,10 @@ impl Handler<MessageFromClient> for RoomActor {
                 }
                 MessageFromClient::Message { .. } => {
                     if service_actor.do_send(message).is_err() {
-                        log::warn!("Couldn't forward message from client to service in room {}", self.room_id);
+                        log::warn!(
+                            "Couldn't forward message from client to service in room {}",
+                            self.room_id
+                        );
                     }
                 }
             }

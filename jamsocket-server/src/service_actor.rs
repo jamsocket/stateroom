@@ -128,7 +128,8 @@ impl<J: JamsocketService> Handler<SetTimer> for ServiceActor<J> {
         }
 
         if duration_ms > 0 {
-            let handle = ctx.notify_later(TimerFinished, Duration::from_millis(u64::from(duration_ms)));
+            let handle =
+                ctx.notify_later(TimerFinished, Duration::from_millis(u64::from(duration_ms)));
             self.timer_handle = Some(handle);
         }
     }

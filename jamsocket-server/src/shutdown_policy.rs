@@ -49,11 +49,12 @@ impl FromStr for ServiceShutdownPolicy {
             "immediate" => ServiceShutdownPolicy::Immediate,
             s => {
                 if let Some(v) = s.strip_suffix("sec") {
-                    let v = v.parse()
+                    let v = v
+                        .parse()
                         .map_err(move |_| BadShutdownPolicyName(s.to_string()))?;
                     ServiceShutdownPolicy::AfterSeconds(v)
                 } else {
-                    return Err(BadShutdownPolicyName(s.to_string()))
+                    return Err(BadShutdownPolicyName(s.to_string()));
                 }
             }
         })

@@ -49,7 +49,9 @@ impl RoomIdGenerator for ShortRoomIdGenerator {
         for _ in 0..self.length {
             #[allow(clippy::cast_possible_truncation)]
             let c = (val % 26) as u32;
-            chars.push(char::from_u32(c + ASCII_A).expect("Should always be a valid ASCII character."));
+            chars.push(
+                char::from_u32(c + ASCII_A).expect("Should always be a valid ASCII character."),
+            );
             val /= 26;
         }
 

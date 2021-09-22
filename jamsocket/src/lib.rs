@@ -63,10 +63,12 @@
 
 pub use client_id::ClientId;
 pub use message_recipient::MessageRecipient;
+pub use messages::{MessageFromProcess, MessagePayload, MessageToProcess};
 use std::marker::PhantomData;
 
 mod client_id;
 mod message_recipient;
+mod messages;
 
 /// Provides an interface for a [JamsocketService] instance to send messages back to its host environment.
 pub trait JamsocketContext: Unpin + 'static + Send + Sync {

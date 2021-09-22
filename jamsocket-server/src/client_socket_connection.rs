@@ -83,7 +83,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                     data: MessageData::String(text.to_string()),
                 };
                 if self.room.do_send(message).is_err() {
-                    log::warn!("Error forwarding message to service in room {}", self.room_id);
+                    log::warn!(
+                        "Error forwarding message to service in room {}",
+                        self.room_id
+                    );
                 }
             }
             Ok(ws::Message::Binary(data)) => {
@@ -92,7 +95,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                     data: MessageData::Binary(data.to_vec()),
                 };
                 if self.room.do_send(message).is_err() {
-                    log::warn!("Error forwarding binary message to service in room {}", self.room_id);
+                    log::warn!(
+                        "Error forwarding binary message to service in room {}",
+                        self.room_id
+                    );
                 }
             }
             Ok(ws::Message::Close(_)) => {

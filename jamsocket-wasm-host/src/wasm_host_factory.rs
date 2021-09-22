@@ -37,7 +37,10 @@ impl<T: JamsocketContext> JamsocketServiceFactory<T> for WasmHostFactory {
 }
 
 impl WasmHostFactory {
-    pub fn new<P>(wasm_file: P) -> Result<Self> where P: AsRef<Path> {
+    pub fn new<P>(wasm_file: P) -> Result<Self>
+    where
+        P: AsRef<Path>,
+    {
         let engine = Engine::default();
         log::info!("Loading WebAssembly module {:?}", wasm_file.as_ref());
         let module = Module::from_file(&engine, wasm_file)?;
