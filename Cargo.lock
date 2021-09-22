@@ -1353,6 +1353,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "interactive_process"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5bea3f0b65ff4df5241d0d586df4ab529b7584ee9ada2ad163ab756032733b9"
+
+[[package]]
 name = "io-lifetimes"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1386,6 +1392,9 @@ checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 [[package]]
 name = "jamsocket"
 version = "0.1.1"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "jamsocket-cli"
@@ -1424,6 +1433,16 @@ dependencies = [
  "serde",
  "serde_json",
  "uuid",
+]
+
+[[package]]
+name = "jamsocket-stdio"
+version = "0.1.0"
+dependencies = [
+ "interactive_process",
+ "jamsocket",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

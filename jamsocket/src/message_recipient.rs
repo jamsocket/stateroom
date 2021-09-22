@@ -1,4 +1,6 @@
 use crate::ClientId;
+#[cfg(feature="serde")]
+use serde::{Deserialize, Serialize};
 
 /// Represents the recipient(s) of a message.
 ///
@@ -6,6 +8,8 @@ use crate::ClientId;
 /// (`MessageRecipient::Client(3)`), or be broadcast to all connected clients
 /// (`MessageRecipient::Broadcast`).]
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+
 pub enum MessageRecipient {
     Broadcast,
     Client(ClientId),
