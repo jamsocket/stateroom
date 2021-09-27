@@ -261,7 +261,7 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">messages</span>::{<span class="ident">AssignClientId</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">room_actor::RoomActor</span>;
 <span class="kw">use</span> <span class="ident">server_state::ServerState</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">service_actor</span>::{<span class="ident">ServiceActorContext</span>, <span class="ident">ServiceActor</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">service_actor</span>::{<span class="ident">ServiceActor</span>, <span class="ident">ServiceActorContext</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">shutdown_policy::ServiceShutdownPolicy</span>;
 <span class="kw">use</span> <span class="ident">std::time</span>::{<span class="ident">Duration</span>, <span class="ident">Instant</span>};
 
@@ -318,14 +318,14 @@
         <span class="ident">Server::default</span>()
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span><span class="op">=</span><span class="string">&quot;serve-static&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serve-static&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_static_path</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">static_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">static_path</span> <span class="op">=</span> <span class="ident">static_path</span>;
         <span class="self">self</span>
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span><span class="op">=</span><span class="string">&quot;serve-static&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serve-static&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_client_path</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">client_path</span> <span class="op">=</span> <span class="ident">client_path</span>;
@@ -394,25 +394,25 @@
                     .<span class="ident">route</span>(<span class="string">&quot;/ws/{room_id}&quot;</span>, <span class="ident">get</span>().<span class="ident">to</span>(<span class="ident">websocket</span>::<span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>))
                     .<span class="ident">route</span>(<span class="string">&quot;/ws/{room_id}&quot;</span>, <span class="ident">post</span>().<span class="ident">to</span>(<span class="ident">new_room_explicit</span>::<span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>));
 
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span><span class="op">=</span><span class="string">&quot;serve-static&quot;</span>)]</span>
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serve-static&quot;</span>)]</span>
                 {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">client_path</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">server_state</span>.<span class="ident">settings</span>.<span class="ident">client_path</span> {
                         <span class="comment">//let client_dir = Path::new(client_path).parent().unwrap();</span>
                         <span class="ident">app</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">service</span>(<span class="ident">actix_files::Files::new</span>(<span class="string">&quot;/client&quot;</span>, <span class="ident">client_path</span>));
                     }
-    
+
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">static_path</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">server_state</span>.<span class="ident">settings</span>.<span class="ident">static_path</span> {
                         <span class="ident">app</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">service</span>(
                             <span class="ident">actix_files::Files::new</span>(<span class="string">&quot;/&quot;</span>, <span class="ident">static_path</span>).<span class="ident">index_file</span>(<span class="string">&quot;index.html&quot;</span>),
                         );
-                    }    
+                    }
                 }
 
                 <span class="ident">app</span>
             })
             .<span class="ident">bind</span>(<span class="kw-2">&amp;</span><span class="ident">host</span>)<span class="question-mark">?</span>;
 
-            <span class="macro">tracing::info_span!</span>(<span class="string">&quot;Server is listening&quot;</span>, <span class="op">%</span><span class="ident">host</span>);
+            <span class="macro">tracing::info!</span>(<span class="op">%</span><span class="ident">host</span>, <span class="string">&quot;Server is listening&quot;</span>);
             <span class="ident">server</span>.<span class="ident">run</span>().<span class="kw">await</span>
         })
     }
@@ -469,11 +469,11 @@
         <span class="ident">stream</span>,
     ) {
         <span class="prelude-val">Ok</span>((<span class="ident">addr</span>, <span class="ident">resp</span>)) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="macro">tracing::info_span!</span>(
-                <span class="string">&quot;New connection&quot;</span>,
+            <span class="macro">tracing::info!</span>(
                 <span class="op">%</span><span class="ident">ip</span>,
                 <span class="op">%</span><span class="ident">room_id</span>,
-                <span class="question-mark">?</span><span class="ident">client_id</span>
+                <span class="question-mark">?</span><span class="ident">client_id</span>,
+                <span class="string">&quot;New connection&quot;</span>,
             );
             <span class="ident">room_addr</span>.<span class="ident">do_send</span>(<span class="ident">MessageFromClient::Connect</span>(<span class="ident">client_id</span>, <span class="ident">addr</span>.<span class="ident">recipient</span>()));
 
