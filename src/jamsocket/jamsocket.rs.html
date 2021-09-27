@@ -14,14 +14,32 @@
 <span id="14">14</span>
 <span id="15">15</span>
 <span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
 </pre><pre class="rust"><code><span class="doccomment">//! # `jamsocket-cli`: a command-line interface to Jamsocket</span>
 
 <span class="kw">use</span> <span class="ident">clap::Clap</span>;
 <span class="kw">use</span> <span class="ident">jamsocket_cli::cli_opts</span>::{<span class="ident">Opts</span>, <span class="ident">SubCommand</span>};
 <span class="kw">use</span> <span class="ident">jamsocket_cli</span>::{<span class="ident">dev</span>, <span class="ident">serve</span>};
+<span class="kw">use</span> <span class="ident">tracing_subscriber::EnvFilter</span>;
 
-<span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">tracing_subscriber::fmt::init</span>();
+<span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {    
+    <span class="kw">let</span> <span class="ident">env_filter</span> <span class="op">=</span> <span class="ident">EnvFilter::default</span>().<span class="ident">add_directive</span>(
+        <span class="string">&quot;jamsocket_cli=info&quot;</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>,
+    ).<span class="ident">add_directive</span>(
+        <span class="string">&quot;jamsocket_wasm_host=info&quot;</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>,
+    ).<span class="ident">add_directive</span>(
+        <span class="string">&quot;jamsocket_server=info&quot;</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>,
+    );
+    
+    <span class="ident">tracing_subscriber::fmt</span>().<span class="ident">with_env_filter</span>(<span class="ident">env_filter</span>).<span class="ident">init</span>();
 
     <span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">Opts::parse</span>();
 
