@@ -76,12 +76,14 @@ impl Server {
         Server::default()
     }
 
+    #[cfg(feature="serve-static")]
     #[must_use]
     pub fn with_static_path(mut self, static_path: Option<String>) -> Self {
         self.static_path = static_path;
         self
     }
 
+    #[cfg(feature="serve-static")]
     #[must_use]
     pub fn with_client_path(mut self, client_path: Option<String>) -> Self {
         self.client_path = client_path;
@@ -142,6 +144,7 @@ impl Server {
 
         actix_web::rt::System::new().block_on(async move {
             let server = HttpServer::new(move || {
+                #[allow(unused_mut)] // mut only needed with crate feature `serve-static`.
                 let mut app = App::new()
                     .app_data(server_state.clone())
                     .route("/status", get().to(status))
@@ -149,15 +152,18 @@ impl Server {
                     .route("/ws/{room_id}", get().to(websocket::<F>))
                     .route("/ws/{room_id}", post().to(new_room_explicit::<F>));
 
-                if let Some(client_path) = &server_state.settings.client_path {
-                    //let client_dir = Path::new(client_path).parent().unwrap();
-                    app = app.service(actix_files::Files::new("/client", client_path));
-                }
-
-                if let Some(static_path) = &server_state.settings.static_path {
-                    app = app.service(
-                        actix_files::Files::new("/", static_path).index_file("index.html"),
-                    );
+                #[cfg(feature="serve-static")]
+                {
+                    if let Some(client_path) = &server_state.settings.client_path {
+                        //let client_dir = Path::new(client_path).parent().unwrap();
+                        app = app.service(actix_files::Files::new("/client", client_path));
+                    }
+    
+                    if let Some(static_path) = &server_state.settings.static_path {
+                        app = app.service(
+                            actix_files::Files::new("/", static_path).index_file("index.html"),
+                        );
+                    }    
                 }
 
                 app
