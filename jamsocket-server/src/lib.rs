@@ -19,7 +19,7 @@ use jamsocket::{JamsocketServiceFactory, SimpleJamsocketService, SimpleJamsocket
 pub use messages::{AssignClientId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
 use server_state::ServerState;
-pub use service_actor::ServiceActorContext;
+pub use service_actor::{ServiceActorContext, ServiceActor};
 pub use shutdown_policy::ServiceShutdownPolicy;
 use std::time::{Duration, Instant};
 
