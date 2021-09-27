@@ -73,7 +73,7 @@ impl<J: JamsocketService> ServiceActor<J> {
     pub fn new(
         ctx: &Context<Self>,
         room_id: &str,
-        service_constructor: &Arc<impl JamsocketServiceFactory<ServiceActorContext, Service = J>>,
+        service_constructor: Arc<impl JamsocketServiceFactory<ServiceActorContext, Service = J>>,
         recipient: Recipient<MessageFromServer>,
     ) -> Option<Self> {
         let host_context = ServiceActorContext {

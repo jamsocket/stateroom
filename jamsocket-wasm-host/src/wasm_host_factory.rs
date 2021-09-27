@@ -50,4 +50,11 @@ impl WasmHostFactory {
             module: Arc::new(module),
         })
     }
+
+    pub fn new_with_shared_module(engine: Arc<Engine>, module: Arc<Module>) -> Self {
+        WasmHostFactory {
+            engine,
+            module
+        }
+    }
 }
