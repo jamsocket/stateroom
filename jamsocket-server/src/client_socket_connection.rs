@@ -110,12 +110,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
 
                 self.close(ctx);
             }
-            Err(error) => 
-                tracing::error!(?error, "Encountered error in StreamHandler")
-            
-            _ => 
-                tracing::warn!(message=?msg, "Unhandled message in StreamHandler")
-            
+            Err(error) => tracing::error!(?error, "Encountered error in StreamHandler"),
+            _ => tracing::warn!(message=?msg, "Unhandled message in StreamHandler"),
         }
     }
 }

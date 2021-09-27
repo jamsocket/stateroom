@@ -19,7 +19,7 @@ use jamsocket::{JamsocketServiceFactory, SimpleJamsocketService, SimpleJamsocket
 pub use messages::{AssignClientId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
 use server_state::ServerState;
-pub use service_actor::{ServiceActorContext, ServiceActor};
+pub use service_actor::{ServiceActor, ServiceActorContext};
 pub use shutdown_policy::ServiceShutdownPolicy;
 use std::time::{Duration, Instant};
 
@@ -76,14 +76,14 @@ impl Server {
         Server::default()
     }
 
-    #[cfg(feature="serve-static")]
+    #[cfg(feature = "serve-static")]
     #[must_use]
     pub fn with_static_path(mut self, static_path: Option<String>) -> Self {
         self.static_path = static_path;
         self
     }
 
-    #[cfg(feature="serve-static")]
+    #[cfg(feature = "serve-static")]
     #[must_use]
     pub fn with_client_path(mut self, client_path: Option<String>) -> Self {
         self.client_path = client_path;
@@ -152,18 +152,18 @@ impl Server {
                     .route("/ws/{room_id}", get().to(websocket::<F>))
                     .route("/ws/{room_id}", post().to(new_room_explicit::<F>));
 
-                #[cfg(feature="serve-static")]
+                #[cfg(feature = "serve-static")]
                 {
                     if let Some(client_path) = &server_state.settings.client_path {
                         //let client_dir = Path::new(client_path).parent().unwrap();
                         app = app.service(actix_files::Files::new("/client", client_path));
                     }
-    
+
                     if let Some(static_path) = &server_state.settings.static_path {
                         app = app.service(
                             actix_files::Files::new("/", static_path).index_file("index.html"),
                         );
-                    }    
+                    }
                 }
 
                 app
