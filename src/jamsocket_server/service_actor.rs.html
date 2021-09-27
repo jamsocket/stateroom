@@ -179,10 +179,10 @@
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">send_message_recipient</span>.<span class="ident">do_send</span>(<span class="ident">message</span>) {
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (),
             <span class="prelude-val">Err</span>(<span class="ident">SendError::Closed</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">log::warn!</span>(<span class="string">&quot;Attempted to send a message to a closed service.&quot;</span>);
+                <span class="macro">tracing::warn!</span>(<span class="string">&quot;Attempted to send a message to a closed service&quot;</span>);
             }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="macro">log::warn!</span>(<span class="string">&quot;Encountered an error sending message to a service: {:?}&quot;</span>, <span class="ident">e</span>);
+            <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="macro">tracing::warn_span!</span>(<span class="string">&quot;Encountered an error sending message to a service&quot;</span>, <span class="question-mark">?</span><span class="ident">error</span>);
             }
         }
     }
@@ -209,7 +209,7 @@
             .<span class="ident">do_send</span>(<span class="ident">SetTimer</span>(<span class="ident">ms_delay</span>))
             .<span class="ident">is_err</span>()
         {
-            <span class="macro">log::warn!</span>(<span class="string">&quot;Encountered an error sending SetTimer message.&quot;</span>);
+            <span class="macro">tracing::warn!</span>(<span class="string">&quot;Encountered an error sending SetTimer message.&quot;</span>);
         }
     }
 }
@@ -238,7 +238,7 @@
     <span class="kw">type</span> <span class="ident">Context</span> <span class="op">=</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">stopping</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">_ctx</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident"><span class="self">Self</span>::Context</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">actix::Running</span> {
-        <span class="macro">log::info!</span>(<span class="string">&quot;Shutting down service.&quot;</span>);
+        <span class="macro">tracing::info!</span>(<span class="string">&quot;Shutting down service&quot;</span>);
         <span class="ident">actix::Running::Stop</span>
     }
 }
@@ -266,7 +266,7 @@
     <span class="kw">type</span> <span class="prelude-ty">Result</span> <span class="op">=</span> ();
 
     <span class="kw">fn</span> <span class="ident">handle</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">SetTimer</span>(<span class="ident">duration_ms</span>): <span class="ident">SetTimer</span>, <span class="ident">ctx</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident"><span class="self">Self</span>::Context</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident"><span class="self">Self</span>::Result</span> {
-        <span class="macro">log::info!</span>(<span class="string">&quot;Timer set for {} ms.&quot;</span>, <span class="ident">duration_ms</span>);
+        <span class="macro">tracing::info_span!</span>(<span class="string">&quot;Timer set&quot;</span>, <span class="op">%</span><span class="ident">duration_ms</span>);
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">timer_handle</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">timer_handle</span>.<span class="ident">take</span>() {
             <span class="ident">ctx</span>.<span class="ident">cancel_future</span>(<span class="ident">timer_handle</span>);
@@ -284,7 +284,7 @@
     <span class="kw">type</span> <span class="prelude-ty">Result</span> <span class="op">=</span> ();
 
     <span class="kw">fn</span> <span class="ident">handle</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw">_</span>: <span class="ident">TimerFinished</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident"><span class="self">Self</span>::Context</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident"><span class="self">Self</span>::Result</span> {
-        <span class="macro">log::info!</span>(<span class="string">&quot;Timer finished.&quot;</span>);
+        <span class="macro">tracing::info!</span>(<span class="string">&quot;Timer finished.&quot;</span>);
         <span class="self">self</span>.<span class="ident">service</span>.<span class="ident">timer</span>();
     }
 }
