@@ -12,10 +12,10 @@ use wasm_bindgen_cli_support::Bindgen;
 
 fn locate_config() -> anyhow::Result<JamsocketConfig> {
     if let Ok(r) = read_to_string("jamsocket.toml") {
-        log::info!("Loading config from file (jamsocket.toml).");
+        tracing::info!("Loading config from file (jamsocket.toml)");
         toml::from_str(&r).map_err(|e| e.into())
     } else {
-        log::info!("Didn't find a jamsocket.toml file in current directory, using default.");
+        tracing::info!("Didn't find a jamsocket.toml file in current directory, using default");
         Ok(JamsocketConfig::default())
     }
 }
@@ -90,13 +90,13 @@ fn run_cargo_build_command(
 pub fn dev() -> anyhow::Result<()> {
     let config = locate_config()?; // TODO: default to a configuration if file not found.
 
-    log::info!("Building service");
+    tracing::info!("Building service");
     let service_wasm = run_cargo_build_command(&config.service.package, "wasm32-wasi", true)?;
 
     let host_factory = WasmHostFactory::new(service_wasm)?;
 
     let client_path = if let Some(client_config) = config.client {
-        log::info!("Building client");
+        tracing::info!("Building client");
         let client_wasm_path =
             run_cargo_build_command(&Some(client_config.package), "wasm32-unknown-unknown", true)
                 .expect("Error building client.");
