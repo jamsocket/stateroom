@@ -20,6 +20,9 @@ impl SimpleJamsocketService for EchoServer {
     }
 
     fn disconnect(&mut self, client_id: ClientId, ctx: &impl JamsocketContext) {
-        ctx.send_message(MessageRecipient::Broadcast, &format!("User {:?} left.", client_id));
+        ctx.send_message(
+            MessageRecipient::Broadcast,
+            &format!("User {:?} left.", client_id),
+        );
     }
 }
