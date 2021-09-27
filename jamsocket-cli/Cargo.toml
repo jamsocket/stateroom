@@ -1,6 +1,6 @@
 [package]
 name = "jamsocket-cli"
-version = "0.1.0"
+version = "0.1.3"
 edition = "2018"
 readme = "README.md"
 repository = "https://github.com/jamsocket/jamsocket"
@@ -11,8 +11,8 @@ description = "Command-line tool for developing Jamsocket applications"
 [dependencies]
 jamsocket = { path="../jamsocket", version="0.1.0" }
 jamsocket-stdio = { path="../jamsocket-stdio", version="0.1.0" }
-jamsocket-server = { path="../jamsocket-server", version="0.1.0" }
-jamsocket-wasm-host = { path="../jamsocket-wasm-host", version="0.1.0" }
+jamsocket-server = { path="../jamsocket-server", version="0.1.3" }
+jamsocket-wasm-host = { path="../jamsocket-wasm-host", version="0.1.3" }
 clap = "3.0.0-beta.2"
 actix = "0.12.0"
 actix-web = "4.0.0-beta.9"
