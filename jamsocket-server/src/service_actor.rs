@@ -37,7 +37,7 @@ impl ServiceActorContext {
                 tracing::warn!("Attempted to send a message to a closed service");
             }
             Err(error) => {
-                tracing::warn_span!("Encountered an error sending message to a service", ?error);
+                tracing::error!(?error, "Encountered an error sending message to a service");
             }
         }
     }
@@ -121,7 +121,7 @@ impl<J: JamsocketService> Handler<SetTimer> for ServiceActor<J> {
     type Result = ();
 
     fn handle(&mut self, SetTimer(duration_ms): SetTimer, ctx: &mut Self::Context) -> Self::Result {
-        tracing::info_span!("Timer set", %duration_ms);
+        tracing::info!(%duration_ms, "Timer set");
 
         if let Some(timer_handle) = self.timer_handle.take() {
             ctx.cancel_future(timer_handle);

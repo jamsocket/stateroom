@@ -51,9 +51,9 @@ impl RoomActor {
     fn handle_empty_room(&mut self, ctx: &mut Context<Self>) {
         match self.shutdown_policy {
             ServiceShutdownPolicy::Immediate => {
-                tracing::info_span!(
+                tracing::info!(
+                    room_id=%self.room_id,
                     "Shutting down service actor because no clients are left",
-                    room_id=%self.room_id
                 );
 
                 ctx.stop();
@@ -79,9 +79,9 @@ impl Handler<MessageFromServer> for RoomActor {
             MessageRecipient::Broadcast => {
                 for addr in self.connections.values() {
                     if addr.do_send(message.clone()).is_err() {
-                        tracing::warn_span!(
+                        tracing::warn!(
+                            room_id=%self.room_id,
                             "Could not forward server-sent message to client",
-                            room_id=%self.room_id
                         );
                     }
                 }
@@ -89,15 +89,15 @@ impl Handler<MessageFromServer> for RoomActor {
             MessageRecipient::Client(client_id) => {
                 if let Some(client_connection) = self.connections.get(&client_id) {
                     if client_connection.do_send(message).is_err() {
-                        tracing::warn_span!(
+                        tracing::warn!(
+                            room_id=%self.room_id,
                             "Could not forward server-sent binary message to client in room",
-                            room_id=%self.room_id
                         );
                     }
                 } else {
-                    tracing::warn_span!(
+                    tracing::warn!(
+                        ?client_id,
                         "Could not get address of user, who may have disconnected",
-                        ?client_id
                     );
                 }
             }
@@ -114,9 +114,9 @@ impl Handler<MessageFromClient> for RoomActor {
                 MessageFromClient::Connect(client, resp) => {
                     self.connections.insert(*client, resp.clone());
                     if service_actor.do_send(message).is_err() {
-                        tracing::warn_span!(
+                        tracing::warn!(
+                            room_id=%self.room_id,
                             "Couldn't forward client message to service",
-                            room_id=%self.room_id
                         );
                     }
 
@@ -134,9 +134,9 @@ impl Handler<MessageFromClient> for RoomActor {
                     #[allow(clippy::collapsible_if)]
                     if send_message {
                         if service_actor.do_send(message).is_err() {
-                            tracing::warn_span!(
+                            tracing::warn!(
+                                room_id=%self.room_id,
                                 "Couldn't forward client message to service",
-                                room_id=%self.room_id
                             );
                         }
                     }
@@ -147,17 +147,17 @@ impl Handler<MessageFromClient> for RoomActor {
                 }
                 MessageFromClient::Message { .. } => {
                     if service_actor.do_send(message).is_err() {
-                        tracing::warn_span!(
+                        tracing::warn!(
+                            room_id=%self.room_id,
                             "Couldn't forward message from client to service",
-                            room_id=%self.room_id
                         );
                     }
                 }
             }
         } else {
-            tracing::warn_span!(
+            tracing::warn!(
+                room_id=%self.room_id,
                 "MessageFromClient received on room with no service attached",
-                room_id=%self.room_id
             );
         }
     }
@@ -169,7 +169,7 @@ impl MessageResponse<RoomActor, AssignClientId> for ClientId {
             if let Err(error) = tx.send(self) {
                 // TODO: checking this avoids a linter warning, but I need to better
                 // understand the series of events that would lead to this triggering.
-                tracing::warn_span!("Error returning response to AssignClientId", ?error);
+                tracing::error!(?error, "Error returning response to AssignClientId");
             }
         }
     }
@@ -190,9 +190,9 @@ impl Handler<Shutdown> for RoomActor {
     type Result = ();
 
     fn handle(&mut self, _: Shutdown, ctx: &mut Self::Context) -> Self::Result {
-        tracing::info_span!(
+        tracing::info!(
+            room_id=%self.room_id,
             "Shutting down service actor because no clients are left and the timeout period has elapsed",
-            room_id=%self.room_id
         );
 
         ctx.stop();

@@ -170,7 +170,7 @@ impl Server {
             })
             .bind(&host)?;
 
-            tracing::info_span!("Server is listening", %host);
+            tracing::info!(%host, "Server is listening");
             server.run().await
         })
     }
@@ -227,11 +227,11 @@ async fn websocket<F: JamsocketServiceFactory<ServiceActorContext>>(
         stream,
     ) {
         Ok((addr, resp)) => {
-            tracing::info_span!(
-                "New connection",
+            tracing::info!(
                 %ip,
                 %room_id,
-                ?client_id
+                ?client_id,
+                "New connection",
             );
             room_addr.do_send(MessageFromClient::Connect(client_id, addr.recipient()));
 

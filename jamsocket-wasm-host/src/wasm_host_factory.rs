@@ -29,7 +29,7 @@ impl<T: JamsocketContext> JamsocketServiceFactory<T> for WasmHostFactory {
         match result {
             Ok(r) => Some(r),
             Err(error) => {
-                tracing::error_span!("Could not build a WasmHost", ?error);
+                tracing::error!(?error, "Could not build a WasmHost");
                 None
             }
         }
@@ -42,7 +42,7 @@ impl WasmHostFactory {
         P: AsRef<Path>,
     {
         let engine = Engine::default();
-        tracing::info_span!("Loading WebAssembly module", wasm_file=?wasm_file.as_ref());
+        tracing::info!(wasm_file=?wasm_file.as_ref(), "Loading WebAssembly module");
         let module = Module::from_file(&engine, wasm_file)?;
 
         Ok(WasmHostFactory {
@@ -52,9 +52,6 @@ impl WasmHostFactory {
     }
 
     pub fn new_with_shared_module(engine: Arc<Engine>, module: Arc<Module>) -> Self {
-        WasmHostFactory {
-            engine,
-            module
-        }
+        WasmHostFactory { engine, module }
     }
 }

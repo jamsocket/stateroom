@@ -78,31 +78,31 @@ impl WasmHost {
 impl JamsocketService for WasmHost {
     fn message(&mut self, client: ClientId, message: &str) {
         if let Err(error) = self.try_message(client, message) {
-            tracing::error_span!("Error calling `message` on wasm host", ?error);
+            tracing::error!(?error, "Error calling `message` on wasm host");
         }
     }
 
     fn connect(&mut self, client: ClientId) {
         if let Err(error) = self.fn_connect.call(&mut self.store, client.into()) {
-            tracing::error_span!("Error calling `connect` on wasm host", ?error);
+            tracing::error!(?error, "Error calling `connect` on wasm host");
         }
     }
 
     fn disconnect(&mut self, client: ClientId) {
         if let Err(error) = self.fn_disconnect.call(&mut self.store, client.into()) {
-            tracing::error_span!("Error calling `disconnect` on wasm host", ?error);
+            tracing::error!(?error, "Error calling `disconnect` on wasm host");
         };
     }
 
     fn timer(&mut self) {
         if let Err(error) = self.fn_timer.call(&mut self.store, ()) {
-            tracing::error_span!("Error calling `timer` on wasm host", ?error);
+            tracing::error!(?error, "Error calling `timer` on wasm host");
         };
     }
 
     fn binary(&mut self, client: ClientId, message: &[u8]) {
         if let Err(error) = self.try_binary(client, message) {
-            tracing::error_span!("Error calling `binary` on wasm host", ?error);
+            tracing::error!(?error, "Error calling `binary` on wasm host");
         };
     }
 }

@@ -21,11 +21,11 @@ impl ClientSocketConnection {
     fn start_heartbeat_interval(&mut self, ctx: &mut <Self as Actor>::Context) {
         self.interval_handle = Some(ctx.run_interval(self.heartbeat_interval, |act, ctx| {
             if Instant::now() - act.last_seen > act.heartbeat_timeout {
-                tracing::warn_span!(
-                    "Stopping ClientSocketConnection because heartbeat not responded.",
+                tracing::warn!(
                     client_id=?act.client_id,
                     ip=%act.ip,
                     room_id=%act.room_id,
+                    "Stopping ClientSocketConnection because heartbeat not responded.",
                 );
                 act.close(ctx);
             } else {
@@ -42,9 +42,9 @@ impl ClientSocketConnection {
             .do_send(MessageFromClient::Disconnect(self.client_id))
             .is_err()
         {
-            tracing::warn_span!(
+            tracing::warn!(
+                room_id=%self.room_id,
                 "Could not send Disconnect message before closing room",
-                room_id=%self.room_id
             );
         }
 
@@ -82,9 +82,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                     data: MessageData::String(text.to_string()),
                 };
                 if self.room.do_send(message).is_err() {
-                    tracing::warn_span!(
+                    tracing::warn!(
+                        room_id=%self.room_id,
                         "Error forwarding message to service",
-                        room_id=%self.room_id
                     );
                 }
             }
@@ -94,28 +94,28 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                     data: MessageData::Binary(data.to_vec()),
                 };
                 if self.room.do_send(message).is_err() {
-                    tracing::warn_span!(
+                    tracing::warn!(
+                        room_id=%self.room_id,
                         "Error forwarding binary message to service",
-                        room_id=%self.room_id
                     );
                 }
             }
             Ok(ws::Message::Close(_)) => {
-                tracing::info_span!(
-                    "User has disconnected from room",
+                tracing::info!(
                     client_id=?self.client_id,
                     ip=%self.ip,
-                    room_id=%self.room_id
+                    room_id=%self.room_id,
+                    "User has disconnected from room",
                 );
 
                 self.close(ctx);
             }
-            Err(e) => {
-                tracing::error_span!("Encountered error in StreamHandler", error=?e);
-            }
-            _ => {
-                tracing::warn_span!("Unhandled message in StreamHandler", message=?msg);
-            }
+            Err(error) => 
+                tracing::error!(?error, "Encountered error in StreamHandler")
+            
+            _ => 
+                tracing::warn!(message=?msg, "Unhandled message in StreamHandler")
+            
         }
     }
 }
