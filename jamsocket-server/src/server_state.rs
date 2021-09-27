@@ -88,14 +88,14 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
                         if let Some(service_actor) = service_actor {
                             service_ctx.run(service_actor);
                         } else {
-                            log::error!("Could not create service actor for room {}.", &room_id);
+                            tracing::error_span!("Could not create service actor for room", %room_id);
                         }
                     });
                 }
 
                 entry.insert(room_addr.clone());
 
-                log::info!("Created room: {}", &room_id);
+                tracing::info_span!("Created room", room_id=%room_id);
                 Ok(room_addr)
             }
         }
@@ -123,7 +123,7 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
             let result = self.new_room(&room_id, false).await;
 
             if result.is_err() {
-                log::error!("Ran out of unique room IDs. Increase the length to avoid this.");
+                tracing::error_span!("Ran out of unique room IDs. Increase the length to avoid this.");
                 return Err(ErrorConflict("Ran out of unique room IDs."));
             }
 

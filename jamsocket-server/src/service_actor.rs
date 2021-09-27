@@ -34,10 +34,10 @@ impl ServiceActorContext {
         match self.send_message_recipient.do_send(message) {
             Ok(_) => (),
             Err(SendError::Closed(_)) => {
-                log::warn!("Attempted to send a message to a closed service.");
+                tracing::warn!("Attempted to send a message to a closed service");
             }
-            Err(e) => {
-                log::warn!("Encountered an error sending message to a service: {:?}", e);
+            Err(error) => {
+                tracing::warn_span!("Encountered an error sending message to a service", ?error);
             }
         }
     }
@@ -64,7 +64,7 @@ impl JamsocketContext for ServiceActorContext {
             .do_send(SetTimer(ms_delay))
             .is_err()
         {
-            log::warn!("Encountered an error sending SetTimer message.");
+            tracing::warn!("Encountered an error sending SetTimer message.");
         }
     }
 }
@@ -93,7 +93,7 @@ impl<J: JamsocketService> Actor for ServiceActor<J> {
     type Context = Context<Self>;
 
     fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::Running {
-        log::info!("Shutting down service.");
+        tracing::info!("Shutting down service");
         actix::Running::Stop
     }
 }
@@ -121,7 +121,7 @@ impl<J: JamsocketService> Handler<SetTimer> for ServiceActor<J> {
     type Result = ();
 
     fn handle(&mut self, SetTimer(duration_ms): SetTimer, ctx: &mut Self::Context) -> Self::Result {
-        log::info!("Timer set for {} ms.", duration_ms);
+        tracing::info_span!("Timer set", %duration_ms);
 
         if let Some(timer_handle) = self.timer_handle.take() {
             ctx.cancel_future(timer_handle);
@@ -139,7 +139,7 @@ impl<J: JamsocketService> Handler<TimerFinished> for ServiceActor<J> {
     type Result = ();
 
     fn handle(&mut self, _: TimerFinished, _: &mut Self::Context) -> Self::Result {
-        log::info!("Timer finished.");
+        tracing::info!("Timer finished.");
         self.service.timer();
     }
 }

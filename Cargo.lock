@@ -1422,11 +1422,11 @@ dependencies = [
  "anyhow",
  "async-std",
  "jamsocket",
- "log",
  "matches",
  "rand",
  "serde",
  "serde_json",
+ "tracing",
  "uuid",
 ]
 
