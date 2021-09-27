@@ -28,8 +28,8 @@ impl<T: JamsocketContext> JamsocketServiceFactory<T> for WasmHostFactory {
 
         match result {
             Ok(r) => Some(r),
-            Err(e) => {
-                log::error!("Could not build a WasmHost, got: {:?}", &e);
+            Err(error) => {
+                tracing::error_span!("Could not build a WasmHost", ?error);
                 None
             }
         }
@@ -42,7 +42,7 @@ impl WasmHostFactory {
         P: AsRef<Path>,
     {
         let engine = Engine::default();
-        log::info!("Loading WebAssembly module {:?}", wasm_file.as_ref());
+        tracing::info_span!("Loading WebAssembly module", wasm_file=?wasm_file.as_ref());
         let module = Module::from_file(&engine, wasm_file)?;
 
         Ok(WasmHostFactory {

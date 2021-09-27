@@ -1455,7 +1455,7 @@ dependencies = [
  "anyhow",
  "byteorder",
  "jamsocket",
- "log",
+ "tracing",
  "wasmtime",
  "wasmtime-wasi",
 ]

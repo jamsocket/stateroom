@@ -77,32 +77,32 @@ impl WasmHost {
 
 impl JamsocketService for WasmHost {
     fn message(&mut self, client: ClientId, message: &str) {
-        if let Err(e) = self.try_message(client, message) {
-            log::error!("Error calling `message` on wasm host. {:?}", &e);
+        if let Err(error) = self.try_message(client, message) {
+            tracing::error_span!("Error calling `message` on wasm host", ?error);
         }
     }
 
     fn connect(&mut self, client: ClientId) {
-        if let Err(e) = self.fn_connect.call(&mut self.store, client.into()) {
-            log::error!("Error calling `connect` on wasm host. {:?}", &e);
+        if let Err(error) = self.fn_connect.call(&mut self.store, client.into()) {
+            tracing::error_span!("Error calling `connect` on wasm host", ?error);
         }
     }
 
     fn disconnect(&mut self, client: ClientId) {
-        if let Err(e) = self.fn_disconnect.call(&mut self.store, client.into()) {
-            log::error!("Error calling `disconnect` on wasm host. {:?}", &e);
+        if let Err(error) = self.fn_disconnect.call(&mut self.store, client.into()) {
+            tracing::error_span!("Error calling `disconnect` on wasm host", ?error);
         };
     }
 
     fn timer(&mut self) {
-        if let Err(e) = self.fn_timer.call(&mut self.store, ()) {
-            log::error!("Error calling `timer` on wasm host. {:?}", &e);
+        if let Err(error) = self.fn_timer.call(&mut self.store, ()) {
+            tracing::error_span!("Error calling `timer` on wasm host", ?error);
         };
     }
 
     fn binary(&mut self, client: ClientId, message: &[u8]) {
-        if let Err(e) = self.try_binary(client, message) {
-            log::error!("Error calling `binary` on wasm host. {:?}", &e);
+        if let Err(error) = self.try_binary(client, message) {
+            tracing::error_span!("Error calling `binary` on wasm host", ?error);
         };
     }
 }
