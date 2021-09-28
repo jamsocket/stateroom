@@ -8,11 +8,13 @@
 <span id="8"> 8</span>
 <span id="9"> 9</span>
 <span id="10">10</span>
+<span id="11">11</span>
 </pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">api</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">cli_opts</span>;
 <span class="kw">mod</span> <span class="ident">commands</span>;
 <span class="kw">mod</span> <span class="ident">config</span>;
 
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">commands::deploy::deploy</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">commands::dev::dev</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">commands::login::login</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">commands::serve::serve</span>;

@@ -132,7 +132,7 @@
 };
 <span class="kw">use</span> <span class="ident">wasm_bindgen_cli_support::Bindgen</span>;
 
-<span class="kw">fn</span> <span class="ident">locate_config</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span><span class="ident">JamsocketConfig</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">locate_config</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span><span class="ident">JamsocketConfig</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">r</span>) <span class="op">=</span> <span class="ident">read_to_string</span>(<span class="string">&quot;jamsocket.toml&quot;</span>) {
         <span class="macro">tracing::info!</span>(<span class="string">&quot;Loading config from file (jamsocket.toml)&quot;</span>);
         <span class="ident">toml::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">r</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">into</span>())
@@ -142,7 +142,7 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">run_cargo_build_command</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run_cargo_build_command</span>(
     <span class="ident">package</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
     <span class="ident">release</span>: <span class="ident">bool</span>,

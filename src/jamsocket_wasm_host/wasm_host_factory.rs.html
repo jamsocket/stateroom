@@ -55,6 +55,7 @@
 <span id="55">55</span>
 <span id="56">56</span>
 <span id="57">57</span>
+<span id="58">58</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wasm_host::WasmHost</span>;
 <span class="kw">use</span> <span class="ident">anyhow::Result</span>;
 <span class="kw">use</span> <span class="ident">jamsocket</span>::{<span class="ident">JamsocketContext</span>, <span class="ident">JamsocketServiceFactory</span>};
@@ -108,6 +109,7 @@
         })
     }
 
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_with_shared_module</span>(<span class="ident">engine</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Engine</span><span class="op">&gt;</span>, <span class="ident">module</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Module</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">WasmHostFactory</span> { <span class="ident">engine</span>, <span class="ident">module</span> }
     }

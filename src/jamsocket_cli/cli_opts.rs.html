@@ -51,6 +51,8 @@
 <span id="51">51</span>
 <span id="52">52</span>
 <span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">clap::Clap</span>;
 <span class="kw">use</span> <span class="ident">jamsocket_server</span>::{<span class="ident">RoomIdStrategy</span>, <span class="ident">ServiceShutdownPolicy</span>};
 
@@ -68,6 +70,8 @@
     <span class="ident">Login</span>(<span class="ident">LoginCommand</span>),
 
     <span class="ident">Dev</span>,
+
+    <span class="ident">Deploy</span>,
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clap</span>)]</span>
