@@ -10,7 +10,7 @@ use std::{
 };
 use wasm_bindgen_cli_support::Bindgen;
 
-fn locate_config() -> anyhow::Result<JamsocketConfig> {
+pub fn locate_config() -> anyhow::Result<JamsocketConfig> {
     if let Ok(r) = read_to_string("jamsocket.toml") {
         tracing::info!("Loading config from file (jamsocket.toml)");
         toml::from_str(&r).map_err(|e| e.into())
@@ -20,7 +20,7 @@ fn locate_config() -> anyhow::Result<JamsocketConfig> {
     }
 }
 
-fn run_cargo_build_command(
+pub fn run_cargo_build_command(
     package: &Option<String>,
     target: &str,
     release: bool,

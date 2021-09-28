@@ -15,6 +15,8 @@ pub enum SubCommand {
     Login(LoginCommand),
 
     Dev,
+
+    Deploy,
 }
 
 #[derive(Clap)]

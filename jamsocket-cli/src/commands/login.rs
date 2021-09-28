@@ -42,7 +42,7 @@ pub fn login(login_opts: LoginCommand) -> anyhow::Result<()> {
                 println!(
                     "{}\nTo clear the current token, run `jamsocket login -c`.",
                     "Current token is valid.".green().bold()
-                )
+                );
             }
             Ok(false) => {
                 println!(

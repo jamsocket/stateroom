@@ -51,6 +51,7 @@ impl WasmHostFactory {
         })
     }
 
+    #[must_use]
     pub fn new_with_shared_module(engine: Arc<Engine>, module: Arc<Module>) -> Self {
         WasmHostFactory { engine, module }
     }

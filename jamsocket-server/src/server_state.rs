@@ -74,7 +74,7 @@ impl<T: JamsocketServiceFactory<ServiceActorContext>> ServerState<T> {
                         let service_actor = ServiceActor::new(
                             &service_ctx,
                             &room_id,
-                            host_factory,
+                            host_factory.as_ref(),
                             room_addr.clone().recipient(),
                         );
 

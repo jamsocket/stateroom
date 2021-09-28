@@ -3,7 +3,7 @@ use actix::{
     prelude::SendError, Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle,
 };
 use jamsocket::{JamsocketContext, JamsocketService, JamsocketServiceFactory, MessageRecipient};
-use std::{sync::Arc, time::Duration};
+use std::time::Duration;
 
 pub struct ServiceActor<J: JamsocketService> {
     service: J,
@@ -70,10 +70,11 @@ impl JamsocketContext for ServiceActorContext {
 }
 
 impl<J: JamsocketService> ServiceActor<J> {
+    #[must_use]
     pub fn new(
         ctx: &Context<Self>,
         room_id: &str,
-        service_constructor: Arc<impl JamsocketServiceFactory<ServiceActorContext, Service = J>>,
+        service_constructor: &impl JamsocketServiceFactory<ServiceActorContext, Service = J>,
         recipient: Recipient<MessageFromServer>,
     ) -> Option<Self> {
         let host_context = ServiceActorContext {
