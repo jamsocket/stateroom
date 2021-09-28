@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["SubCommand",""]],"struct":[["Opts",""],["ServeCommand",""]]});
+initSidebarItems({"enum":[["SubCommand",""]],"struct":[["LoginCommand",""],["Opts",""],["ServeCommand",""]]});
