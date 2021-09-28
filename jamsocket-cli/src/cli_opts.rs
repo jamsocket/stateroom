@@ -12,7 +12,18 @@ pub enum SubCommand {
     /// Run a dev server to host a given Jamsocket module.
     Serve(ServeCommand),
 
+    Login(LoginCommand),
+
     Dev,
+}
+
+#[derive(Clap)]
+pub struct LoginCommand {
+    #[clap(short, long)]
+    pub token: Option<String>,
+
+    #[clap(short, long)]
+    pub clear: bool,
 }
 
 #[derive(Clap)]

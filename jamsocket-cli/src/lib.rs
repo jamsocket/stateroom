@@ -1,6 +1,10 @@
+mod api;
 pub mod cli_opts;
 mod commands;
 mod config;
 
 pub use commands::dev::dev;
+pub use commands::login::login;
 pub use commands::serve::serve;
+
+pub(crate) const API_BASE: &str = "https://beta.jamsocket.com/";
