@@ -42,10 +42,29 @@
 <span id="42">42</span>
 <span id="43">43</span>
 <span id="44">44</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">API_BASE</span>, <span class="ident">WS_BASE</span>, <span class="ident">api::upload</span>, <span class="ident">cli_opts::DeployCommand</span>, <span class="ident">commands::dev</span>::{<span class="ident">locate_config</span>, <span class="ident">run_cargo_build_command</span>}, <span class="ident">config::GlobalConfigHandle</span>};
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{
+    <span class="ident">api::JamsocketApi</span>,
+    <span class="ident">cli_opts::DeployCommand</span>,
+    <span class="ident">commands::dev</span>::{<span class="ident">locate_config</span>, <span class="ident">run_cargo_build_command</span>},
+    <span class="ident">config::GlobalConfigHandle</span>,
+    <span class="ident">API_BASE</span>, <span class="ident">WS_BASE</span>,
+};
 <span class="kw">use</span> <span class="ident">anyhow::anyhow</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fs::File</span>, <span class="ident">io::Read</span>};
 <span class="kw">use</span> <span class="ident">colored::Colorize</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fs::File</span>, <span class="ident">io::Read</span>};
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">deploy</span>(<span class="ident">deploy_opts</span>: <span class="ident">DeployCommand</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">service_config</span> <span class="op">=</span> <span class="ident">locate_config</span>()<span class="question-mark">?</span>; <span class="comment">// TODO: default to a configuration if file not found.</span>
@@ -67,18 +86,25 @@
         <span class="string">&quot;The service id must either be passed in the command line, or be present in the jamsocket.toml file.&quot;</span>.<span class="ident">red</span>().<span class="ident">bold</span>(),
         <span class="string">&quot;Use `jamsocket init` to create a new service id.&quot;</span>.<span class="ident">yellow</span>()
     );
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(())
+        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     };
 
     <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="ident">global_config</span>.<span class="ident">config</span>.<span class="ident">token</span>.<span class="ident">ok_or</span>(<span class="macro">anyhow!</span>(
         <span class="string">&quot;Use `jamsocket login` first to install jamsocket credentials.&quot;</span>
     ))<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">upload</span>(<span class="kw-2">&amp;</span><span class="ident">token</span>, <span class="kw-2">&amp;</span><span class="ident">service_id</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">JamsocketApi::new</span>(<span class="kw-2">&amp;</span><span class="ident">token</span>).<span class="ident">upload</span>(<span class="kw-2">&amp;</span><span class="ident">service_id</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">new_room_url</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}service/{}/{}/new_room&quot;</span>, <span class="ident">API_BASE</span>, <span class="ident">result</span>.<span class="ident">service</span>, <span class="ident">result</span>.<span class="ident">module</span>);
-    <span class="kw">let</span> <span class="ident">ws_url</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}service/{}/{}/ws/&lt;room id&gt;&quot;</span>, <span class="ident">WS_BASE</span>, <span class="ident">result</span>.<span class="ident">service</span>, <span class="ident">result</span>.<span class="ident">module</span>);
+    <span class="kw">let</span> <span class="ident">new_room_url</span> <span class="op">=</span> <span class="macro">format!</span>(
+        <span class="string">&quot;{}service/{}/{}/new_room&quot;</span>,
+        <span class="ident">API_BASE</span>, <span class="ident">result</span>.<span class="ident">service</span>, <span class="ident">result</span>.<span class="ident">module</span>
+    );
+    <span class="kw">let</span> <span class="ident">ws_url</span> <span class="op">=</span> <span class="macro">format!</span>(
+        <span class="string">&quot;{}service/{}/{}/ws/&lt;room id&gt;&quot;</span>,
+        <span class="ident">WS_BASE</span>, <span class="ident">result</span>.<span class="ident">service</span>, <span class="ident">result</span>.<span class="ident">module</span>
+    );
 
-    <span class="macro">println!</span>(<span class="string">&quot;Module uploaded successfully.\n\nNew room URL:\n\n{} {}\n\nWebsocket URL:\n\n{}&quot;</span>,
+    <span class="macro">println!</span>(
+        <span class="string">&quot;Module uploaded successfully.\n\nNew room URL:\n\n{} {}\n\nWebsocket URL:\n\n{}&quot;</span>,
         <span class="string">&quot;POST&quot;</span>.<span class="ident">blue</span>().<span class="ident">bold</span>(),
         <span class="ident">new_room_url</span>.<span class="ident">yellow</span>().<span class="ident">bold</span>(),
         <span class="ident">ws_url</span>.<span class="ident">yellow</span>().<span class="ident">bold</span>(),

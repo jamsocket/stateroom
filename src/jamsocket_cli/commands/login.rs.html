@@ -64,7 +64,7 @@
 <span id="64">64</span>
 <span id="65">65</span>
 <span id="66">66</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">api::authenticate</span>, <span class="ident">cli_opts::LoginCommand</span>, <span class="ident">config::GlobalConfigHandle</span>, <span class="ident">API_BASE</span>};
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">api::JamsocketApi</span>, <span class="ident">cli_opts::LoginCommand</span>, <span class="ident">config::GlobalConfigHandle</span>, <span class="ident">API_BASE</span>};
 <span class="kw">use</span> <span class="ident">colored::Colorize</span>;
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">login</span>(<span class="ident">login_opts</span>: <span class="ident">LoginCommand</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -77,7 +77,7 @@
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
         }
 
-        <span class="kw">match</span> <span class="ident">authenticate</span>(<span class="kw-2">&amp;</span><span class="ident">token</span>) {
+        <span class="kw">match</span> <span class="ident">JamsocketApi::new</span>(<span class="kw-2">&amp;</span><span class="ident">token</span>).<span class="ident">authenticate</span>() {
             <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> {}
             <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="macro">println!</span>(<span class="string">&quot;Failed to authenticate with given token.&quot;</span>);
@@ -103,7 +103,7 @@
 
         <span class="comment">// User is not setting a token, but one exists in the config,</span>
         <span class="comment">// so we will check it.</span>
-        <span class="kw">match</span> <span class="ident">authenticate</span>(<span class="kw-2">&amp;</span><span class="ident">token</span>) {
+        <span class="kw">match</span> <span class="ident">JamsocketApi::new</span>(<span class="kw-2">&amp;</span><span class="ident">token</span>).<span class="ident">authenticate</span>() {
             <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="macro">println!</span>(
                     <span class="string">&quot;{}\nTo clear the current token, run `jamsocket login -c`.&quot;</span>,
