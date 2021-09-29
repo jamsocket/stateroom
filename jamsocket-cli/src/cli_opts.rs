@@ -21,7 +21,7 @@ pub enum SubCommand {
 
 #[derive(Clap)]
 pub struct DeployCommand {
-    pub service_id: String,
+    pub service_id: Option<String>,
 }
 
 #[derive(Clap)]

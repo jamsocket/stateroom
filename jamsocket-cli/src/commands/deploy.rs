@@ -14,7 +14,17 @@ pub fn deploy(deploy_opts: DeployCommand) -> anyhow::Result<()> {
     let mut module: Vec<u8> = Vec::new();
     File::open(service_wasm)?.read_to_end(&mut module)?;
 
-    let service_id = deploy_opts.service_id;
+    let service_id = if let Some(service_id) = deploy_opts.service_id {
+        service_id
+    } else if let Some(service_id) = service_config.service_id {
+        service_id
+    } else {
+        println!("{}\n\n{}",
+        "The service id must either be passed in the command line, or be present in the jamsocket.toml file.".red().bold(),
+        "Use `jamsocket init` to create a new service id.".yellow()
+    );
+        return Ok(())
+    };
 
     let token = global_config.config.token.ok_or(anyhow!(
         "Use `jamsocket login` first to install jamsocket credentials."

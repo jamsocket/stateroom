@@ -77,6 +77,9 @@ pub struct JamsocketConfig {
 
     /// Configuration for building the WebAssembly module to serve.
     pub service: ServiceConfig,
+
+    /// A unique ID for the service used for deployment.
+    pub service_id: Option<String>,
 }
 
 /// Configuration for generating a client-side WebAssembly module.
