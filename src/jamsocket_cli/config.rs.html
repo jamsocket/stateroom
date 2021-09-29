@@ -110,6 +110,9 @@
 <span id="110">110</span>
 <span id="111">111</span>
 <span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">fs</span>::{<span class="ident">create_dir_all</span>, <span class="ident">read_to_string</span>},
     <span class="ident">path::PathBuf</span>,
@@ -189,6 +192,9 @@
 
     <span class="doccomment">/// Configuration for building the WebAssembly module to serve.</span>
     <span class="kw">pub</span> <span class="ident">service</span>: <span class="ident">ServiceConfig</span>,
+
+    <span class="doccomment">/// A unique ID for the service used for deployment.</span>
+    <span class="kw">pub</span> <span class="ident">service_id</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Configuration for generating a client-side WebAssembly module.</span>
