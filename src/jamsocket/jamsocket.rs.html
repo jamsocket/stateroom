@@ -22,11 +22,12 @@
 <span id="22">22</span>
 <span id="23">23</span>
 <span id="24">24</span>
+<span id="25">25</span>
 </pre><pre class="rust"><code><span class="doccomment">//! # `jamsocket-cli`: a command-line interface to Jamsocket</span>
 
 <span class="kw">use</span> <span class="ident">clap::Clap</span>;
 <span class="kw">use</span> <span class="ident">jamsocket_cli::cli_opts</span>::{<span class="ident">Opts</span>, <span class="ident">SubCommand</span>};
-<span class="kw">use</span> <span class="ident">jamsocket_cli</span>::{<span class="ident">deploy</span>, <span class="ident">dev</span>, <span class="ident">login</span>, <span class="ident">serve</span>};
+<span class="kw">use</span> <span class="ident">jamsocket_cli</span>::{<span class="ident">deploy</span>, <span class="ident">dev</span>, <span class="ident">init</span>, <span class="ident">login</span>, <span class="ident">serve</span>};
 <span class="kw">use</span> <span class="ident">tracing_subscriber::EnvFilter</span>;
 
 <span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -44,6 +45,7 @@
         <span class="ident">SubCommand::Dev</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">dev</span>(),
         <span class="ident">SubCommand::Login</span>(<span class="ident">login_opts</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">login</span>(<span class="ident">login_opts</span>),
         <span class="ident">SubCommand::Deploy</span>(<span class="ident">deploy_opts</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">deploy</span>(<span class="ident">deploy_opts</span>),
+        <span class="ident">SubCommand::Init</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">init</span>(),
     }
 }
 </code></pre></div>
