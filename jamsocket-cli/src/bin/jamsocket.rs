@@ -2,7 +2,7 @@
 
 use clap::Clap;
 use jamsocket_cli::cli_opts::{Opts, SubCommand};
-use jamsocket_cli::{deploy, dev, login, serve};
+use jamsocket_cli::{deploy, dev, init, login, serve};
 use tracing_subscriber::EnvFilter;
 
 fn main() -> anyhow::Result<()> {
@@ -20,5 +20,6 @@ fn main() -> anyhow::Result<()> {
         SubCommand::Dev => dev(),
         SubCommand::Login(login_opts) => login(login_opts),
         SubCommand::Deploy(deploy_opts) => deploy(deploy_opts),
+        SubCommand::Init => init(),
     }
 }

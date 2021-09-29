@@ -1,13 +1,18 @@
 pub const API_BASE: &str = "https://beta.jamsocket.com/";
 pub const WS_BASE: &str = "wss://beta.jamsocket.com/";
 
+#[cfg(feature="client")]
 use anyhow::{anyhow, Result};
+#[cfg(feature="client")]
 use reqwest::StatusCode;
 use serde::{Serialize, Deserialize};
 
+#[cfg(feature="client")]
 pub struct JamsocketApi {
     token: String,
 }
+
+#[cfg(feature="client")]
 
 impl JamsocketApi {
     pub fn new(token: &str) -> Self {
@@ -62,6 +67,7 @@ impl JamsocketApi {
         let res = client
             .post(url)
             .query(&[("token", &self.token)])
+            .body("")
             .send()?;
 
         match res.status() {
