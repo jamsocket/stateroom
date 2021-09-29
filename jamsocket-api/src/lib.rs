@@ -1,7 +1,9 @@
-use crate::API_BASE;
+pub const API_BASE: &str = "https://beta.jamsocket.com/";
+pub const WS_BASE: &str = "wss://beta.jamsocket.com/";
+
 use anyhow::{anyhow, Result};
 use reqwest::StatusCode;
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 
 pub struct JamsocketApi {
     token: String,
@@ -52,10 +54,40 @@ impl JamsocketApi {
             )),
         }
     }
+
+    pub fn new_service(&self) -> Result<String> {
+        let url = format!("{}service", API_BASE);
+
+        let client = reqwest::blocking::Client::new();
+        let res = client
+            .post(url)
+            .query(&[("token", &self.token)])
+            .send()?;
+
+        match res.status() {
+            StatusCode::FORBIDDEN => Err(anyhow!(
+                "Configured token is not valid."
+            )),
+            StatusCode::OK => {
+                let response = res.json::<CreateServiceResponse>()?;
+                Ok(response.service_id.to_string())
+            },
+            sc => Err(anyhow!(
+                "Received error status code from jamsocket API: {} {:?}",
+                sc,
+                res.text()?
+            )),
+        }
+    }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct UploadServiceResponse {
     pub module: String,
     pub service: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CreateServiceResponse {
+    pub service_id: String,
 }

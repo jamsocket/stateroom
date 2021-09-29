@@ -1512,6 +1512,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "jamsocket-api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "reqwest",
+ "serde",
+]
+
+[[package]]
 name = "jamsocket-cli"
 version = "0.1.3"
 dependencies = [
@@ -1524,10 +1533,10 @@ dependencies = [
  "colored",
  "dirs",
  "jamsocket",
+ "jamsocket-api",
  "jamsocket-server",
  "jamsocket-stdio",
  "jamsocket-wasm-host",
- "reqwest",
  "serde",
  "toml",
  "tracing",
