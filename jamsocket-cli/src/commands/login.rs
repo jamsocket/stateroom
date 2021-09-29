@@ -1,4 +1,4 @@
-use crate::{api::authenticate, cli_opts::LoginCommand, config::GlobalConfigHandle, API_BASE};
+use crate::{api::JamsocketApi, cli_opts::LoginCommand, config::GlobalConfigHandle, API_BASE};
 use colored::Colorize;
 
 pub fn login(login_opts: LoginCommand) -> anyhow::Result<()> {
@@ -11,7 +11,7 @@ pub fn login(login_opts: LoginCommand) -> anyhow::Result<()> {
             return Ok(());
         }
 
-        match authenticate(&token) {
+        match JamsocketApi::new(&token).authenticate() {
             Ok(true) => {}
             Ok(false) => {
                 println!("Failed to authenticate with given token.");
@@ -37,7 +37,7 @@ pub fn login(login_opts: LoginCommand) -> anyhow::Result<()> {
 
         // User is not setting a token, but one exists in the config,
         // so we will check it.
-        match authenticate(&token) {
+        match JamsocketApi::new(&token).authenticate() {
             Ok(true) => {
                 println!(
                     "{}\nTo clear the current token, run `jamsocket login -c`.",
