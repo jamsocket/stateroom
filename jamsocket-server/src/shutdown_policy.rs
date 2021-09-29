@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{fmt::Display, str::FromStr};
 
 #[derive(Debug, PartialEq)]
@@ -20,7 +20,7 @@ impl std::error::Error for BadShutdownPolicyName {}
 ///
 /// Depending on this value, the server may shut down the room immediately, after a
 /// given timeout, or never.
-#[derive(Clone, Copy, PartialEq, Debug, Deserialize)]
+#[derive(Clone, Copy, PartialEq, Debug, Deserialize, Serialize)]
 pub enum ServiceShutdownPolicy {
     /// Never garbage collect rooms. This is mostly for development, or for when you
     /// have a fixed set of rooms.

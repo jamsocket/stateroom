@@ -60,13 +60,16 @@ impl GlobalConfigHandle {
 
 /// Represents a `jamsocket.toml` file, used to configure
 /// a Jamsocket server.
-#[derive(Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct JamsocketConfig {
     /// Directory to serve static files from.
     ///
     /// If this is provided, the server will attempt to serve HTTP requests
     /// relative to this directory, if they do not match other paths.
     pub static_files: Option<String>,
+
+    /// A unique ID for the service used for deployment.
+    pub service_id: Option<String>,
 
     /// Optional configuration for building a WebAssembly module for the
     /// client.
@@ -77,13 +80,10 @@ pub struct JamsocketConfig {
 
     /// Configuration for building the WebAssembly module to serve.
     pub service: ServiceConfig,
-
-    /// A unique ID for the service used for deployment.
-    pub service_id: Option<String>,
 }
 
 /// Configuration for generating a client-side WebAssembly module.
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ClientConfig {
     /// The name of the package to build.
     ///
@@ -94,7 +94,7 @@ pub struct ClientConfig {
 }
 
 /// Configuration for generating and serving a Jamsocket service module.
-#[derive(Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct ServiceConfig {
     /// The name of the package to build.
     ///
