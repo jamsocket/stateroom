@@ -64,8 +64,10 @@
 <span id="64">64</span>
 <span id="65">65</span>
 <span id="66">66</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">api::JamsocketApi</span>, <span class="ident">cli_opts::LoginCommand</span>, <span class="ident">config::GlobalConfigHandle</span>, <span class="ident">API_BASE</span>};
+<span id="67">67</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">cli_opts::LoginCommand</span>, <span class="ident">config::GlobalConfigHandle</span>};
 <span class="kw">use</span> <span class="ident">colored::Colorize</span>;
+<span class="kw">use</span> <span class="ident">jamsocket_api</span>::{<span class="ident">API_BASE</span>, <span class="ident">JamsocketApi</span>};
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">login</span>(<span class="ident">login_opts</span>: <span class="ident">LoginCommand</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}login/github&quot;</span>, <span class="ident">API_BASE</span>);

@@ -54,16 +54,14 @@
 <span id="54">54</span>
 <span id="55">55</span>
 <span id="56">56</span>
-<span id="57">57</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">api::JamsocketApi</span>,
     <span class="ident">cli_opts::DeployCommand</span>,
     <span class="ident">commands::dev</span>::{<span class="ident">locate_config</span>, <span class="ident">run_cargo_build_command</span>},
     <span class="ident">config::GlobalConfigHandle</span>,
-    <span class="ident">API_BASE</span>, <span class="ident">WS_BASE</span>,
 };
 <span class="kw">use</span> <span class="ident">anyhow::anyhow</span>;
 <span class="kw">use</span> <span class="ident">colored::Colorize</span>;
+<span class="kw">use</span> <span class="ident">jamsocket_api</span>::{<span class="ident">API_BASE</span>, <span class="ident">JamsocketApi</span>, <span class="ident">WS_BASE</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fs::File</span>, <span class="ident">io::Read</span>};
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">deploy</span>(<span class="ident">deploy_opts</span>: <span class="ident">DeployCommand</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
