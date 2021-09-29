@@ -34,9 +34,20 @@
 <span id="34">34</span>
 <span id="35">35</span>
 <span id="36">36</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::config::GlobalConfigHandle</span>;
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::config</span>::{<span class="ident">GlobalConfigHandle</span>, <span class="ident">JamsocketConfig</span>, <span class="ident">ServiceConfig</span>};
 <span class="kw">use</span> <span class="ident">colored::Colorize</span>;
 <span class="kw">use</span> <span class="ident">jamsocket_api::JamsocketApi</span>;
+<span class="kw">use</span> <span class="ident">jamsocket_server</span>::{<span class="ident">RoomIdStrategy</span>, <span class="ident">ServiceShutdownPolicy</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">fs::File</span>, <span class="ident">path::Path</span>};
 <span class="kw">use</span> <span class="ident">std::io::prelude::Write</span>;
 
@@ -55,10 +66,19 @@
 
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">token</span>) <span class="op">=</span> <span class="ident">global_config</span>.<span class="ident">config</span>.<span class="ident">token</span> {
         <span class="kw">let</span> <span class="ident">service_id</span> <span class="op">=</span> <span class="ident">JamsocketApi::new</span>(<span class="kw-2">&amp;</span><span class="ident">token</span>).<span class="ident">new_service</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">service_toml</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;service_id = {}\n&quot;</span>, <span class="ident">service_id</span>);
+        <span class="kw">let</span> <span class="ident">service_config</span> <span class="op">=</span> <span class="ident">JamsocketConfig</span> {
+            <span class="ident">static_files</span>: <span class="prelude-val">None</span>,
+            <span class="ident">client</span>: <span class="prelude-val">None</span>,
+            <span class="ident">service</span>: <span class="ident">ServiceConfig</span> {
+                <span class="ident">package</span>: <span class="prelude-val">None</span>,
+                <span class="ident">room_strategy</span>: <span class="ident">RoomIdStrategy::Explicit</span>,
+                <span class="ident">shutdown_policy</span>: <span class="ident">ServiceShutdownPolicy::Immediate</span>,
+            },
+            <span class="ident">service_id</span>: <span class="prelude-val">Some</span>(<span class="ident">service_id</span>.<span class="ident">clone</span>()),
+        };
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">File::create</span>(<span class="string">&quot;jamsocket.toml&quot;</span>)<span class="question-mark">?</span>;
-        <span class="ident">file</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">service_toml</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
+        <span class="ident">file</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">toml::to_vec</span>(<span class="kw-2">&amp;</span><span class="ident">service_config</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
         <span class="macro">println!</span>(
             <span class="string">&quot;Created new service {} and wrote to jamsocket.toml.&quot;</span>,

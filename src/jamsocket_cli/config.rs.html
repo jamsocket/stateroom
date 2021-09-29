@@ -175,13 +175,16 @@
 
 <span class="doccomment">/// Represents a `jamsocket.toml` file, used to configure</span>
 <span class="doccomment">/// a Jamsocket server.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">JamsocketConfig</span> {
     <span class="doccomment">/// Directory to serve static files from.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If this is provided, the server will attempt to serve HTTP requests</span>
     <span class="doccomment">/// relative to this directory, if they do not match other paths.</span>
     <span class="kw">pub</span> <span class="ident">static_files</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+
+    <span class="doccomment">/// A unique ID for the service used for deployment.</span>
+    <span class="kw">pub</span> <span class="ident">service_id</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 
     <span class="doccomment">/// Optional configuration for building a WebAssembly module for the</span>
     <span class="doccomment">/// client.</span>
@@ -192,13 +195,10 @@
 
     <span class="doccomment">/// Configuration for building the WebAssembly module to serve.</span>
     <span class="kw">pub</span> <span class="ident">service</span>: <span class="ident">ServiceConfig</span>,
-
-    <span class="doccomment">/// A unique ID for the service used for deployment.</span>
-    <span class="kw">pub</span> <span class="ident">service_id</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Configuration for generating a client-side WebAssembly module.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Debug</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ClientConfig</span> {
     <span class="doccomment">/// The name of the package to build.</span>
     <span class="doccomment">///</span>
@@ -209,7 +209,7 @@
 }
 
 <span class="doccomment">/// Configuration for generating and serving a Jamsocket service module.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ServiceConfig</span> {
     <span class="doccomment">/// The name of the package to build.</span>
     <span class="doccomment">///</span>

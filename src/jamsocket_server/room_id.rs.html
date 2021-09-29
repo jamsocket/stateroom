@@ -295,8 +295,21 @@
 <span id="295">295</span>
 <span id="296">296</span>
 <span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">rand</span>::{<span class="ident">thread_rng</span>, <span class="ident">Rng</span>};
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">de::Visitor</span>, <span class="ident">Deserialize</span>};
+<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">de::Visitor</span>, <span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">fmt</span>::{<span class="ident">Debug</span>, <span class="ident">Display</span>},
     <span class="ident">str::FromStr</span>,
@@ -455,6 +468,19 @@
         <span class="ident">D</span>: <span class="ident">serde::Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     {
         <span class="ident">deserializer</span>.<span class="ident">deserialize_str</span>(<span class="ident">RoomIdStrategyVisitor</span>)
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">RoomIdStrategy</span> {
+    <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">S</span>: <span class="ident">serde::Serializer</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">RoomIdStrategy::Explicit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">serializer</span>.<span class="ident">serialize_str</span>(<span class="string">&quot;api&quot;</span>),
+            <span class="ident">RoomIdStrategy::Implicit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">serializer</span>.<span class="ident">serialize_str</span>(<span class="string">&quot;implicit&quot;</span>),
+            <span class="comment">// TODO: return Err instead of panicking.</span>
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;Can&#39;t serialize RoomIdStrategy with arbitrary generator.&quot;</span>)
+        }
     }
 }
 
