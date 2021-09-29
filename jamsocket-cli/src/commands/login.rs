@@ -1,5 +1,6 @@
-use crate::{api::JamsocketApi, cli_opts::LoginCommand, config::GlobalConfigHandle, API_BASE};
+use crate::{cli_opts::LoginCommand, config::GlobalConfigHandle};
 use colored::Colorize;
+use jamsocket_api::{API_BASE, JamsocketApi};
 
 pub fn login(login_opts: LoginCommand) -> anyhow::Result<()> {
     let url = format!("{}login/github", API_BASE);

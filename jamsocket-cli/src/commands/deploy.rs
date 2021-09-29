@@ -1,12 +1,11 @@
 use crate::{
-    api::JamsocketApi,
     cli_opts::DeployCommand,
     commands::dev::{locate_config, run_cargo_build_command},
     config::GlobalConfigHandle,
-    API_BASE, WS_BASE,
 };
 use anyhow::anyhow;
 use colored::Colorize;
+use jamsocket_api::{API_BASE, JamsocketApi, WS_BASE};
 use std::{fs::File, io::Read};
 
 pub fn deploy(deploy_opts: DeployCommand) -> anyhow::Result<()> {
