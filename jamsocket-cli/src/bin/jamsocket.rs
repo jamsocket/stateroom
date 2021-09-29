@@ -19,6 +19,6 @@ fn main() -> anyhow::Result<()> {
         SubCommand::Serve(serve_opts) => serve(serve_opts),
         SubCommand::Dev => dev(),
         SubCommand::Login(login_opts) => login(login_opts),
-        SubCommand::Deploy => deploy(),
+        SubCommand::Deploy(deploy_opts) => deploy(deploy_opts),
     }
 }

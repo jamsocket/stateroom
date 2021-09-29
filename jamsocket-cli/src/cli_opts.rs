@@ -16,7 +16,12 @@ pub enum SubCommand {
 
     Dev,
 
-    Deploy,
+    Deploy(DeployCommand),
+}
+
+#[derive(Clap)]
+pub struct DeployCommand {
+    pub service_id: String,
 }
 
 #[derive(Clap)]
