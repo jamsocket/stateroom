@@ -53,6 +53,11 @@
 <span id="53">53</span>
 <span id="54">54</span>
 <span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">clap::Clap</span>;
 <span class="kw">use</span> <span class="ident">jamsocket_server</span>::{<span class="ident">RoomIdStrategy</span>, <span class="ident">ServiceShutdownPolicy</span>};
 
@@ -71,7 +76,12 @@
 
     <span class="ident">Dev</span>,
 
-    <span class="ident">Deploy</span>,
+    <span class="ident">Deploy</span>(<span class="ident">DeployCommand</span>),
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clap</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DeployCommand</span> {
+    <span class="kw">pub</span> <span class="ident">service_id</span>: <span class="ident">String</span>,
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clap</span>)]</span>
