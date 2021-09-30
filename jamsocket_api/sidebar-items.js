@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["API_BASE",""],["WS_BASE",""]],"struct":[["CreateServiceResponse",""],["JamsocketApi",""],["UploadServiceResponse",""]]});
+initSidebarItems({"constant":[["API_BASE",""],["WS_BASE",""]],"struct":[["AuthcheckResponse",""],["CreateServiceResponse",""],["JamsocketApi",""],["UploadServiceResponse",""]]});
