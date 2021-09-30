@@ -13,8 +13,8 @@ pub fn login(login_opts: LoginCommand) -> anyhow::Result<()> {
         }
 
         match JamsocketApi::new(&token).authenticate() {
-            Ok(true) => {}
-            Ok(false) => {
+            Ok(Some(_)) => {}
+            Ok(None) => {
                 println!("Failed to authenticate with given token.");
                 return Ok(());
             }
@@ -39,13 +39,13 @@ pub fn login(login_opts: LoginCommand) -> anyhow::Result<()> {
         // User is not setting a token, but one exists in the config,
         // so we will check it.
         match JamsocketApi::new(&token).authenticate() {
-            Ok(true) => {
+            Ok(Some(_)) => {
                 println!(
                     "{}\nTo clear the current token, run `jamsocket login -c`.",
                     "Current token is valid.".green().bold()
                 );
             }
-            Ok(false) => {
+            Ok(None) => {
                 println!(
                     "{} To create a new one, open the URL below and follow the instructions.\n\n{}",
                     "Current token is not valid.".red().bold(),
