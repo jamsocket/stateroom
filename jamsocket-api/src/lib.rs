@@ -13,7 +13,6 @@ pub struct JamsocketApi {
 }
 
 #[cfg(feature="client")]
-
 impl JamsocketApi {
     pub fn new(token: &str) -> Self {
         JamsocketApi {
@@ -21,16 +20,16 @@ impl JamsocketApi {
         }
     }
 
-    pub fn authenticate(&self) -> Result<bool> {
+    pub fn authenticate(&self) -> Result<Option<AuthcheckResponse>> {
         let url = format!("{}authcheck", API_BASE);
 
         let client = reqwest::blocking::Client::new();
         let res = client.get(url).query(&[("token", &self.token)]).send()?;
 
         if res.status().is_success() {
-            Ok(true)
+            Ok(Some(res.json()?))
         } else if res.status() == StatusCode::FORBIDDEN {
-            Ok(false)
+            Ok(None)
         } else {
             Err(anyhow!("Unexpected error code: {}", res.status()))
         }
@@ -96,4 +95,12 @@ pub struct UploadServiceResponse {
 #[derive(Serialize, Deserialize)]
 pub struct CreateServiceResponse {
     pub service_id: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AuthcheckResponse {
+    email: String,
+    provider: String,
+    username: String,
+    activated: bool,
 }
