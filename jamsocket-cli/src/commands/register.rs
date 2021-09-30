@@ -7,7 +7,7 @@ use toml_edit::{Document, value};
 const JAMSOCKET_TOML: &str = "jamsocket.toml";
 const SERVICE_ID: &str = "service_id";
 
-pub fn init() -> anyhow::Result<()> {
+pub fn register() -> anyhow::Result<()> {
     let global_config = GlobalConfigHandle::new()?;
     let doc_str = match read_to_string(JAMSOCKET_TOML) {
         Ok(v) => v,

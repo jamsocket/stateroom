@@ -18,7 +18,7 @@ pub enum SubCommand {
 
     Deploy(DeployCommand),
 
-    Init,
+    Register,
 }
 
 #[derive(Clap)]

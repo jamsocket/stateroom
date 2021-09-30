@@ -99,8 +99,8 @@ pub struct CreateServiceResponse {
 
 #[derive(Serialize, Deserialize)]
 pub struct AuthcheckResponse {
-    email: String,
-    provider: String,
-    username: String,
-    activated: bool,
+    pub email: String,
+    pub provider: String,
+    pub username: String,
+    pub activated: bool,
 }

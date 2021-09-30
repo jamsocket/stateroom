@@ -39,10 +39,13 @@ pub fn login(login_opts: LoginCommand) -> anyhow::Result<()> {
         // User is not setting a token, but one exists in the config,
         // so we will check it.
         match JamsocketApi::new(&token).authenticate() {
-            Ok(Some(_)) => {
+            Ok(Some(result)) => {
                 println!(
-                    "{}\nTo clear the current token, run `jamsocket login -c`.",
-                    "Current token is valid.".green().bold()
+                    "{}\n\nEmail: {}\nOAuth Provider: {}\nUsername: {}\n\nTo clear the current token, run `jamsocket login -c`.",
+                    "Current token is valid.".green().bold(),
+                    result.email,
+                    result.provider,
+                    result.username,
                 );
             }
             Ok(None) => {
