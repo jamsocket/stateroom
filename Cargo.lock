@@ -649,7 +649,7 @@ dependencies = [
  "ipnet",
  "maybe-owned",
  "once_cell",
- "rsix 0.23.5",
+ "rsix 0.23.6",
  "rustc_version 0.4.0",
  "unsafe-io",
  "winapi",
@@ -676,7 +676,7 @@ dependencies = [
  "cap-primitives",
  "io-lifetimes",
  "ipnet",
- "rsix 0.23.5",
+ "rsix 0.23.6",
  "rustc_version 0.4.0",
  "unsafe-io",
 ]
@@ -689,7 +689,7 @@ checksum = "aea5319ada3a9517fc70eafe9cf3275f04da795c53770ebc5d91f4a33f4dd2b5"
 dependencies = [
  "cap-primitives",
  "once_cell",
- "rsix 0.23.5",
+ "rsix 0.23.6",
  "winx",
 ]
 
@@ -1196,7 +1196,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "807e3ef0de04fbe498bebd560ae041e006d97bf9f726dc0b485a86316be0ebc8"
 dependencies = [
  "io-lifetimes",
- "rsix 0.23.5",
+ "rsix 0.23.6",
  "winapi",
 ]
 
@@ -1312,9 +1312,9 @@ dependencies = [
 
 [[package]]
 name = "h2"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7f3675cfef6a30c8031cf9e6493ebdc3bb3272a3fea3923c4210d1830e6a472"
+checksum = "3b21b78895ff1ade3f8df6a9a77917f20dc8b46d0069dd5a3837cf1f507a70ee"
 dependencies = [
  "bytes",
  "fnv",
@@ -2281,9 +2281,9 @@ dependencies = [
 
 [[package]]
 name = "rsix"
-version = "0.23.5"
+version = "0.23.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d2e5b875a1b71286b054bf60a7df4ec63fc546ab2e8e4d61701c3cebaf1baf3"
+checksum = "7c78173061d7d2860f5e455a05165f0129431306b3dd4fd445da170c210b3456"
 dependencies = [
  "bitflags",
  "cc",
@@ -2525,9 +2525,9 @@ checksum = "c307a32c1c5c437f38c7fd45d753050587732ba8628319fbdf12a7e289ccc590"
 
 [[package]]
 name = "smallvec"
-version = "1.6.1"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
+checksum = "1ecab6c735a6bb4139c0caafd0cc3635748bbb3acf4550e8138122099251f309"
 
 [[package]]
 name = "socket2"
@@ -2631,7 +2631,7 @@ dependencies = [
  "cap-fs-ext",
  "cap-std",
  "io-lifetimes",
- "rsix 0.23.5",
+ "rsix 0.23.6",
  "rustc_version 0.4.0",
  "winapi",
  "winx",
