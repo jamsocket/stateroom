@@ -87,9 +87,12 @@ impl JamsocketApi {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UploadServiceResponse {
     pub module: String,
     pub service: String,
+    pub create_room_url: Option<String>,
+    pub url_base: String,
 }
 
 #[derive(Serialize, Deserialize)]
