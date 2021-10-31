@@ -26,13 +26,13 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ClientId</span>(<span class="ident">u32</span>);
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ClientId</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">u32</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">c</span>: <span class="ident">ClientId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">c</span>: <span class="ident">ClientId</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">c</span>.<span class="number">0</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ClientId</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">u</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">u</span>: <span class="ident">u32</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">ClientId</span>(<span class="ident">u</span>)
     }
 }

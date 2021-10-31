@@ -60,16 +60,16 @@
 <span id="60">60</span>
 <span id="61">61</span>
 <span id="62">62</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">clap::Clap</span>;
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">clap::Parser</span>;
 <span class="kw">use</span> <span class="ident">jamsocket_server</span>::{<span class="ident">RoomIdStrategy</span>, <span class="ident">ServiceShutdownPolicy</span>};
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clap</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Parser</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Opts</span> {
     <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">subcommand</span>)]</span>
     <span class="kw">pub</span> <span class="ident">subcommand</span>: <span class="ident">SubCommand</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clap</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Parser</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">SubCommand</span> {
     <span class="doccomment">/// Run a dev server to host a given Jamsocket module.</span>
     <span class="ident">Serve</span>(<span class="ident">ServeCommand</span>),
@@ -83,12 +83,12 @@
     <span class="ident">Register</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clap</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Parser</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DeployCommand</span> {
     <span class="kw">pub</span> <span class="ident">service_id</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clap</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Parser</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LoginCommand</span> {
     <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">short</span>, <span class="ident">long</span>)]</span>
     <span class="kw">pub</span> <span class="ident">token</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
@@ -97,7 +97,7 @@
     <span class="kw">pub</span> <span class="ident">clear</span>: <span class="ident">bool</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clap</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Parser</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ServeCommand</span> {
     <span class="doccomment">/// The module (.wasm file) to serve.</span>
     <span class="kw">pub</span> <span class="ident">module</span>: <span class="ident">String</span>,

@@ -70,9 +70,9 @@
 <span id="70">70</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">cli_opts::LoginCommand</span>, <span class="ident">config::GlobalConfigHandle</span>};
 <span class="kw">use</span> <span class="ident">colored::Colorize</span>;
-<span class="kw">use</span> <span class="ident">jamsocket_api</span>::{<span class="ident">API_BASE</span>, <span class="ident">JamsocketApi</span>};
+<span class="kw">use</span> <span class="ident">jamsocket_api</span>::{<span class="ident">JamsocketApi</span>, <span class="ident">API_BASE</span>};
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">login</span>(<span class="ident">login_opts</span>: <span class="ident">LoginCommand</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">login</span>(<span class="ident">login_opts</span>: <span class="ident">LoginCommand</span>) -&gt; <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">url</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}login/github&quot;</span>, <span class="ident">API_BASE</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">GlobalConfigHandle::new</span>()<span class="question-mark">?</span>;
 
@@ -83,12 +83,12 @@
         }
 
         <span class="kw">match</span> <span class="ident">JamsocketApi::new</span>(<span class="kw-2">&amp;</span><span class="ident">token</span>).<span class="ident">authenticate</span>() {
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> {}
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw">_</span>)) =&gt; {}
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; {
                 <span class="macro">println!</span>(<span class="string">&quot;Failed to authenticate with given token.&quot;</span>);
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
             }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
                 <span class="macro">println!</span>(<span class="string">&quot;Encountered error: {}&quot;</span>, <span class="ident">e</span>);
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
             }
@@ -109,7 +109,7 @@
         <span class="comment">// User is not setting a token, but one exists in the config,</span>
         <span class="comment">// so we will check it.</span>
         <span class="kw">match</span> <span class="ident">JamsocketApi::new</span>(<span class="kw-2">&amp;</span><span class="ident">token</span>).<span class="ident">authenticate</span>() {
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">result</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">result</span>)) =&gt; {
                 <span class="macro">println!</span>(
                     <span class="string">&quot;{}\n\nEmail: {}\nOAuth Provider: {}\nUsername: {}\n\nTo clear the current token, run `jamsocket login -c`.&quot;</span>,
                     <span class="string">&quot;Current token is valid.&quot;</span>.<span class="ident">green</span>().<span class="ident">bold</span>(),
@@ -118,14 +118,14 @@
                     <span class="ident">result</span>.<span class="ident">username</span>,
                 );
             }
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; {
                 <span class="macro">println!</span>(
                     <span class="string">&quot;{} To create a new one, open the URL below and follow the instructions.\n\n{}&quot;</span>,
                     <span class="string">&quot;Current token is not valid.&quot;</span>.<span class="ident">red</span>().<span class="ident">bold</span>(),
                     <span class="ident">url</span>.<span class="ident">yellow</span>().<span class="ident">bold</span>()
                 );
             }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
                 <span class="macro">println!</span>(<span class="string">&quot;Encountered error: {}&quot;</span>, <span class="ident">e</span>);
             }
         }

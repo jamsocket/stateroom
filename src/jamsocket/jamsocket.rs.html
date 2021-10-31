@@ -25,12 +25,12 @@
 <span id="25">25</span>
 </pre><pre class="rust"><code><span class="doccomment">//! # `jamsocket-cli`: a command-line interface to Jamsocket</span>
 
-<span class="kw">use</span> <span class="ident">clap::Clap</span>;
+<span class="kw">use</span> <span class="ident">clap::Parser</span>;
 <span class="kw">use</span> <span class="ident">jamsocket_cli::cli_opts</span>::{<span class="ident">Opts</span>, <span class="ident">SubCommand</span>};
-<span class="kw">use</span> <span class="ident">jamsocket_cli</span>::{<span class="ident">deploy</span>, <span class="ident">dev</span>, <span class="ident">register</span>, <span class="ident">login</span>, <span class="ident">serve</span>};
+<span class="kw">use</span> <span class="ident">jamsocket_cli</span>::{<span class="ident">deploy</span>, <span class="ident">dev</span>, <span class="ident">login</span>, <span class="ident">register</span>, <span class="ident">serve</span>};
 <span class="kw">use</span> <span class="ident">tracing_subscriber::EnvFilter</span>;
 
-<span class="kw">fn</span> <span class="ident">main</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">main</span>() -&gt; <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">env_filter</span> <span class="op">=</span> <span class="ident">EnvFilter::default</span>()
         .<span class="ident">add_directive</span>(<span class="string">&quot;jamsocket_cli=info&quot;</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>)
         .<span class="ident">add_directive</span>(<span class="string">&quot;jamsocket_wasm_host=info&quot;</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>)
@@ -41,11 +41,11 @@
     <span class="kw">let</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">Opts::parse</span>();
 
     <span class="kw">match</span> <span class="ident">opts</span>.<span class="ident">subcommand</span> {
-        <span class="ident">SubCommand::Serve</span>(<span class="ident">serve_opts</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">serve</span>(<span class="ident">serve_opts</span>),
-        <span class="ident">SubCommand::Dev</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">dev</span>(),
-        <span class="ident">SubCommand::Login</span>(<span class="ident">login_opts</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">login</span>(<span class="ident">login_opts</span>),
-        <span class="ident">SubCommand::Deploy</span>(<span class="ident">deploy_opts</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">deploy</span>(<span class="ident">deploy_opts</span>),
-        <span class="ident">SubCommand::Register</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">register</span>(),
+        <span class="ident">SubCommand::Serve</span>(<span class="ident">serve_opts</span>) =&gt; <span class="ident">serve</span>(<span class="ident">serve_opts</span>),
+        <span class="ident">SubCommand::Dev</span> =&gt; <span class="ident">dev</span>(),
+        <span class="ident">SubCommand::Login</span>(<span class="ident">login_opts</span>) =&gt; <span class="ident">login</span>(<span class="ident">login_opts</span>),
+        <span class="ident">SubCommand::Deploy</span>(<span class="ident">deploy_opts</span>) =&gt; <span class="ident">deploy</span>(<span class="ident">deploy_opts</span>),
+        <span class="ident">SubCommand::Register</span> =&gt; <span class="ident">register</span>(),
     }
 }
 </code></pre></div>

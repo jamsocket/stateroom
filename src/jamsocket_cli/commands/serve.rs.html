@@ -45,7 +45,7 @@
 <span class="kw">use</span> <span class="ident">jamsocket_stdio::StdioProcessServiceFactory</span>;
 <span class="kw">use</span> <span class="ident">jamsocket_wasm_host::WasmHostFactory</span>;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serve</span>(<span class="ident">serve_opts</span>: <span class="ident">ServeCommand</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serve</span>(<span class="ident">serve_opts</span>: <span class="ident">ServeCommand</span>) -&gt; <span class="ident">anyhow::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">ServeCommand</span> {
         <span class="ident">module</span>,
         <span class="ident">port</span>,
