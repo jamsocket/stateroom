@@ -84,9 +84,10 @@ impl Server {
         service_factory: impl JamsocketServiceFactory<ServiceActorContext>,
     ) -> std::io::Result<()> {
         let host = format!("127.0.0.1:{}", self.port);
-        let server_state = Data::new(ServerState::new(service_factory, self).unwrap());
 
         actix_web::rt::System::new().block_on(async move {
+            let server_state = Data::new(ServerState::new(service_factory, self).unwrap());
+
             let server = HttpServer::new(move || {
                 #[allow(unused_mut)] // mut only needed with crate feature `serve-static`.
                 let mut app = App::new()
@@ -107,7 +108,6 @@ impl Server {
 async fn websocket(
     req: HttpRequest,
     stream: web::Payload,
-    room_id: web::Path<String>,
 ) -> actix_web::Result<HttpResponse> {
     let ip = req
         .peer_addr()
@@ -126,7 +126,6 @@ async fn websocket(
             room: room_addr.clone().recipient(),
             client_id,
             ip: ip.clone(),
-            room_id: room_id.clone(),
             last_seen: Instant::now(),
             heartbeat_interval: server_state.settings.heartbeat_interval,
             heartbeat_timeout: server_state.settings.heartbeat_timeout,
@@ -138,7 +137,6 @@ async fn websocket(
         Ok((addr, resp)) => {
             tracing::info!(
                 %ip,
-                %room_id,
                 ?client_id,
                 "New connection",
             );

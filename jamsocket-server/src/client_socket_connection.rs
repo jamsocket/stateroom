@@ -9,7 +9,6 @@ use std::time::{Duration, Instant};
 pub struct ClientSocketConnection {
     pub room: Recipient<MessageFromClient>,
     pub client_id: ClientId,
-    pub room_id: String,
     pub ip: String,
     pub last_seen: Instant,
     pub heartbeat_interval: Duration,
@@ -24,7 +23,6 @@ impl ClientSocketConnection {
                 tracing::warn!(
                     client_id=?act.client_id,
                     ip=%act.ip,
-                    room_id=%act.room_id,
                     "Stopping ClientSocketConnection because heartbeat not responded.",
                 );
                 act.close(ctx);
@@ -43,7 +41,6 @@ impl ClientSocketConnection {
             .is_err()
         {
             tracing::warn!(
-                room_id=%self.room_id,
                 "Could not send Disconnect message before closing room",
             );
         }
@@ -83,7 +80,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                 };
                 if self.room.do_send(message).is_err() {
                     tracing::warn!(
-                        room_id=%self.room_id,
                         "Error forwarding message to service",
                     );
                 }
@@ -95,7 +91,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                 };
                 if self.room.do_send(message).is_err() {
                     tracing::warn!(
-                        room_id=%self.room_id,
                         "Error forwarding binary message to service",
                     );
                 }
@@ -104,7 +99,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                 tracing::info!(
                     client_id=?self.client_id,
                     ip=%self.ip,
-                    room_id=%self.room_id,
                     "User has disconnected from room",
                 );
 

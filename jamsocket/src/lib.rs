@@ -64,7 +64,7 @@
 pub use client_id::ClientId;
 pub use message_recipient::MessageRecipient;
 pub use messages::{MessageFromProcess, MessagePayload, MessageToProcess};
-use std::{convert::Infallible, marker::PhantomData};
+use std::convert::Infallible;
 
 mod client_id;
 mod message_recipient;
@@ -152,36 +152,12 @@ pub trait JamsocketServiceFactory<C: JamsocketContext>: Send + Sync + 'static {
     fn build(&self, room_id: &str, context: C) -> Result<Self::Service, Self::Error>;
 }
 
-/// A [JamsocketServiceFactory] that passes through `build()` arguments directly to
-/// the associated [SimpleJamsocketService]'s `new()` constructor, and wraps the
-/// result in a [WrappedJamsocketService].
-pub struct SimpleJamsocketServiceFactory<S: SimpleJamsocketService, C: JamsocketContext> {
-    _c: PhantomData<C>,
-    _s: PhantomData<S>,
-}
-
-impl<S: SimpleJamsocketService, C: JamsocketContext> Default
-    for SimpleJamsocketServiceFactory<S, C>
-{
-    fn default() -> Self {
-        SimpleJamsocketServiceFactory {
-            _c: PhantomData::default(),
-            _s: PhantomData::default(),
-        }
-    }
-}
-
-impl<S: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceFactory<C>
-    for SimpleJamsocketServiceFactory<S, C>
-{
+impl<C: JamsocketContext, S: SimpleJamsocketService + Clone> JamsocketServiceFactory<C> for S {
     type Service = WrappedJamsocketService<S, C>;
     type Error = Infallible;
 
-    fn build(&self, room_id: &str, context: C) -> Result<Self::Service, Infallible> {
-        Ok(WrappedJamsocketService {
-            service: S::new(room_id, &context),
-            context,
-        })
+    fn build(&self, _room_id: &str, context: C) -> Result<Self::Service, Self::Error> {
+        Ok(WrappedJamsocketService::new(self.clone(), context))
     }
 }
 
