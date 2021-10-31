@@ -21,8 +21,9 @@ impl StdioProcessServiceFactory {
 
 impl<T: JamsocketContext> JamsocketServiceFactory<T> for StdioProcessServiceFactory {
     type Service = StdioProcessService;
+    type Error = std::io::Error;
 
-    fn build(&self, _room_id: &str, context: T) -> Option<Self::Service> {
+    fn build(&self, _room_id: &str, context: T) -> Result<Self::Service, Self::Error> {
         let process = InteractiveProcess::new(Command::new(&self.command), move |line| {
             let line = line.expect("Error reading line from stdin.");
             let message: MessageFromProcess =
@@ -42,10 +43,9 @@ impl<T: JamsocketContext> JamsocketServiceFactory<T> for StdioProcessServiceFact
                     context.send_message(recipient, &message);
                 }
             }
-        })
-        .ok()?;
+        })?;
 
-        Some(StdioProcessService { process })
+        Ok(StdioProcessService { process })
     }
 }
 

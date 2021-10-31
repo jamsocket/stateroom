@@ -1,7 +1,8 @@
 [workspace]
 
 exclude = [
-    "examples"
+    "examples",
+    "jamsocket-cli",
 ]
 
 members = [

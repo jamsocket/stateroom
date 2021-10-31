@@ -73,15 +73,15 @@ impl<J: JamsocketService> ServiceActor<J> {
     #[must_use]
     pub fn new(
         ctx: &Context<Self>,
-        room_id: &str,
-        service_constructor: &impl JamsocketServiceFactory<ServiceActorContext, Service = J>,
+        service_factory: impl JamsocketServiceFactory<ServiceActorContext, Service = J>,
         recipient: Recipient<MessageFromServer>,
     ) -> Option<Self> {
         let host_context = ServiceActorContext {
             set_timer_recipient: ctx.address().recipient(),
             send_message_recipient: recipient,
         };
-        let service = service_constructor.build(room_id, host_context)?;
+
+        let service = service_factory.build("", host_context).unwrap();
 
         Some(ServiceActor {
             service,

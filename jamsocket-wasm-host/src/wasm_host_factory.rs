@@ -17,22 +17,15 @@ pub struct WasmHostFactory {
 
 impl<T: JamsocketContext> JamsocketServiceFactory<T> for WasmHostFactory {
     type Service = WasmHost;
+    type Error = anyhow::Error;
 
-    fn build(&self, room_id: &str, context: T) -> Option<Self::Service> {
-        let result = WasmHost::new(
+    fn build(&self, room_id: &str, context: T) -> Result<Self::Service, Self::Error> {
+        WasmHost::new(
             room_id,
             self.module.as_ref(),
             self.engine.as_ref(),
             &Arc::new(context),
-        );
-
-        match result {
-            Ok(r) => Some(r),
-            Err(error) => {
-                tracing::error!(?error, "Could not build a WasmHost");
-                None
-            }
-        }
+        )
     }
 }
 

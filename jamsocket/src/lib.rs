@@ -64,7 +64,7 @@
 pub use client_id::ClientId;
 pub use message_recipient::MessageRecipient;
 pub use messages::{MessageFromProcess, MessagePayload, MessageToProcess};
-use std::marker::PhantomData;
+use std::{convert::Infallible, marker::PhantomData};
 
 mod client_id;
 mod message_recipient;
@@ -146,9 +146,10 @@ pub trait JamsocketService: Send + Sync + Unpin + 'static {
 pub trait JamsocketServiceFactory<C: JamsocketContext>: Send + Sync + 'static {
     /// The type of [JamsocketService] that the object implementing this trait builds.
     type Service: JamsocketService;
+    type Error: std::fmt::Debug;
 
     /// Non-destructively build a [JamsocketService] from `self`.
-    fn build(&self, room_id: &str, context: C) -> Option<Self::Service>;
+    fn build(&self, room_id: &str, context: C) -> Result<Self::Service, Self::Error>;
 }
 
 /// A [JamsocketServiceFactory] that passes through `build()` arguments directly to
@@ -174,9 +175,10 @@ impl<S: SimpleJamsocketService, C: JamsocketContext> JamsocketServiceFactory<C>
     for SimpleJamsocketServiceFactory<S, C>
 {
     type Service = WrappedJamsocketService<S, C>;
+    type Error = Infallible;
 
-    fn build(&self, room_id: &str, context: C) -> Option<Self::Service> {
-        Some(WrappedJamsocketService {
+    fn build(&self, room_id: &str, context: C) -> Result<Self::Service, Infallible> {
+        Ok(WrappedJamsocketService {
             service: S::new(room_id, &context),
             context,
         })
