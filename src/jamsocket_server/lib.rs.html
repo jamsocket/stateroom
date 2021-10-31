@@ -149,120 +149,22 @@
 <span id="149">149</span>
 <span id="150">150</span>
 <span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
-<span id="176">176</span>
-<span id="177">177</span>
-<span id="178">178</span>
-<span id="179">179</span>
-<span id="180">180</span>
-<span id="181">181</span>
-<span id="182">182</span>
-<span id="183">183</span>
-<span id="184">184</span>
-<span id="185">185</span>
-<span id="186">186</span>
-<span id="187">187</span>
-<span id="188">188</span>
-<span id="189">189</span>
-<span id="190">190</span>
-<span id="191">191</span>
-<span id="192">192</span>
-<span id="193">193</span>
-<span id="194">194</span>
-<span id="195">195</span>
-<span id="196">196</span>
-<span id="197">197</span>
-<span id="198">198</span>
-<span id="199">199</span>
-<span id="200">200</span>
-<span id="201">201</span>
-<span id="202">202</span>
-<span id="203">203</span>
-<span id="204">204</span>
-<span id="205">205</span>
-<span id="206">206</span>
-<span id="207">207</span>
-<span id="208">208</span>
-<span id="209">209</span>
-<span id="210">210</span>
-<span id="211">211</span>
-<span id="212">212</span>
-<span id="213">213</span>
-<span id="214">214</span>
-<span id="215">215</span>
-<span id="216">216</span>
-<span id="217">217</span>
-<span id="218">218</span>
-<span id="219">219</span>
-<span id="220">220</span>
-<span id="221">221</span>
-<span id="222">222</span>
-<span id="223">223</span>
-<span id="224">224</span>
-<span id="225">225</span>
-<span id="226">226</span>
-<span id="227">227</span>
-<span id="228">228</span>
-<span id="229">229</span>
-<span id="230">230</span>
-<span id="231">231</span>
-<span id="232">232</span>
-<span id="233">233</span>
-<span id="234">234</span>
-<span id="235">235</span>
-<span id="236">236</span>
-<span id="237">237</span>
-<span id="238">238</span>
-<span id="239">239</span>
-<span id="240">240</span>
-<span id="241">241</span>
-<span id="242">242</span>
 </pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">client_socket_connection</span>;
 <span class="kw">mod</span> <span class="ident">messages</span>;
 <span class="kw">mod</span> <span class="ident">room_actor</span>;
-<span class="kw">mod</span> <span class="ident">room_id</span>;
 <span class="kw">mod</span> <span class="ident">server_state</span>;
 <span class="kw">mod</span> <span class="ident">service_actor</span>;
-<span class="kw">mod</span> <span class="ident">shutdown_policy</span>;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::room_id</span>::{
-    <span class="ident">RoomIdGenerator</span>, <span class="ident">RoomIdStrategy</span>, <span class="ident">ShortRoomIdGenerator</span>, <span class="ident">ShortRoomIdGeneratorFactory</span>,
-    <span class="ident">UuidRoomIdGenerator</span>, <span class="ident">UuidRoomIdGeneratorFactory</span>,
-};
 <span class="kw">use</span> <span class="ident">actix_web::error::ErrorInternalServerError</span>;
-<span class="kw">use</span> <span class="ident">actix_web::web</span>::{<span class="self">self</span>, <span class="ident">get</span>, <span class="ident">post</span>};
+<span class="kw">use</span> <span class="ident">actix_web::web</span>::{<span class="self">self</span>, <span class="ident">get</span>};
 <span class="kw">use</span> <span class="ident">actix_web</span>::{<span class="ident">web::Data</span>, <span class="ident">App</span>, <span class="ident">Error</span>, <span class="ident">HttpRequest</span>, <span class="ident">HttpResponse</span>, <span class="ident">HttpServer</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">actix_web_actors::ws</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">client_socket_connection::ClientSocketConnection</span>;
-<span class="kw">use</span> <span class="ident">jamsocket</span>::{<span class="ident">JamsocketServiceFactory</span>, <span class="ident">SimpleJamsocketService</span>, <span class="ident">SimpleJamsocketServiceFactory</span>};
+<span class="kw">use</span> <span class="ident">jamsocket::JamsocketServiceFactory</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">messages</span>::{<span class="ident">AssignClientId</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>};
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">room_actor::RoomActor</span>;
 <span class="kw">use</span> <span class="ident">server_state::ServerState</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">service_actor</span>::{<span class="ident">ServiceActor</span>, <span class="ident">ServiceActorContext</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">shutdown_policy::ServiceShutdownPolicy</span>;
 <span class="kw">use</span> <span class="ident">std::time</span>::{<span class="ident">Duration</span>, <span class="ident">Instant</span>};
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::unused_async</span>)]</span>
@@ -282,20 +184,8 @@
     <span class="doccomment">/// Defaults to 5 minutes.</span>
     <span class="kw">pub</span> <span class="ident">heartbeat_timeout</span>: <span class="ident">Duration</span>,
 
-    <span class="doccomment">/// The method by which new rooms are created and assigned names.</span>
-    <span class="kw">pub</span> <span class="ident">room_id_strategy</span>: <span class="ident">RoomIdStrategy</span>,
-
     <span class="doccomment">/// The port to run the server on. Defaults to 8080.</span>
     <span class="kw">pub</span> <span class="ident">port</span>: <span class="ident">u32</span>,
-
-    <span class="doccomment">/// How the server decides to shut down a room once it is empty.</span>
-    <span class="kw">pub</span> <span class="ident">shutdown_policy</span>: <span class="ident">ServiceShutdownPolicy</span>,
-
-    <span class="doccomment">/// A local filesystem path to serve static files from, or None (default).</span>
-    <span class="kw">pub</span> <span class="ident">static_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-
-    <span class="doccomment">/// A local filesystem path to serve from /client, or None (default).</span>
-    <span class="kw">pub</span> <span class="ident">client_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Server</span> {
@@ -304,10 +194,6 @@
             <span class="ident">heartbeat_interval</span>: <span class="ident">Duration::from_secs</span>(<span class="number">30</span>),
             <span class="ident">heartbeat_timeout</span>: <span class="ident">Duration::from_secs</span>(<span class="number">300</span>),
             <span class="ident">port</span>: <span class="number">8080</span>,
-            <span class="ident">room_id_strategy</span>: <span class="ident">RoomIdStrategy::default</span>(),
-            <span class="ident">shutdown_policy</span>: <span class="ident">ServiceShutdownPolicy::Never</span>,
-            <span class="ident">static_path</span>: <span class="prelude-val">None</span>,
-            <span class="ident">client_path</span>: <span class="prelude-val">None</span>,
         }
     }
 }
@@ -316,20 +202,6 @@
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
         <span class="ident">Server::default</span>()
-    }
-
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serve-static&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_static_path</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">static_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">static_path</span> <span class="op">=</span> <span class="ident">static_path</span>;
-        <span class="self">self</span>
-    }
-
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serve-static&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_client_path</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">client_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">client_path</span> <span class="op">=</span> <span class="ident">client_path</span>;
-        <span class="self">self</span>
     }
 
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
@@ -350,26 +222,7 @@
         <span class="self">self</span>
     }
 
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_room_id_strategy</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">room_id_strategy</span>: <span class="ident">RoomIdStrategy</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">room_id_strategy</span> <span class="op">=</span> <span class="ident">room_id_strategy</span>;
-        <span class="self">self</span>
-    }
-
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_shutdown_policy</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">shutdown_policy</span>: <span class="ident">ServiceShutdownPolicy</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">shutdown_policy</span> <span class="op">=</span> <span class="ident">shutdown_policy</span>;
-        <span class="self">self</span>
-    }
-
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serve_default</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">SimpleJamsocketService</span><span class="op">&gt;</span>(<span class="self">self</span>) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">host_factory</span>: <span class="ident">SimpleJamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">ServiceActorContext</span><span class="op">&gt;</span> <span class="op">=</span>
-            <span class="ident">SimpleJamsocketServiceFactory::default</span>();
-
-        <span class="self">self</span>.<span class="ident">serve</span>(<span class="ident">host_factory</span>)
-    }
-
-    <span class="doccomment">/// Start a server given a cloneable [JamsocketServiceBuilder].</span>
+    <span class="doccomment">/// Start a server given a [JamsocketService].</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This function blocks until the server is terminated. While it is running, the following</span>
     <span class="doccomment">/// endpoints are available:</span>
@@ -377,12 +230,12 @@
     <span class="doccomment">/// - `/new_room` (POST): create a new room, if not in `explicit` room creation mode.</span>
     <span class="doccomment">/// - `/ws/{room_id}` (GET): initiate a WebSocket connection to the given room. If the room</span>
     <span class="doccomment">///     does not exist and the server is in `implicit` room creation mode, it will be created.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serve</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serve</span>(
         <span class="self">self</span>,
-        <span class="ident">host_factory</span>: <span class="ident">F</span>,
+        <span class="ident">service_factory</span>: <span class="kw">impl</span> <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span>,
     ) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">host</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;127.0.0.1:{}&quot;</span>, <span class="self">self</span>.<span class="ident">port</span>);
-        <span class="kw">let</span> <span class="ident">server_state</span> <span class="op">=</span> <span class="ident">Data::new</span>(<span class="ident">ServerState::new</span>(<span class="ident">host_factory</span>, <span class="self">self</span>));
+        <span class="kw">let</span> <span class="ident">server_state</span> <span class="op">=</span> <span class="ident">Data::new</span>(<span class="ident">ServerState::new</span>(<span class="ident">service_factory</span>, <span class="self">self</span>).<span class="ident">unwrap</span>());
 
         <span class="ident">actix_web::rt::System::new</span>().<span class="ident">block_on</span>(<span class="kw">async</span> <span class="kw">move</span> {
             <span class="kw">let</span> <span class="ident">server</span> <span class="op">=</span> <span class="ident">HttpServer::new</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
@@ -390,23 +243,7 @@
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">app</span> <span class="op">=</span> <span class="ident">App::new</span>()
                     .<span class="ident">app_data</span>(<span class="ident">server_state</span>.<span class="ident">clone</span>())
                     .<span class="ident">route</span>(<span class="string">&quot;/status&quot;</span>, <span class="ident">get</span>().<span class="ident">to</span>(<span class="ident">status</span>))
-                    .<span class="ident">route</span>(<span class="string">&quot;/new_room&quot;</span>, <span class="ident">post</span>().<span class="ident">to</span>(<span class="ident">new_room</span>::<span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>))
-                    .<span class="ident">route</span>(<span class="string">&quot;/ws/{room_id}&quot;</span>, <span class="ident">get</span>().<span class="ident">to</span>(<span class="ident">websocket</span>::<span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>))
-                    .<span class="ident">route</span>(<span class="string">&quot;/ws/{room_id}&quot;</span>, <span class="ident">post</span>().<span class="ident">to</span>(<span class="ident">new_room_explicit</span>::<span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>));
-
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serve-static&quot;</span>)]</span>
-                {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">client_path</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">server_state</span>.<span class="ident">settings</span>.<span class="ident">client_path</span> {
-                        <span class="comment">//let client_dir = Path::new(client_path).parent().unwrap();</span>
-                        <span class="ident">app</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">service</span>(<span class="ident">actix_files::Files::new</span>(<span class="string">&quot;/client&quot;</span>, <span class="ident">client_path</span>));
-                    }
-
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">static_path</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">server_state</span>.<span class="ident">settings</span>.<span class="ident">static_path</span> {
-                        <span class="ident">app</span> <span class="op">=</span> <span class="ident">app</span>.<span class="ident">service</span>(
-                            <span class="ident">actix_files::Files::new</span>(<span class="string">&quot;/&quot;</span>, <span class="ident">static_path</span>).<span class="ident">index_file</span>(<span class="string">&quot;index.html&quot;</span>),
-                        );
-                    }
-                }
+                    .<span class="ident">route</span>(<span class="string">&quot;/ws&quot;</span>, <span class="ident">get</span>().<span class="ident">to</span>(<span class="ident">websocket</span>));
 
                 <span class="ident">app</span>
             })
@@ -418,26 +255,7 @@
     }
 }
 
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new_room</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">req</span>: <span class="ident">HttpRequest</span>,
-) -&gt; <span class="ident">actix_web::Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">expect</span>(<span class="string">&quot;Could not load ServerState.&quot;</span>);
-    <span class="kw">let</span> <span class="ident">room_id</span> <span class="op">=</span> <span class="ident">server_state</span>.<span class="ident">new_room_generated</span>().<span class="kw">await</span><span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::Ok</span>().<span class="ident">body</span>(<span class="ident">room_id</span>))
-}
-
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">new_room_explicit</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
-    <span class="ident">req</span>: <span class="ident">HttpRequest</span>,
-    <span class="ident">room_id</span>: <span class="ident">web::Path</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">actix_web::Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">expect</span>(<span class="string">&quot;Could not load ServerState.&quot;</span>);
-    <span class="ident">server_state</span>.<span class="ident">explicit_new_room</span>(<span class="ident">room_id</span>.<span class="ident">as_ref</span>()).<span class="kw">await</span><span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::Ok</span>().<span class="ident">body</span>(<span class="ident">room_id</span>.<span class="ident">to_string</span>()))
-}
-
-<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">websocket</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">async</span> <span class="kw">fn</span> <span class="ident">websocket</span>(
     <span class="ident">req</span>: <span class="ident">HttpRequest</span>,
     <span class="ident">stream</span>: <span class="ident">web::Payload</span>,
     <span class="ident">room_id</span>: <span class="ident">web::Path</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
@@ -446,9 +264,9 @@
         .<span class="ident">peer_addr</span>()
         .<span class="ident">map_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;&lt;unknown&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">ip</span>().<span class="ident">to_string</span>());
 
-    <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">expect</span>(<span class="string">&quot;Could not load ServerState.&quot;</span>);
-    <span class="kw">let</span> <span class="ident">room_addr</span> <span class="op">=</span> <span class="ident">server_state</span>.<span class="ident">connect_room</span>(<span class="ident">room_id</span>.<span class="ident">as_ref</span>()).<span class="kw">await</span><span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">expect</span>(<span class="string">&quot;Could not load ServerState.&quot;</span>);
 
+    <span class="kw">let</span> <span class="ident">room_addr</span> <span class="op">=</span> <span class="ident">server_state</span>.<span class="ident">room_addr</span>.<span class="ident">clone</span>();
     <span class="kw">let</span> <span class="ident">client_id</span> <span class="op">=</span> <span class="ident">room_addr</span>
         .<span class="ident">send</span>(<span class="ident">AssignClientId</span>)
         .<span class="kw">await</span>
