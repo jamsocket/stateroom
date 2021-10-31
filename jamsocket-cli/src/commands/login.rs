@@ -41,11 +41,11 @@ pub fn login(login_opts: LoginCommand) -> anyhow::Result<()> {
         match JamsocketApi::new(&token).authenticate() {
             Ok(Some(result)) => {
                 println!(
-                    "{}\n\nEmail: {}\nOAuth Provider: {}\nUsername: {}\n\nTo clear the current token, run `jamsocket login -c`.",
+                    "{}\n\nEmail:          {}\nOAuth Provider: {}\nUsername:       {}\n\nTo clear the current token, run `jamsocket login -c`.",
                     "Current token is valid.".green().bold(),
-                    result.email,
-                    result.provider,
-                    result.username,
+                    result.email.blue(),
+                    result.provider.blue(),
+                    result.username.blue(),
                 );
             }
             Ok(None) => {
