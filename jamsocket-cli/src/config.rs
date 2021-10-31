@@ -78,6 +78,7 @@ pub struct JamsocketConfig {
     /// client-side code from the same workspace in one command.
     pub client: Option<ClientConfig>,
 
+    #[serde(default)]
     /// Configuration for building the WebAssembly module to serve.
     pub service: ServiceConfig,
 }
