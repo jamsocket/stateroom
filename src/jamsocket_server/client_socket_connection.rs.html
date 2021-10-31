@@ -109,12 +109,6 @@
 <span id="109">109</span>
 <span id="110">110</span>
 <span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::messages</span>::{<span class="ident">MessageData</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>};
 <span class="kw">use</span> <span class="ident">actix</span>::{<span class="ident">Actor</span>, <span class="ident">ActorContext</span>, <span class="ident">AsyncContext</span>, <span class="ident">Handler</span>, <span class="ident">Recipient</span>, <span class="ident">SpawnHandle</span>, <span class="ident">StreamHandler</span>};
 <span class="kw">use</span> <span class="ident">actix_web_actors::ws</span>;
@@ -126,7 +120,6 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ClientSocketConnection</span> {
     <span class="kw">pub</span> <span class="ident">room</span>: <span class="ident">Recipient</span><span class="op">&lt;</span><span class="ident">MessageFromClient</span><span class="op">&gt;</span>,
     <span class="kw">pub</span> <span class="ident">client_id</span>: <span class="ident">ClientId</span>,
-    <span class="kw">pub</span> <span class="ident">room_id</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">ip</span>: <span class="ident">String</span>,
     <span class="kw">pub</span> <span class="ident">last_seen</span>: <span class="ident">Instant</span>,
     <span class="kw">pub</span> <span class="ident">heartbeat_interval</span>: <span class="ident">Duration</span>,
@@ -141,7 +134,6 @@
                 <span class="macro">tracing::warn!</span>(
                     <span class="ident">client_id</span><span class="op">=</span><span class="question-mark">?</span><span class="ident">act</span>.<span class="ident">client_id</span>,
                     <span class="ident">ip</span><span class="op">=</span><span class="op">%</span><span class="ident">act</span>.<span class="ident">ip</span>,
-                    <span class="ident">room_id</span><span class="op">=</span><span class="op">%</span><span class="ident">act</span>.<span class="ident">room_id</span>,
                     <span class="string">&quot;Stopping ClientSocketConnection because heartbeat not responded.&quot;</span>,
                 );
                 <span class="ident">act</span>.<span class="ident">close</span>(<span class="ident">ctx</span>);
@@ -160,7 +152,6 @@
             .<span class="ident">is_err</span>()
         {
             <span class="macro">tracing::warn!</span>(
-                <span class="ident">room_id</span><span class="op">=</span><span class="op">%</span><span class="self">self</span>.<span class="ident">room_id</span>,
                 <span class="string">&quot;Could not send Disconnect message before closing room&quot;</span>,
             );
         }
@@ -200,7 +191,6 @@
                 };
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">room</span>.<span class="ident">do_send</span>(<span class="ident">message</span>).<span class="ident">is_err</span>() {
                     <span class="macro">tracing::warn!</span>(
-                        <span class="ident">room_id</span><span class="op">=</span><span class="op">%</span><span class="self">self</span>.<span class="ident">room_id</span>,
                         <span class="string">&quot;Error forwarding message to service&quot;</span>,
                     );
                 }
@@ -212,7 +202,6 @@
                 };
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">room</span>.<span class="ident">do_send</span>(<span class="ident">message</span>).<span class="ident">is_err</span>() {
                     <span class="macro">tracing::warn!</span>(
-                        <span class="ident">room_id</span><span class="op">=</span><span class="op">%</span><span class="self">self</span>.<span class="ident">room_id</span>,
                         <span class="string">&quot;Error forwarding binary message to service&quot;</span>,
                     );
                 }
@@ -221,7 +210,6 @@
                 <span class="macro">tracing::info!</span>(
                     <span class="ident">client_id</span><span class="op">=</span><span class="question-mark">?</span><span class="self">self</span>.<span class="ident">client_id</span>,
                     <span class="ident">ip</span><span class="op">=</span><span class="op">%</span><span class="self">self</span>.<span class="ident">ip</span>,
-                    <span class="ident">room_id</span><span class="op">=</span><span class="op">%</span><span class="self">self</span>.<span class="ident">room_id</span>,
                     <span class="string">&quot;User has disconnected from room&quot;</span>,
                 );
 
