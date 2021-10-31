@@ -1,13 +1,13 @@
-use clap::Clap;
+use clap::Parser;
 use jamsocket_server::{RoomIdStrategy, ServiceShutdownPolicy};
 
-#[derive(Clap)]
+#[derive(Parser)]
 pub struct Opts {
     #[clap(subcommand)]
     pub subcommand: SubCommand,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 pub enum SubCommand {
     /// Run a dev server to host a given Jamsocket module.
     Serve(ServeCommand),
@@ -21,12 +21,12 @@ pub enum SubCommand {
     Register,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 pub struct DeployCommand {
     pub service_id: Option<String>,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 pub struct LoginCommand {
     #[clap(short, long)]
     pub token: Option<String>,
@@ -35,7 +35,7 @@ pub struct LoginCommand {
     pub clear: bool,
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 pub struct ServeCommand {
     /// The module (.wasm file) to serve.
     pub module: String,

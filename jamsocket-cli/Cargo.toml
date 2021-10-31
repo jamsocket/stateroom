@@ -14,7 +14,7 @@ jamsocket-stdio = { path="../jamsocket-stdio", version="0.1.3" }
 jamsocket-server = { path="../jamsocket-server", version="0.1.3" }
 jamsocket-wasm-host = { path="../jamsocket-wasm-host", version="0.1.3" }
 jamsocket-api = { path="../jamsocket-api", version="0.1.3" }
-clap = "3.0.0-beta.2"
+clap = "3.0.0-beta.5"
 actix = "0.12.0"
 actix-web = "4.0.0-beta.9"
 actix-web-actors = "4.0.0-beta.6"

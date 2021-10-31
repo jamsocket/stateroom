@@ -1,8 +1,8 @@
 //! # `jamsocket-cli`: a command-line interface to Jamsocket
 
-use clap::Clap;
+use clap::Parser;
 use jamsocket_cli::cli_opts::{Opts, SubCommand};
-use jamsocket_cli::{deploy, dev, register, login, serve};
+use jamsocket_cli::{deploy, dev, login, register, serve};
 use tracing_subscriber::EnvFilter;
 
 fn main() -> anyhow::Result<()> {

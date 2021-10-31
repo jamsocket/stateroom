@@ -79,6 +79,7 @@ pub struct JamsocketConfig {
     pub client: Option<ClientConfig>,
 
     /// Configuration for building the WebAssembly module to serve.
+    #[serde(default)]
     pub service: ServiceConfig,
 }
 

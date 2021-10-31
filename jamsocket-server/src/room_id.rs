@@ -164,12 +164,13 @@ impl<'de> Deserialize<'de> for RoomIdStrategy {
 impl Serialize for RoomIdStrategy {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
+        S: serde::Serializer,
+    {
         match self {
             RoomIdStrategy::Explicit => serializer.serialize_str("api"),
             RoomIdStrategy::Implicit => serializer.serialize_str("implicit"),
             // TODO: return Err instead of panicking.
-            _ => panic!("Can't serialize RoomIdStrategy with arbitrary generator.")
+            _ => panic!("Can't serialize RoomIdStrategy with arbitrary generator."),
         }
     }
 }

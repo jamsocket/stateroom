@@ -5,7 +5,7 @@ use crate::{
 };
 use anyhow::anyhow;
 use colored::Colorize;
-use jamsocket_api::{API_BASE, JamsocketApi, WS_BASE};
+use jamsocket_api::JamsocketApi;
 use std::{fs::File, io::Read};
 
 pub fn deploy(deploy_opts: DeployCommand) -> anyhow::Result<()> {
@@ -36,21 +36,20 @@ pub fn deploy(deploy_opts: DeployCommand) -> anyhow::Result<()> {
     ))?;
     let result = JamsocketApi::new(&token).upload(&service_id, &module)?;
 
-    let new_room_url = format!(
-        "{}service/{}/{}/new_room",
-        API_BASE, result.service, result.module
-    );
-    let ws_url = format!(
-        "{}service/{}/{}/ws/<room id>",
-        WS_BASE, result.service, result.module
-    );
+    println!("{}", "Module uploaded successfully.".green().bold());
 
-    println!(
-        "Module uploaded successfully.\n\nNew room URL:\n\n{} {}\n\nWebsocket URL:\n\n{}",
-        "POST".blue().bold(),
-        new_room_url.yellow().bold(),
-        ws_url.yellow().bold(),
-    );
+    if let Some(create_room_url) = result.create_room_url {
+        println!(
+            "To create a room, send a {} request to:\n\n{}",
+            "POST".blue().bold(),
+            create_room_url.yellow().bold(),
+        );
+    } else {
+        println!(
+            "To create a room, open a WebSocket connection to:\n\n{}",
+            result.url_base.yellow().bold()
+        );
+    }
 
     Ok(())
 }

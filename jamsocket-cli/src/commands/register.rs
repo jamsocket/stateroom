@@ -1,8 +1,8 @@
-use crate::config::{GlobalConfigHandle};
+use crate::config::GlobalConfigHandle;
 use colored::Colorize;
 use jamsocket_api::JamsocketApi;
 use std::fs::read_to_string;
-use toml_edit::{Document, value};
+use toml_edit::{value, Document};
 
 const JAMSOCKET_TOML: &str = "jamsocket.toml";
 const SERVICE_ID: &str = "service_id";
@@ -12,7 +12,7 @@ pub fn register() -> anyhow::Result<()> {
     let doc_str = match read_to_string(JAMSOCKET_TOML) {
         Ok(v) => v,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => "".to_string(),
-        Err(e) => return Err(e.into())
+        Err(e) => return Err(e.into()),
     };
     let mut doc = doc_str.parse::<Document>()?;
 
@@ -26,11 +26,11 @@ pub fn register() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let token = if let Some(token) =  global_config.config.token {
+    let token = if let Some(token) = global_config.config.token {
         token
     } else {
         println!("Need to be logged in.");
-        return Ok(())
+        return Ok(());
     };
 
     let service_id = JamsocketApi::new(&token).new_service()?;
