@@ -14,7 +14,7 @@ impl SimpleJamsocketService for EchoServer {
 }
 
 fn main() -> std::io::Result<()> {
-    Server::new().serve_default::<EchoServer>()?;
+    Server::new().serve(EchoServer)?;
 
     Ok(())
 }

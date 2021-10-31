@@ -1,18 +1,17 @@
 pub const API_BASE: &str = "https://beta.jamsocket.com/";
-pub const WS_BASE: &str = "wss://beta.jamsocket.com/";
 
-#[cfg(feature="client")]
+#[cfg(feature = "client")]
 use anyhow::{anyhow, Result};
-#[cfg(feature="client")]
+#[cfg(feature = "client")]
 use reqwest::StatusCode;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-#[cfg(feature="client")]
+#[cfg(feature = "client")]
 pub struct JamsocketApi {
     token: String,
 }
 
-#[cfg(feature="client")]
+#[cfg(feature = "client")]
 impl JamsocketApi {
     pub fn new(token: &str) -> Self {
         JamsocketApi {
@@ -70,13 +69,11 @@ impl JamsocketApi {
             .send()?;
 
         match res.status() {
-            StatusCode::FORBIDDEN => Err(anyhow!(
-                "Configured token is not valid."
-            )),
+            StatusCode::FORBIDDEN => Err(anyhow!("Configured token is not valid.")),
             StatusCode::OK => {
                 let response = res.json::<CreateServiceResponse>()?;
                 Ok(response.service_id.to_string())
-            },
+            }
             sc => Err(anyhow!(
                 "Received error status code from jamsocket API: {} {:?}",
                 sc,
@@ -87,9 +84,12 @@ impl JamsocketApi {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UploadServiceResponse {
     pub module: String,
     pub service: String,
+    pub create_room_url: Option<String>,
+    pub url_base: String,
 }
 
 #[derive(Serialize, Deserialize)]

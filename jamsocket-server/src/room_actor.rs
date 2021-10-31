@@ -1,27 +1,22 @@
-use crate::{
-    messages::{AssignClientId, MessageFromClient, MessageFromServer},
-    ServiceShutdownPolicy,
-};
+use crate::messages::{AssignClientId, MessageFromClient, MessageFromServer};
 use actix::{
     dev::MessageResponse, Actor, ActorContext, AsyncContext, Context, Handler, Message, Recipient,
     SpawnHandle,
 };
 use jamsocket::{ClientId, MessageRecipient};
-use std::{collections::HashMap, time::Duration};
+use std::collections::HashMap;
 
 /// Actor model representation of a “room”. A room is a set of clients
 /// that share an instance of a Jamsocket instance. Conceptually, this
 /// is like a room in a chat service. Events (such as messages) and their
 /// side-effects are isolated to the room in which they occur.
 pub struct RoomActor {
-    room_id: String,
     service_actor: Option<Recipient<MessageFromClient>>,
     connections: HashMap<ClientId, Recipient<MessageFromServer>>,
     /// User IDs are assigned sequentially within the context of each room,
     /// ensuring that they never overlap. `next_id` stores the next ID that
     /// will be assigned.
     next_id: u32,
-    shutdown_policy: ServiceShutdownPolicy,
     shutdown_handle: Option<SpawnHandle>,
 }
 
@@ -33,36 +28,12 @@ impl Message for Shutdown {
 
 impl RoomActor {
     #[must_use]
-    pub fn new(
-        room_id: String,
-        service_actor: Recipient<MessageFromClient>,
-        shutdown_policy: ServiceShutdownPolicy,
-    ) -> Self {
+    pub fn new(service_actor: Recipient<MessageFromClient>) -> Self {
         RoomActor {
-            room_id,
             service_actor: Some(service_actor),
             connections: HashMap::default(),
             next_id: 1,
-            shutdown_policy,
             shutdown_handle: None,
-        }
-    }
-
-    fn handle_empty_room(&mut self, ctx: &mut Context<Self>) {
-        match self.shutdown_policy {
-            ServiceShutdownPolicy::Immediate => {
-                tracing::info!(
-                    room_id=%self.room_id,
-                    "Shutting down service actor because no clients are left",
-                );
-
-                ctx.stop();
-            }
-            ServiceShutdownPolicy::Never => (),
-            ServiceShutdownPolicy::AfterSeconds(secs) => {
-                self.shutdown_handle =
-                    Some(ctx.notify_later(Shutdown, Duration::from_secs(secs.into())));
-            }
         }
     }
 }
@@ -79,10 +50,7 @@ impl Handler<MessageFromServer> for RoomActor {
             MessageRecipient::Broadcast => {
                 for addr in self.connections.values() {
                     if addr.do_send(message.clone()).is_err() {
-                        tracing::warn!(
-                            room_id=%self.room_id,
-                            "Could not forward server-sent message to client",
-                        );
+                        tracing::warn!("Could not forward server-sent message to client",);
                     }
                 }
             }
@@ -90,7 +58,6 @@ impl Handler<MessageFromServer> for RoomActor {
                 if let Some(client_connection) = self.connections.get(&client_id) {
                     if client_connection.do_send(message).is_err() {
                         tracing::warn!(
-                            room_id=%self.room_id,
                             "Could not forward server-sent binary message to client in room",
                         );
                     }
@@ -114,10 +81,7 @@ impl Handler<MessageFromClient> for RoomActor {
                 MessageFromClient::Connect(client, resp) => {
                     self.connections.insert(*client, resp.clone());
                     if service_actor.do_send(message).is_err() {
-                        tracing::warn!(
-                            room_id=%self.room_id,
-                            "Couldn't forward client message to service",
-                        );
+                        tracing::warn!("Couldn't forward client message to service",);
                     }
 
                     // If this task was scheduled to shut down becuse the room is empty,
@@ -127,38 +91,18 @@ impl Handler<MessageFromClient> for RoomActor {
                 MessageFromClient::Disconnect(client_id) => {
                     self.connections.remove(client_id);
 
-                    let empty_room = self.connections.is_empty();
-                    let send_message =
-                        !empty_room || self.shutdown_policy != ServiceShutdownPolicy::Immediate;
-
-                    #[allow(clippy::collapsible_if)]
-                    if send_message {
-                        if service_actor.do_send(message).is_err() {
-                            tracing::warn!(
-                                room_id=%self.room_id,
-                                "Couldn't forward client message to service",
-                            );
-                        }
-                    }
-
-                    if empty_room {
-                        self.handle_empty_room(ctx);
+                    if service_actor.do_send(message).is_err() {
+                        tracing::warn!("Couldn't forward client message to service",);
                     }
                 }
                 MessageFromClient::Message { .. } => {
                     if service_actor.do_send(message).is_err() {
-                        tracing::warn!(
-                            room_id=%self.room_id,
-                            "Couldn't forward message from client to service",
-                        );
+                        tracing::warn!("Couldn't forward message from client to service",);
                     }
                 }
             }
         } else {
-            tracing::warn!(
-                room_id=%self.room_id,
-                "MessageFromClient received on room with no service attached",
-            );
+            tracing::warn!("MessageFromClient received on room with no service attached",);
         }
     }
 }
@@ -191,7 +135,6 @@ impl Handler<Shutdown> for RoomActor {
 
     fn handle(&mut self, _: Shutdown, ctx: &mut Self::Context) -> Self::Result {
         tracing::info!(
-            room_id=%self.room_id,
             "Shutting down service actor because no clients are left and the timeout period has elapsed",
         );
 
