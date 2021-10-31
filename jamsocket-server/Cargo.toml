@@ -23,7 +23,7 @@ rand = "0.8.4"
 async-std = "1.9.0"
 serde = { version = "1.0.126", features = ["derive"] }
 serde_json = "1.0.64"
-actix-files = { version = "0.6.0-beta.6", optional = true }
+actix-files = { version = "0.6.0-beta.8", optional = true }
 tracing = "0.1.28"
 
 [dev-dependencies]
