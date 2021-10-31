@@ -14,9 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Update rust
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            override: true
+      uses: actions-rs/toolchain@v1
+      with:
+          toolchain: stable
+          override: true
     - name: Run tests
       run: cargo test
