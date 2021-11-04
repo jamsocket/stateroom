@@ -15,10 +15,12 @@ pub use room_actor::RoomActor;
 use server_state::ServerState;
 pub use service_actor::{ServiceActor, ServiceActorContext};
 use std::time::{Duration, Instant};
+use tracing_actix_web::TracingLogger;
+
 
 #[allow(clippy::unused_async)]
 async fn status() -> Result<HttpResponse, Error> {
-    Ok(HttpResponse::Ok().body("ok"))
+    Ok(HttpResponse::Ok().body("{\"status\": \"ok\"}\n"))
 }
 
 /// Settings used by the server.
@@ -83,7 +85,7 @@ impl Server {
         self,
         service_factory: impl JamsocketServiceFactory<ServiceActorContext>,
     ) -> std::io::Result<()> {
-        let host = format!("127.0.0.1:{}", self.port);
+        let host = format!("0.0.0.0:{}", self.port);
 
         actix_web::rt::System::new().block_on(async move {
             let server_state = Data::new(ServerState::new(service_factory, self).unwrap());
@@ -93,7 +95,8 @@ impl Server {
                 let mut app = App::new()
                     .app_data(server_state.clone())
                     .route("/status", get().to(status))
-                    .route("/ws", get().to(websocket));
+                    .route("/ws", get().to(websocket))
+                    .wrap(TracingLogger::default());
 
                 app
             })
