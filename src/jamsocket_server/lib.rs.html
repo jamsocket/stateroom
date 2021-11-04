@@ -150,6 +150,17 @@
 <span id="150">150</span>
 <span id="151">151</span>
 <span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
 </pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">client_socket_connection</span>;
 <span class="kw">mod</span> <span class="ident">messages</span>;
 <span class="kw">mod</span> <span class="ident">room_actor</span>;
@@ -169,6 +180,7 @@
 <span class="kw">use</span> <span class="ident">std::time</span>::{<span class="ident">Duration</span>, <span class="ident">Instant</span>};
 <span class="kw">use</span> <span class="ident">tracing_actix_web::TracingLogger</span>;
 
+<span class="kw">const</span> <span class="ident">DEFAULT_IP</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;0.0.0.0&quot;</span>;
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::unused_async</span>)]</span>
 <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">status</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
@@ -189,6 +201,9 @@
 
     <span class="doccomment">/// The port to run the server on. Defaults to 8080.</span>
     <span class="kw">pub</span> <span class="ident">port</span>: <span class="ident">u32</span>,
+
+    <span class="doccomment">/// The IP to listen on. Defaults to 0.0.0.0.</span>
+    <span class="kw">pub</span> <span class="ident">ip</span>: <span class="ident">String</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Server</span> {
@@ -197,6 +212,7 @@
             <span class="ident">heartbeat_interval</span>: <span class="ident">Duration::from_secs</span>(<span class="number">30</span>),
             <span class="ident">heartbeat_timeout</span>: <span class="ident">Duration::from_secs</span>(<span class="number">300</span>),
             <span class="ident">port</span>: <span class="number">8080</span>,
+            <span class="ident">ip</span>: <span class="ident">DEFAULT_IP</span>.<span class="ident">to_string</span>(),
         }
     }
 }
@@ -225,6 +241,12 @@
         <span class="self">self</span>
     }
 
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_ip</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ip</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">ip</span> <span class="op">=</span> <span class="ident">ip</span>;
+        <span class="self">self</span>
+    }
+
     <span class="doccomment">/// Start a server given a [JamsocketService].</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This function blocks until the server is terminated. While it is running, the following</span>
@@ -237,7 +259,7 @@
         <span class="self">self</span>,
         <span class="ident">service_factory</span>: <span class="kw">impl</span> <span class="ident">JamsocketServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceActorContext</span><span class="op">&gt;</span>,
     ) -&gt; <span class="ident">std::io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">host</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;0.0.0.0:{}&quot;</span>, <span class="self">self</span>.<span class="ident">port</span>);
+        <span class="kw">let</span> <span class="ident">host</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}:{}&quot;</span>, <span class="self">self</span>.<span class="ident">ip</span>, <span class="self">self</span>.<span class="ident">port</span>);
 
         <span class="ident">actix_web::rt::System::new</span>().<span class="ident">block_on</span>(<span class="kw">async</span> <span class="kw">move</span> {
             <span class="kw">let</span> <span class="ident">server_state</span> <span class="op">=</span> <span class="ident">Data::new</span>(<span class="ident">ServerState::new</span>(<span class="ident">service_factory</span>, <span class="self">self</span>).<span class="ident">unwrap</span>());
