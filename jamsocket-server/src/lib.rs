@@ -16,12 +16,15 @@ use server_state::ServerState;
 pub use service_actor::{ServiceActor, ServiceActorContext};
 use std::time::{Duration, Instant};
 use tracing_actix_web::TracingLogger;
+use serde_json::{Value, json};
 
 const DEFAULT_IP: &str = "0.0.0.0";
 
 #[allow(clippy::unused_async)]
-async fn status() -> Result<HttpResponse, Error> {
-    Ok(HttpResponse::Ok().body("{\"status\": \"ok\"}\n"))
+async fn status() -> Result<web::Json<Value>, Error> {
+    Ok(web::Json(json!({
+        "status": "ok"
+    })))
 }
 
 /// Settings used by the server.
