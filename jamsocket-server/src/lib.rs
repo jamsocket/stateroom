@@ -17,6 +17,7 @@ pub use service_actor::{ServiceActor, ServiceActorContext};
 use std::time::{Duration, Instant};
 use tracing_actix_web::TracingLogger;
 
+const DEFAULT_IP: &str = "0.0.0.0";
 
 #[allow(clippy::unused_async)]
 async fn status() -> Result<HttpResponse, Error> {
@@ -37,6 +38,9 @@ pub struct Server {
 
     /// The port to run the server on. Defaults to 8080.
     pub port: u32,
+
+    /// The IP to listen on. Defaults to 0.0.0.0.
+    pub ip: String,
 }
 
 impl Default for Server {
@@ -45,6 +49,7 @@ impl Default for Server {
             heartbeat_interval: Duration::from_secs(30),
             heartbeat_timeout: Duration::from_secs(300),
             port: 8080,
+            ip: DEFAULT_IP.to_string(),
         }
     }
 }
@@ -73,6 +78,12 @@ impl Server {
         self
     }
 
+    #[must_use]
+    pub fn with_ip(mut self, ip: String) -> Self {
+        self.ip = ip;
+        self
+    }
+
     /// Start a server given a [JamsocketService].
     ///
     /// This function blocks until the server is terminated. While it is running, the following
@@ -85,7 +96,7 @@ impl Server {
         self,
         service_factory: impl JamsocketServiceFactory<ServiceActorContext>,
     ) -> std::io::Result<()> {
-        let host = format!("0.0.0.0:{}", self.port);
+        let host = format!("{}:{}", self.ip, self.port);
 
         actix_web::rt::System::new().block_on(async move {
             let server_state = Data::new(ServerState::new(service_factory, self).unwrap());
