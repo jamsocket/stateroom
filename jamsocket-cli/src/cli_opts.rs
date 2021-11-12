@@ -1,5 +1,4 @@
 use clap::Parser;
-use jamsocket_server::{RoomIdStrategy, ServiceShutdownPolicy};
 
 #[derive(Parser)]
 pub struct Opts {
@@ -44,10 +43,6 @@ pub struct ServeCommand {
     #[clap(short, long, default_value = "8080")]
     pub port: u32,
 
-    /// The strategy for assigning new room IDs.
-    #[clap(short, long, default_value = "implicit")]
-    pub rooms: RoomIdStrategy,
-
     /// The time interval (in seconds) between WebSocket heartbeat pings.
     #[clap(short = 'i', long, default_value = "30")]
     pub heartbeat_interval: u64,
@@ -56,7 +51,4 @@ pub struct ServeCommand {
     /// assumed to be disconnected.
     #[clap(short = 't', long, default_value = "120")]
     pub heartbeat_timeout: u64,
-
-    #[clap(short, long, default_value = "300sec")]
-    pub shutdown_policy: ServiceShutdownPolicy,
 }

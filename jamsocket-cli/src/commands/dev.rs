@@ -8,7 +8,6 @@ use std::{
     path::PathBuf,
     process::{Command, Stdio},
 };
-use wasm_bindgen_cli_support::Bindgen;
 
 pub fn locate_config() -> anyhow::Result<JamsocketConfig> {
     if let Ok(r) = read_to_string("jamsocket.toml") {
@@ -95,28 +94,7 @@ pub fn dev() -> anyhow::Result<()> {
 
     let host_factory = WasmHostFactory::new(service_wasm)?;
 
-    let client_path = if let Some(client_config) = config.client {
-        tracing::info!("Building client");
-        let client_wasm_path =
-            run_cargo_build_command(&Some(client_config.package), "wasm32-unknown-unknown", true)
-                .expect("Error building client.");
-
-        Bindgen::new()
-            .input_path(client_wasm_path)
-            .web(true)?
-            .emit_start(false)
-            .generate("client-pkg")?;
-
-        // TODO: run wasm-opt
-        Some("client-pkg".to_string())
-    } else {
-        None
-    };
-
     Server::default()
-        .with_static_path(config.static_files)
-        .with_client_path(client_path)
-        .with_room_id_strategy(config.service.room_strategy)
         .serve(host_factory)
         .map_err(|e| e.into())
 }

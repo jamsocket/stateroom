@@ -4,7 +4,6 @@ use std::{
 };
 
 use anyhow::anyhow;
-use jamsocket_server::{RoomIdStrategy, ServiceShutdownPolicy};
 use serde::{Deserialize, Serialize};
 
 const CONFIG_LOCATION_ENV_VAR: &str = "JAMSOCKET_CONFIG";
@@ -78,7 +77,6 @@ pub struct JamsocketConfig {
     /// client-side code from the same workspace in one command.
     pub client: Option<ClientConfig>,
 
-    #[serde(default)]
     /// Configuration for building the WebAssembly module to serve.
     #[serde(default)]
     pub service: ServiceConfig,
@@ -106,12 +104,4 @@ pub struct ServiceConfig {
     /// If this is empty, builds the package we are in (i.e. the package that
     /// `cargo build` builds.)
     pub package: Option<String>,
-
-    /// The strategy used for generating room IDs.
-    #[serde(default)]
-    pub room_strategy: RoomIdStrategy,
-
-    /// Specifies how empty rooms are handled.
-    #[serde(default)]
-    pub shutdown_policy: ServiceShutdownPolicy,
 }

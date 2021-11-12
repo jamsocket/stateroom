@@ -9,10 +9,8 @@ pub fn serve(serve_opts: ServeCommand) -> anyhow::Result<()> {
     let ServeCommand {
         module,
         port,
-        rooms,
         heartbeat_interval,
         heartbeat_timeout,
-        shutdown_policy,
     } = serve_opts;
 
     let ext = Path::new(&module)
@@ -24,8 +22,6 @@ pub fn serve(serve_opts: ServeCommand) -> anyhow::Result<()> {
         heartbeat_interval: Duration::from_secs(heartbeat_interval),
         heartbeat_timeout: Duration::from_secs(heartbeat_timeout),
         port,
-        room_id_strategy: rooms,
-        shutdown_policy,
         ..Server::default()
     };
 
