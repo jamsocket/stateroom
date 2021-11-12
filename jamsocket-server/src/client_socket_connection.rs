@@ -9,7 +9,6 @@ use std::time::{Duration, Instant};
 pub struct ClientSocketConnection {
     pub room: Recipient<MessageFromClient>,
     pub client_id: ClientId,
-    pub ip: String,
     pub last_seen: Instant,
     pub heartbeat_interval: Duration,
     pub heartbeat_timeout: Duration,
@@ -22,7 +21,6 @@ impl ClientSocketConnection {
             if Instant::now() - act.last_seen > act.heartbeat_timeout {
                 tracing::warn!(
                     client_id=?act.client_id,
-                    ip=%act.ip,
                     "Stopping ClientSocketConnection because heartbeat not responded.",
                 );
                 act.close(ctx);
@@ -98,7 +96,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
             Ok(ws::Message::Close(_)) => {
                 tracing::info!(
                     client_id=?self.client_id,
-                    ip=%self.ip,
                     "User has disconnected from room",
                 );
 

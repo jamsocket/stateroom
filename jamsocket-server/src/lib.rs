@@ -121,10 +121,6 @@ async fn websocket(
     req: HttpRequest,
     stream: web::Payload,
 ) -> actix_web::Result<HttpResponse> {
-    let ip = req
-        .peer_addr()
-        .map_or_else(|| "<unknown>".to_string(), |a| a.ip().to_string());
-
     let server_state: &Data<ServerState> = req.app_data().expect("Could not load ServerState.");
 
     let room_addr = server_state.room_addr.clone();
@@ -137,7 +133,6 @@ async fn websocket(
         ClientSocketConnection {
             room: room_addr.clone().recipient(),
             client_id,
-            ip: ip.clone(),
             last_seen: Instant::now(),
             heartbeat_interval: server_state.settings.heartbeat_interval,
             heartbeat_timeout: server_state.settings.heartbeat_timeout,
@@ -148,7 +143,6 @@ async fn websocket(
     ) {
         Ok((addr, resp)) => {
             tracing::info!(
-                %ip,
                 ?client_id,
                 "New connection",
             );
