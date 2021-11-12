@@ -165,12 +165,6 @@
 <span id="165">165</span>
 <span id="166">166</span>
 <span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
 </pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">client_socket_connection</span>;
 <span class="kw">mod</span> <span class="ident">messages</span>;
 <span class="kw">mod</span> <span class="ident">room_actor</span>;
@@ -294,10 +288,6 @@
     <span class="ident">req</span>: <span class="ident">HttpRequest</span>,
     <span class="ident">stream</span>: <span class="ident">web::Payload</span>,
 ) -&gt; <span class="ident">actix_web::Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">ip</span> <span class="op">=</span> <span class="ident">req</span>
-        .<span class="ident">peer_addr</span>()
-        .<span class="ident">map_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;&lt;unknown&gt;&quot;</span>.<span class="ident">to_string</span>(), <span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">ip</span>().<span class="ident">to_string</span>());
-
     <span class="kw">let</span> <span class="ident">server_state</span>: <span class="kw-2">&amp;</span><span class="ident">Data</span><span class="op">&lt;</span><span class="ident">ServerState</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">app_data</span>().<span class="ident">expect</span>(<span class="string">&quot;Could not load ServerState.&quot;</span>);
 
     <span class="kw">let</span> <span class="ident">room_addr</span> <span class="op">=</span> <span class="ident">server_state</span>.<span class="ident">room_addr</span>.<span class="ident">clone</span>();
@@ -310,7 +300,6 @@
         <span class="ident">ClientSocketConnection</span> {
             <span class="ident">room</span>: <span class="ident">room_addr</span>.<span class="ident">clone</span>().<span class="ident">recipient</span>(),
             <span class="ident">client_id</span>,
-            <span class="ident">ip</span>: <span class="ident">ip</span>.<span class="ident">clone</span>(),
             <span class="ident">last_seen</span>: <span class="ident">Instant::now</span>(),
             <span class="ident">heartbeat_interval</span>: <span class="ident">server_state</span>.<span class="ident">settings</span>.<span class="ident">heartbeat_interval</span>,
             <span class="ident">heartbeat_timeout</span>: <span class="ident">server_state</span>.<span class="ident">settings</span>.<span class="ident">heartbeat_timeout</span>,
@@ -321,7 +310,6 @@
     ) {
         <span class="prelude-val">Ok</span>((<span class="ident">addr</span>, <span class="ident">resp</span>)) =&gt; {
             <span class="macro">tracing::info!</span>(
-                <span class="op">%</span><span class="ident">ip</span>,
                 <span class="question-mark">?</span><span class="ident">client_id</span>,
                 <span class="string">&quot;New connection&quot;</span>,
             );
