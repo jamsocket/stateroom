@@ -94,7 +94,5 @@ pub fn dev() -> anyhow::Result<()> {
 
     let host_factory = WasmHostFactory::new(service_wasm)?;
 
-    Server::default()
-        .serve(host_factory)
-        .map_err(|e| e.into())
+    Server::default().serve(host_factory).map_err(|e| e.into())
 }

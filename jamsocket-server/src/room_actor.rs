@@ -1,10 +1,7 @@
-use crate::messages::{AssignClientId, MessageFromClient, MessageFromServer};
-use actix::{
-    dev::MessageResponse, Actor, ActorContext, AsyncContext, Context, Handler, Message, Recipient,
-    SpawnHandle,
-};
+use crate::{connection_info::ConnectionInfo, messages::{AssignClientId, MessageFromClient, MessageFromServer}};
+use actix::{Actor, ActorContext, AsyncContext, Context, Handler, Message, MessageResult, Recipient, SpawnHandle, dev::MessageResponse};
 use jamsocket::{ClientId, MessageRecipient};
-use std::collections::HashMap;
+use std::{collections::HashMap, time::SystemTime};
 
 /// Actor model representation of a “room”. A room is a set of clients
 /// that share an instance of a Jamsocket instance. Conceptually, this
@@ -18,6 +15,8 @@ pub struct RoomActor {
     /// will be assigned.
     next_id: u32,
     shutdown_handle: Option<SpawnHandle>,
+
+    inactive_since: Option<SystemTime>,
 }
 
 struct Shutdown;
@@ -25,6 +24,10 @@ struct Shutdown;
 impl Message for Shutdown {
     type Result = ();
 }
+
+#[derive(Message)]
+#[rtype(result = "ConnectionInfo")]
+pub struct GetConnectionInfo;
 
 impl RoomActor {
     #[must_use]
@@ -34,6 +37,7 @@ impl RoomActor {
             connections: HashMap::default(),
             next_id: 1,
             shutdown_handle: None,
+            inactive_since: Some(SystemTime::now()),
         }
     }
 }
@@ -80,6 +84,7 @@ impl Handler<MessageFromClient> for RoomActor {
             match &message {
                 MessageFromClient::Connect(client, resp) => {
                     self.connections.insert(*client, resp.clone());
+                    self.inactive_since = None;
                     if service_actor.do_send(message).is_err() {
                         tracing::warn!("Couldn't forward client message to service",);
                     }
@@ -90,6 +95,10 @@ impl Handler<MessageFromClient> for RoomActor {
                 }
                 MessageFromClient::Disconnect(client_id) => {
                     self.connections.remove(client_id);
+
+                    if self.connections.is_empty() {
+                        self.inactive_since = Some(SystemTime::now());
+                    }
 
                     if service_actor.do_send(message).is_err() {
                         tracing::warn!("Couldn't forward client message to service",);
@@ -139,5 +148,21 @@ impl Handler<Shutdown> for RoomActor {
         );
 
         ctx.stop();
+    }
+}
+
+impl Handler<GetConnectionInfo> for RoomActor {
+    type Result = MessageResult<GetConnectionInfo>;
+
+    fn handle(&mut self, _: GetConnectionInfo, _: &mut Self::Context) -> Self::Result {
+        let seconds_inactive = self.inactive_since.map(|d|
+            SystemTime::now().duration_since(d).unwrap().as_secs()
+        ).unwrap_or(0);
+        
+        MessageResult(ConnectionInfo {
+            active_connections: self.connections.len() as _,
+            listening: true,
+            seconds_inactive: seconds_inactive as _,
+        })
     }
 }

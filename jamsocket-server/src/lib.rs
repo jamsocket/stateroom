@@ -3,12 +3,14 @@ mod messages;
 mod room_actor;
 mod server_state;
 mod service_actor;
+mod connection_info;
 
 use actix_web::error::ErrorInternalServerError;
 use actix_web::web::{self, get};
 use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use actix_web_actors::ws;
 pub use client_socket_connection::ClientSocketConnection;
+use connection_info::ConnectionInfo;
 use jamsocket::JamsocketServiceFactory;
 pub use messages::{AssignClientId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
@@ -16,16 +18,9 @@ use server_state::ServerState;
 pub use service_actor::{ServiceActor, ServiceActorContext};
 use std::time::{Duration, Instant};
 use tracing_actix_web::TracingLogger;
-use serde_json::{Value, json};
+use crate::room_actor::GetConnectionInfo;
 
 const DEFAULT_IP: &str = "0.0.0.0";
-
-#[allow(clippy::unused_async)]
-async fn status() -> Result<web::Json<Value>, Error> {
-    Ok(web::Json(json!({
-        "status": "ok"
-    })))
-}
 
 /// Settings used by the server.
 pub struct Server {
@@ -108,7 +103,7 @@ impl Server {
                 #[allow(unused_mut)] // mut only needed with crate feature `serve-static`.
                 let mut app = App::new()
                     .app_data(server_state.clone())
-                    .route("/status", get().to(status))
+                    .route("/", get().to(status))
                     .route("/ws", get().to(websocket))
                     .wrap(TracingLogger::default());
 
@@ -163,4 +158,16 @@ async fn websocket(
         }
         Err(e) => Err(e),
     }
+}
+
+async fn status(req: HttpRequest) -> Result<web::Json<ConnectionInfo>, Error> {
+    let server_state: &Data<ServerState> = req.app_data().expect("Could not load ServerState.");
+
+    let room_addr = server_state.room_addr.clone();
+    let connection_info = room_addr
+        .send(GetConnectionInfo)
+        .await
+        .map_err(|_| ErrorInternalServerError("Error getting connection info."))?;
+    
+    Ok(web::Json(connection_info))
 }
