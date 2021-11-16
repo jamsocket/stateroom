@@ -1,60 +1,8 @@
-use std::{
-    fs::{create_dir_all, read_to_string},
-    path::PathBuf,
-};
-
-use anyhow::anyhow;
 use serde::{Deserialize, Serialize};
-
-const CONFIG_LOCATION_ENV_VAR: &str = "JAMSOCKET_CONFIG";
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct GlobalConfig {
     pub token: Option<String>,
-}
-
-pub struct GlobalConfigHandle {
-    pub config: GlobalConfig,
-    pub location: PathBuf,
-    pub exists: bool,
-}
-
-impl GlobalConfigHandle {
-    pub fn new() -> anyhow::Result<Self> {
-        let conf_path = if let Ok(path) = std::env::var(CONFIG_LOCATION_ENV_VAR) {
-            PathBuf::from(&path)
-        } else {
-            let home = dirs::home_dir().ok_or_else(||
-                anyhow!("Home directory not found and {} not set; can't decide where to put the global.toml config file.",
-                CONFIG_LOCATION_ENV_VAR))?;
-            PathBuf::from(&home)
-                .join(".config")
-                .join("jamsocket")
-                .join("global.toml")
-        };
-
-        let (config, exists) = if conf_path.exists() {
-            let conf_toml = read_to_string(&conf_path)?;
-            (toml::from_str(&conf_toml)?, true)
-        } else {
-            (GlobalConfig::default(), false)
-        };
-
-        Ok(GlobalConfigHandle {
-            config,
-            location: conf_path,
-            exists,
-        })
-    }
-
-    pub fn write(&self) -> anyhow::Result<()> {
-        if let Some(parent) = self.location.parent() {
-            create_dir_all(parent)?;
-        }
-
-        let conf_toml = toml::to_string_pretty(&self.config)?;
-        std::fs::write(&self.location, &conf_toml).map_err(|e| e.into())
-    }
 }
 
 /// Represents a `jamsocket.toml` file, used to configure

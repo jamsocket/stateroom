@@ -11,13 +11,7 @@ pub enum SubCommand {
     /// Run a dev server to host a given Jamsocket module.
     Serve(ServeCommand),
 
-    Login(LoginCommand),
-
     Dev,
-
-    Deploy(DeployCommand),
-
-    Register,
 }
 
 #[derive(Parser)]
