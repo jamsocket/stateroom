@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["deploy",""],["dev",""],["login",""],["register",""],["serve",""]],"mod":[["cli_opts",""]]});
+initSidebarItems({"fn":[["dev",""],["serve",""]],"mod":[["cli_opts",""]]});
