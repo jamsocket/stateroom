@@ -1,6 +1,6 @@
 [package]
 name = "jamsocket-wasm-host"
-version = "0.1.3"
+version = "0.1.5"
 edition = "2018"
 readme = "README.md"
 repository = "https://github.com/jamsocket/jamsocket"
@@ -11,7 +11,7 @@ description = "A Jamsocket service implementation that takes a WebAssembly modul
 [dependencies]
 anyhow = "1.0.45"
 byteorder = "1.4.3"
-jamsocket = {path="../jamsocket", version="0.1.0"}
+jamsocket = {path="../jamsocket", version="0.1.5"}
 wasmtime-wasi = "0.31.0"
 tracing = "0.1.28"
 
