@@ -1,4 +1,5 @@
-//! Jamsocket is a minimalist framework for developing stateful [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) applications.
+//! Jamsocket is a minimalist framework for developing stateful
+//! [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) applications.
 //!
 //! Jamsocket apps implement the [SimpleJamsocketService] trait, which provides a way for the
 //! app to hook into events when clients connect, disconnect, and send messages. Additionally,

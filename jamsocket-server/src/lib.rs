@@ -1,10 +1,11 @@
 mod client_socket_connection;
+mod connection_info;
 mod messages;
 mod room_actor;
 mod server_state;
 mod service_actor;
-mod connection_info;
 
+use crate::room_actor::GetConnectionInfo;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::web::{self, get};
 use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
@@ -17,8 +18,6 @@ pub use room_actor::RoomActor;
 use server_state::ServerState;
 pub use service_actor::{ServiceActor, ServiceActorContext};
 use std::time::{Duration, Instant};
-use tracing_actix_web::TracingLogger;
-use crate::room_actor::GetConnectionInfo;
 
 const DEFAULT_IP: &str = "0.0.0.0";
 
@@ -104,8 +103,7 @@ impl Server {
                 let mut app = App::new()
                     .app_data(server_state.clone())
                     .route("/", get().to(status))
-                    .route("/ws", get().to(websocket))
-                    .wrap(TracingLogger::default());
+                    .route("/ws", get().to(websocket));
 
                 app
             })
@@ -117,10 +115,7 @@ impl Server {
     }
 }
 
-async fn websocket(
-    req: HttpRequest,
-    stream: web::Payload,
-) -> actix_web::Result<HttpResponse> {
+async fn websocket(req: HttpRequest, stream: web::Payload) -> actix_web::Result<HttpResponse> {
     let server_state: &Data<ServerState> = req.app_data().expect("Could not load ServerState.");
 
     let room_addr = server_state.room_addr.clone();
@@ -142,10 +137,7 @@ async fn websocket(
         stream,
     ) {
         Ok((addr, resp)) => {
-            tracing::info!(
-                ?client_id,
-                "New connection",
-            );
+            tracing::info!(?client_id, "New connection",);
             room_addr.do_send(MessageFromClient::Connect(client_id, addr.recipient()));
 
             Ok(resp)
@@ -162,6 +154,6 @@ async fn status(req: HttpRequest) -> Result<web::Json<ConnectionInfo>, Error> {
         .send(GetConnectionInfo)
         .await
         .map_err(|_| ErrorInternalServerError("Error getting connection info."))?;
-    
+
     Ok(web::Json(connection_info))
 }

@@ -12,11 +12,11 @@ dependencies = [
 
 [[package]]
 name = "jamsocket"
-version = "0.1.0"
+version = "0.1.3"
 
 [[package]]
 name = "jamsocket-wasm"
-version = "0.1.0"
+version = "0.1.3"
 dependencies = [
  "jamsocket",
  "jamsocket-wasm-macro",

@@ -1,5 +1,11 @@
-use crate::{connection_info::ConnectionInfo, messages::{AssignClientId, MessageFromClient, MessageFromServer}};
-use actix::{Actor, ActorContext, AsyncContext, Context, Handler, Message, MessageResult, Recipient, SpawnHandle, dev::MessageResponse};
+use crate::{
+    connection_info::ConnectionInfo,
+    messages::{AssignClientId, MessageFromClient, MessageFromServer},
+};
+use actix::{
+    dev::MessageResponse, Actor, ActorContext, AsyncContext, Context, Handler, Message,
+    MessageResult, Recipient, SpawnHandle,
+};
 use jamsocket::{ClientId, MessageRecipient};
 use std::{collections::HashMap, time::SystemTime};
 
@@ -155,10 +161,11 @@ impl Handler<GetConnectionInfo> for RoomActor {
     type Result = MessageResult<GetConnectionInfo>;
 
     fn handle(&mut self, _: GetConnectionInfo, _: &mut Self::Context) -> Self::Result {
-        let seconds_inactive = self.inactive_since.map(|d|
-            SystemTime::now().duration_since(d).unwrap().as_secs()
-        ).unwrap_or(0);
-        
+        let seconds_inactive = self
+            .inactive_since
+            .map(|d| SystemTime::now().duration_since(d).unwrap().as_secs())
+            .unwrap_or(0);
+
         MessageResult(ConnectionInfo {
             active_connections: self.connections.len() as _,
             listening: true,

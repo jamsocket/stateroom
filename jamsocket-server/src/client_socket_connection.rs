@@ -38,9 +38,7 @@ impl ClientSocketConnection {
             .do_send(MessageFromClient::Disconnect(self.client_id))
             .is_err()
         {
-            tracing::warn!(
-                "Could not send Disconnect message before closing room",
-            );
+            tracing::warn!("Could not send Disconnect message before closing room",);
         }
 
         ctx.stop();
@@ -77,9 +75,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                     data: MessageData::String(text.to_string()),
                 };
                 if self.room.do_send(message).is_err() {
-                    tracing::warn!(
-                        "Error forwarding message to service",
-                    );
+                    tracing::warn!("Error forwarding message to service",);
                 }
             }
             Ok(ws::Message::Binary(data)) => {
@@ -88,9 +84,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
                     data: MessageData::Binary(data.to_vec()),
                 };
                 if self.room.do_send(message).is_err() {
-                    tracing::warn!(
-                        "Error forwarding binary message to service",
-                    );
+                    tracing::warn!("Error forwarding binary message to service",);
                 }
             }
             Ok(ws::Message::Close(_)) => {
