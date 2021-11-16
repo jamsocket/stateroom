@@ -166,8 +166,21 @@
 <span id="166">166</span>
 <span id="167">167</span>
 <span id="168">168</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">connection_info::ConnectionInfo</span>, <span class="ident">messages</span>::{<span class="ident">AssignClientId</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>}};
-<span class="kw">use</span> <span class="ident">actix</span>::{<span class="ident">Actor</span>, <span class="ident">ActorContext</span>, <span class="ident">AsyncContext</span>, <span class="ident">Context</span>, <span class="ident">Handler</span>, <span class="ident">Message</span>, <span class="ident">MessageResult</span>, <span class="ident">Recipient</span>, <span class="ident">SpawnHandle</span>, <span class="ident">dev::MessageResponse</span>};
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{
+    <span class="ident">connection_info::ConnectionInfo</span>,
+    <span class="ident">messages</span>::{<span class="ident">AssignClientId</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>},
+};
+<span class="kw">use</span> <span class="ident">actix</span>::{
+    <span class="ident">dev::MessageResponse</span>, <span class="ident">Actor</span>, <span class="ident">ActorContext</span>, <span class="ident">AsyncContext</span>, <span class="ident">Context</span>, <span class="ident">Handler</span>, <span class="ident">Message</span>,
+    <span class="ident">MessageResult</span>, <span class="ident">Recipient</span>, <span class="ident">SpawnHandle</span>,
+};
 <span class="kw">use</span> <span class="ident">jamsocket</span>::{<span class="ident">ClientId</span>, <span class="ident">MessageRecipient</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::HashMap</span>, <span class="ident">time::SystemTime</span>};
 
@@ -323,17 +336,19 @@
     <span class="kw">type</span> <span class="prelude-ty">Result</span> <span class="op">=</span> <span class="ident">MessageResult</span><span class="op">&lt;</span><span class="ident">GetConnectionInfo</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">handle</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="kw">_</span>: <span class="ident">GetConnectionInfo</span>, <span class="kw">_</span>: <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::Context</span>) -&gt; <span class="ident"><span class="self">Self</span>::Result</span> {
-        <span class="kw">let</span> <span class="ident">seconds_inactive</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inactive_since</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span>
-            <span class="ident">SystemTime::now</span>().<span class="ident">duration_since</span>(<span class="ident">d</span>).<span class="ident">unwrap</span>().<span class="ident">as_secs</span>()
-        ).<span class="ident">unwrap_or</span>(<span class="number">0</span>);
-        
+        <span class="kw">let</span> <span class="ident">seconds_inactive</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">inactive_since</span>
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">SystemTime::now</span>().<span class="ident">duration_since</span>(<span class="ident">d</span>).<span class="ident">unwrap</span>().<span class="ident">as_secs</span>())
+            .<span class="ident">unwrap_or</span>(<span class="number">0</span>);
+
         <span class="ident">MessageResult</span>(<span class="ident">ConnectionInfo</span> {
             <span class="ident">active_connections</span>: <span class="self">self</span>.<span class="ident">connections</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="kw">_</span>,
             <span class="ident">listening</span>: <span class="bool-val">true</span>,
             <span class="ident">seconds_inactive</span>: <span class="ident">seconds_inactive</span> <span class="kw">as</span> <span class="kw">_</span>,
         })
     }
-}</code></pre></div>
+}
+</code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="jamsocket_server" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
     <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
 </body></html>

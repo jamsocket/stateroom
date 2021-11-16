@@ -100,12 +100,6 @@
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::messages</span>::{<span class="ident">MessageData</span>, <span class="ident">MessageFromClient</span>, <span class="ident">MessageFromServer</span>};
 <span class="kw">use</span> <span class="ident">actix</span>::{<span class="ident">Actor</span>, <span class="ident">ActorContext</span>, <span class="ident">AsyncContext</span>, <span class="ident">Handler</span>, <span class="ident">Recipient</span>, <span class="ident">SpawnHandle</span>, <span class="ident">StreamHandler</span>};
 <span class="kw">use</span> <span class="ident">actix_web_actors::ws</span>;
@@ -146,9 +140,7 @@
             .<span class="ident">do_send</span>(<span class="ident">MessageFromClient::Disconnect</span>(<span class="self">self</span>.<span class="ident">client_id</span>))
             .<span class="ident">is_err</span>()
         {
-            <span class="macro">tracing::warn!</span>(
-                <span class="string">&quot;Could not send Disconnect message before closing room&quot;</span>,
-            );
+            <span class="macro">tracing::warn!</span>(<span class="string">&quot;Could not send Disconnect message before closing room&quot;</span>,);
         }
 
         <span class="ident">ctx</span>.<span class="ident">stop</span>();
@@ -185,9 +177,7 @@
                     <span class="ident">data</span>: <span class="ident">MessageData::String</span>(<span class="ident">text</span>.<span class="ident">to_string</span>()),
                 };
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">room</span>.<span class="ident">do_send</span>(<span class="ident">message</span>).<span class="ident">is_err</span>() {
-                    <span class="macro">tracing::warn!</span>(
-                        <span class="string">&quot;Error forwarding message to service&quot;</span>,
-                    );
+                    <span class="macro">tracing::warn!</span>(<span class="string">&quot;Error forwarding message to service&quot;</span>,);
                 }
             }
             <span class="prelude-val">Ok</span>(<span class="ident">ws::Message::Binary</span>(<span class="ident">data</span>)) =&gt; {
@@ -196,9 +186,7 @@
                     <span class="ident">data</span>: <span class="ident">MessageData::Binary</span>(<span class="ident">data</span>.<span class="ident">to_vec</span>()),
                 };
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">room</span>.<span class="ident">do_send</span>(<span class="ident">message</span>).<span class="ident">is_err</span>() {
-                    <span class="macro">tracing::warn!</span>(
-                        <span class="string">&quot;Error forwarding binary message to service&quot;</span>,
-                    );
+                    <span class="macro">tracing::warn!</span>(<span class="string">&quot;Error forwarding binary message to service&quot;</span>,);
                 }
             }
             <span class="prelude-val">Ok</span>(<span class="ident">ws::Message::Close</span>(<span class="kw">_</span>)) =&gt; {
