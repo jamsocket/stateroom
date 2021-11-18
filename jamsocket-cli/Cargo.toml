@@ -3,7 +3,7 @@ name = "jamsocket-cli"
 version = "0.1.5"
 edition = "2018"
 readme = "README.md"
-repository = "https://github.com/jamsocket/jamsocket"
+repository = "https://github.com/drifting-in-space/jamsocket"
 license = "MIT OR Apache-2.0"
 keywords = ["websocket"]
 description = "Command-line tool for developing Jamsocket applications"
@@ -11,7 +11,7 @@ description = "Command-line tool for developing Jamsocket applications"
 [dependencies]
 jamsocket = { path="../jamsocket", version="0.1.5" }
 jamsocket-stdio = { path="../jamsocket-stdio", version="0.1.5" }
-jamsocket-server = { path="../jamsocket-server", version="0.1.5" }
+jamsocket-server = { path="../jamsocket-server", version="0.1.5", features=["serve-static"] }
 jamsocket-wasm-host = { path="../jamsocket-wasm-host", version="0.1.5" }
 clap = "3.0.0-beta.5"
 anyhow = "1.0.42"
@@ -20,3 +20,4 @@ toml = "0.5.8"
 cargo_metadata = "0.14.0"
 tracing = "0.1.28"
 tracing-subscriber = { version = "0.3.1", features = ["env-filter"] }
+wasm-bindgen-cli-support = "0.2.78"

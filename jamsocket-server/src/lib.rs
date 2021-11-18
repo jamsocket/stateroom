@@ -38,6 +38,12 @@ pub struct Server {
 
     /// The IP to listen on. Defaults to 0.0.0.0.
     pub ip: String,
+
+    /// A local filesystem path to serve static files from, or None (default).
+    pub static_path: Option<String>,
+
+    /// A local filesystem path to serve from /client, or None (default).
+    pub client_path: Option<String>,
 }
 
 impl Default for Server {
@@ -47,6 +53,8 @@ impl Default for Server {
             heartbeat_timeout: Duration::from_secs(300),
             port: 8080,
             ip: DEFAULT_IP.to_string(),
+            static_path: None,
+            client_path: None,
         }
     }
 }
@@ -55,6 +63,20 @@ impl Server {
     #[must_use]
     pub fn new() -> Self {
         Server::default()
+    }
+
+    #[cfg(feature = "serve-static")]
+    #[must_use]
+    pub fn with_static_path(mut self, static_path: Option<String>) -> Self {
+        self.static_path = static_path;
+        self
+    }
+
+    #[cfg(feature = "serve-static")]
+    #[must_use]
+    pub fn with_client_path(mut self, client_path: Option<String>) -> Self {
+        self.client_path = client_path;
+        self
     }
 
     #[must_use]
@@ -102,9 +124,23 @@ impl Server {
                 #[allow(unused_mut)] // mut only needed with crate feature `serve-static`.
                 let mut app = App::new()
                     .app_data(server_state.clone())
-                    .route("/", get().to(status))
+                    .route("/status", get().to(status))
                     .route("/ws", get().to(websocket));
 
+                #[cfg(feature = "serve-static")]
+                {
+                    if let Some(client_path) = &server_state.settings.client_path {
+                        //let client_dir = Path::new(client_path).parent().unwrap();
+                        app = app.service(actix_files::Files::new("/client", client_path));
+                    }
+
+                    if let Some(static_path) = &server_state.settings.static_path {
+                        app = app.service(
+                            actix_files::Files::new("/", static_path).index_file("index.html"),
+                        );
+                    }
+                }
+    
                 app
             })
             .bind(&host)?;
