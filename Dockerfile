@@ -8,4 +8,4 @@ FROM gcr.io/distroless/cc-debian11
 
 COPY --from=build /work/target/release/jamsocket /jamsocket
 ENTRYPOINT [ "/jamsocket" ]
-CMD ["/dist"]
+CMD ["serve", "/dist"]
