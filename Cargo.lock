@@ -1157,14 +1157,14 @@ checksum = "b71991ff56294aa922b450139ee08b3bfc70982c6b2c7562771375cf73542dd4"
 
 [[package]]
 name = "jamsocket"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "jamsocket-cli"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "anyhow",
  "cargo_metadata",
@@ -1183,7 +1183,7 @@ dependencies = [
 
 [[package]]
 name = "jamsocket-server"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "actix",
  "actix-files",
