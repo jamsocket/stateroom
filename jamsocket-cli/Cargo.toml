@@ -11,7 +11,7 @@ description = "Command-line tool for developing Jamsocket applications"
 [dependencies]
 jamsocket = { path="../jamsocket", version="0.1.6" }
 jamsocket-stdio = { path="../jamsocket-stdio", version="0.1.5" }
-jamsocket-server = { path="../jamsocket-server", version="0.1.5", features=["serve-static"] }
+jamsocket-server = { path="../jamsocket-server", version="0.1.6", features=["serve-static"] }
 jamsocket-wasm-host = { path="../jamsocket-wasm-host", version="0.1.5" }
 clap = "3.0.0-beta.5"
 anyhow = "1.0.42"
