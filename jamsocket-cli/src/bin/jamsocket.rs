@@ -2,7 +2,7 @@
 
 use clap::Parser;
 use jamsocket_cli::cli_opts::{Opts, SubCommand};
-use jamsocket_cli::{dev, serve};
+use jamsocket_cli::{build, dev, serve};
 use tracing_subscriber::EnvFilter;
 
 fn main() -> anyhow::Result<()> {
@@ -18,5 +18,6 @@ fn main() -> anyhow::Result<()> {
     match opts.subcommand {
         SubCommand::Serve(serve_opts) => serve(serve_opts),
         SubCommand::Dev => dev(),
+        SubCommand::Build => build(),
     }
 }

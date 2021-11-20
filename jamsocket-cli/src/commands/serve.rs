@@ -13,7 +13,8 @@ pub fn serve(serve_opts: ServeCommand) -> anyhow::Result<()> {
         heartbeat_timeout,
     } = serve_opts;
 
-    let ext = Path::new(&module)
+    let path = Path::new(&module);
+    let ext = path
         .extension()
         .and_then(OsStr::to_str)
         .map(str::to_ascii_lowercase);
@@ -28,9 +29,32 @@ pub fn serve(serve_opts: ServeCommand) -> anyhow::Result<()> {
     if let Some("wasm" | "wat") = ext.as_deref() {
         let host_factory = WasmHostFactory::new(&module)?;
         server_settings.serve(host_factory).map_err(|e| e.into())
-    } else {
+    } else if path.is_file() {
         // Assume that module represents a system process.
         let host_factory = StdioProcessServiceFactory::new(&module);
         server_settings.serve(host_factory).map_err(|e| e.into())
+    } else if path.is_dir() {
+        let server_module = path.join("server.wasm");
+
+        if !server_module.exists() {
+            return Err(anyhow::anyhow!("Expected server.wasm"));
+        }
+
+        let static_dir = path.join("static");
+
+        let static_dir = if static_dir.exists() {
+            Some(static_dir.to_str().unwrap().to_string())
+        } else {
+            None
+        };
+
+        let host_factory = WasmHostFactory::new(&server_module)?;
+
+        server_settings
+            .with_static_path(static_dir)
+            .serve(host_factory)
+            .map_err(|e| e.into())
+    } else {
+        Err(anyhow::anyhow!("Expected a file or directory."))
     }
 }
