@@ -1,9 +1,8 @@
 FROM rust:latest as build
 
 WORKDIR /work
-COPY jamsocket-cli .
-RUN cargo build --release
-RUN cargo test --release
+COPY . .
+RUN cargo build -p jamsocket-cli --release
 
 FROM gcr.io/distroless/cc-debian11
 
