@@ -1,6 +1,6 @@
 [package]
 name = "jamsocket-cli"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2018"
 readme = "README.md"
 repository = "https://github.com/drifting-in-space/jamsocket"
@@ -9,7 +9,7 @@ keywords = ["websocket"]
 description = "Command-line tool for developing Jamsocket applications"
 
 [dependencies]
-jamsocket = { path="../jamsocket", version="0.1.5" }
+jamsocket = { path="../jamsocket", version="0.1.6" }
 jamsocket-stdio = { path="../jamsocket-stdio", version="0.1.5" }
 jamsocket-server = { path="../jamsocket-server", version="0.1.5", features=["serve-static"] }
 jamsocket-wasm-host = { path="../jamsocket-wasm-host", version="0.1.5" }
