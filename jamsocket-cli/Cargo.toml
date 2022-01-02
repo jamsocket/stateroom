@@ -13,12 +13,12 @@ jamsocket = { path="../jamsocket", version="0.1.6" }
 jamsocket-stdio = { path="../jamsocket-stdio", version="0.1.5" }
 jamsocket-server = { path="../jamsocket-server", version="0.1.6", features=["serve-static"] }
 jamsocket-wasm-host = { path="../jamsocket-wasm-host", version="0.1.5" }
-clap = "3.0.0-beta.5"
-anyhow = "1.0.42"
+clap = { version = "3.0.0", features = ["derive"] }
+anyhow = "1.0.52"
 serde = { version = "1.0.127", features = ["derive"] }
 toml = "0.5.8"
 cargo_metadata = "0.14.0"
 tracing = "0.1.28"
-tracing-subscriber = { version = "0.3.1", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.5", features = ["env-filter"] }
 wasm-bindgen-cli-support = "0.2.78"
 fs_extra = "1.2.0"

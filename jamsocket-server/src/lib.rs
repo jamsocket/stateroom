@@ -9,7 +9,7 @@ use crate::room_actor::GetConnectionInfo;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::web::{self, get};
 use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
-use actix_web_actors::ws;
+use actix_web_actors::ws::WsResponseBuilder;
 pub use client_socket_connection::ClientSocketConnection;
 use connection_info::ConnectionInfo;
 use jamsocket::JamsocketServiceFactory;
@@ -140,7 +140,7 @@ impl Server {
                         );
                     }
                 }
-    
+
                 app
             })
             .bind(&host)?;
@@ -160,7 +160,7 @@ async fn websocket(req: HttpRequest, stream: web::Payload) -> actix_web::Result<
         .await
         .map_err(|_| ErrorInternalServerError("Error getting room."))?;
 
-    match ws::start_with_addr(
+    match WsResponseBuilder::new(
         ClientSocketConnection {
             room: room_addr.clone().recipient(),
             client_id,
@@ -171,7 +171,9 @@ async fn websocket(req: HttpRequest, stream: web::Payload) -> actix_web::Result<
         },
         &req,
         stream,
-    ) {
+    )
+    .start_with_addr()
+    {
         Ok((addr, resp)) => {
             tracing::info!(?client_id, "New connection",);
             room_addr.do_send(MessageFromClient::Connect(client_id, addr.recipient()));

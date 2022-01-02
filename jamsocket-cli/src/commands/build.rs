@@ -26,20 +26,30 @@ pub fn build() -> anyhow::Result<()> {
     .context("Couldn't copy server.wasm.")?;
 
     create_dir(Path::new(OUTPUT_DIR).join(STATIC_DIR))
-            .context("Couldn't create empty static directory.")?;
+        .context("Couldn't create empty static directory.")?;
 
     if let Some(static_dir) = config.static_files {
-        fs_extra::dir::copy(static_dir, Path::new(OUTPUT_DIR).join(STATIC_DIR), &CopyOptions {
-            content_only: true,
-            ..CopyOptions::default()
-        }).context("Couldn't copy static items.")?;
+        fs_extra::dir::copy(
+            static_dir,
+            Path::new(OUTPUT_DIR).join(STATIC_DIR),
+            &CopyOptions {
+                content_only: true,
+                ..CopyOptions::default()
+            },
+        )
+        .context("Couldn't copy static items.")?;
     }
 
     if let Some(client_wasm) = build_result.client_wasm {
-        fs_extra::dir::copy(client_wasm, Path::new(OUTPUT_DIR).join(STATIC_DIR).join("client"), &CopyOptions {
-            copy_inside: true,
-            ..CopyOptions::default()
-        }).context("Couldn't copy client wasm.")?;
+        fs_extra::dir::copy(
+            client_wasm,
+            Path::new(OUTPUT_DIR).join(STATIC_DIR).join("client"),
+            &CopyOptions {
+                copy_inside: true,
+                ..CopyOptions::default()
+            },
+        )
+        .context("Couldn't copy client wasm.")?;
     }
 
     Ok(())

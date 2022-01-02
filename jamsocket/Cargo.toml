@@ -10,7 +10,7 @@ keywords = ["websocket"]
 description = "A lightweight framework for building WebSocket services."
 
 [dependencies]
-serde = { version = "1.0.130", features = ["derive"], optional=true }
+serde = { version = "1.0.133", features = ["derive"], optional=true }
 
 [features]
 default = []
