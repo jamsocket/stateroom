@@ -12,24 +12,6 @@ Jamsocket is a lightweight framework for building services that are accessed thr
 Services can either be native Rust code that runs in the server process, or be compiled into
 [WebAssembly](https://webassembly.org/) modules and loaded dynamically.
 
-## Concepts
-
-### Services
-
-A Jamsocket server hosts one or more **services**. Services determine how the server responds to various types of
-messages.
-
-### Clients
-
-External connections into a Jamsocket server are called **clients**. Usually, clients have a 1:1 correspondence with
-*users*, so the term *user* is (informally) interchangable with *client*.
-
-### Rooms
-
-When clients connect to a Jamsocket server, they connect to a particular **room**. Each room has a 1:1 correspondence with an instance of your service. This means that all service state is scoped to a room. Client identifiers are also scoped to a room, and when a service broadcasts a message it is delivered only to clients in that service instance's room.
-
-You can think of rooms as being isolated and independent of each other, analogous to rooms in a chat service.
-
 ## Usage
 
 To create a Jamsocket service, implement the `SimpleJamsocketService` trait. There's only one function that you *must* implement, the constructor `new`.
