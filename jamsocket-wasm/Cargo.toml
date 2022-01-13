@@ -9,5 +9,5 @@ keywords = ["websocket", "webassembly", "jamsocket"]
 description = "A macro for building a Jamsocket service as a WebAssembly module."
 
 [dependencies]
-jamsocket-wasm-macro = {path="./jamsocket-wasm-macro", version="0.1.5"}
-jamsocket = {path="../jamsocket", version="0.1.5"}
+jamsocket-wasm-macro = {path="./jamsocket-wasm-macro", version="0.1.7"}
+jamsocket = {path="../jamsocket", version="0.1.7"}
