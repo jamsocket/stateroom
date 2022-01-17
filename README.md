@@ -1,7 +1,5 @@
 ![Jamsocket Logo](jamsocket_logo.svg)
 
-# Jamsocket
-
 [![crates.io](https://img.shields.io/crates/v/jamsocket.svg)](https://crates.io/crates/jamsocket)
 [![docs.rs](https://img.shields.io/badge/docs-release-brightgreen)](https://docs.rs/jamsocket/0.1.0/jamsocket/)
 [![wokflow state](https://github.com/jamsocket/jamsocket/workflows/test/badge.svg)](https://github.com/drifting-in-space/jamsocket/actions/workflows/test.yml)
