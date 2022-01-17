@@ -1,4 +1,4 @@
-![Jamsocket Logo](jamsocket_logo.svg?cachebust)
+![Jamsocket Logo](logo.svg)
 
 [![crates.io](https://img.shields.io/crates/v/jamsocket.svg)](https://crates.io/crates/jamsocket)
 [![docs.rs](https://img.shields.io/badge/docs-release-brightgreen)](https://docs.rs/jamsocket/0.1.0/jamsocket/)
