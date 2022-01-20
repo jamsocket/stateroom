@@ -12,12 +12,10 @@ pub enum SubCommand {
     Serve(ServeCommand),
 
     Build,
-    Dev,
-}
-
-#[derive(Parser)]
-pub struct DeployCommand {
-    pub service_id: Option<String>,
+    Dev {
+        #[clap(default_value="8080")]
+        port: u32,
+    },
 }
 
 #[derive(Parser)]
