@@ -9,5 +9,5 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 bytemuck = "1.7.0"
-jamsocket-wasm = {path="../../jamsocket-wasm"}
+stateroom-wasm = {path="../../stateroom-wasm"}
 wasi = "0.10.2"

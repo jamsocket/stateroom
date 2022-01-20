@@ -1,0 +1,13 @@
+[package]
+name = "stateroom-wasm"
+version = "0.2.0"
+edition = "2018"
+readme = "README.md"
+repository = "https://github.com/drifting-in-space/stateroom"
+license = "MIT OR Apache-2.0"
+keywords = ["websocket", "webassembly", "stateroom"]
+description = "A macro for building a Stateroom service as a WebAssembly module."
+
+[dependencies]
+stateroom-wasm-macro = {path="./stateroom-wasm-macro", version="0.2.0"}
+stateroom = {path="../stateroom", version="0.2.0"}

@@ -1,35 +1,35 @@
-![Jamsocket Logo](jamsocket_logo.svg)
+# Stateroom
 
-# Jamsocket
+[![crates.io](https://img.shields.io/crates/v/stateroom.svg)](https://crates.io/crates/stateroom)
+[![docs.rs](https://img.shields.io/badge/docs-release-brightgreen)](https://docs.rs/stateroom/0.1.0/stateroom/)
+[![wokflow state](https://github.com/stateroom/stateroom/workflows/test/badge.svg)](https://github.com/drifting-in-space/stateroom/actions/workflows/test.yml)
 
-[![crates.io](https://img.shields.io/crates/v/jamsocket.svg)](https://crates.io/crates/jamsocket)
-[![docs.rs](https://img.shields.io/badge/docs-release-brightgreen)](https://docs.rs/jamsocket/0.1.0/jamsocket/)
-[![wokflow state](https://github.com/jamsocket/jamsocket/workflows/test/badge.svg)](https://github.com/drifting-in-space/jamsocket/actions/workflows/test.yml)
-
-Jamsocket is a lightweight framework for building services that are accessed through
-[WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) connections.
+Stateroom is a minimalist framework for building lightweight, single-threaded services that send and
+receive messages through [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
 
 Services can either be native Rust code that runs in the server process, or be compiled into
 [WebAssembly](https://webassembly.org/) modules and loaded dynamically.
 
+*Stateroom was formerly known as jamsocket.*
+
 ## Usage
 
-To create a Jamsocket service, implement the `SimpleJamsocketService` trait. There's only one function that you *must* implement, the constructor `new`.
+To create a Stateroom service, implement the `SimpleStateroomService` trait. There's only one function that you *must* implement, the constructor `new`.
 
 Let's implement a simple shared counter. Any connected client will be able to increment or decrement it by sending 
 `increment` or `decrement` messages (other messages will be ignored). Whenever the value is changed, we'll broadcast it 
 to every connected client.
 
 ```rust
-impl SimpleJamsocketService for SharedCounterServer {
+impl SimpleStateroomService for SharedCounterServer {
     fn new(_: &str,
-           _: &impl JamsocketContext) -> Self {
+           _: &impl StateroomContext) -> Self {
         SharedCounterServer(0)
     }
 
     fn message(&mut self, _: ClientId,
                message: &str,
-               ctx: &impl JamsocketContext) {
+               ctx: &impl StateroomContext) {
         match message {
             "increment" => self.0 += 1,
             "decrement" => self.0 -= 1,
@@ -43,26 +43,26 @@ impl SimpleJamsocketService for SharedCounterServer {
 }
 ```
 
-To serve this service, we will compile it into a WebAssembly module. We import the `#[jamsocket_wasm]`
+To serve this service, we will compile it into a WebAssembly module. We import the `#[stateroom_wasm]`
 annotation macro and apply it to the existing `SharedCounterServer` declaration.
 
 ```rust
-use jamsocket_wasm::jamsocket_wasm;
+use stateroom_wasm::stateroom_wasm;
 
-#[jamsocket_wasm]
+#[stateroom_wasm]
 struct SharedCounterServer(i32);
 ```
 
-Then, install the `jamsocket` command-line tool and the `wasm32-wasi` target, and run 
-`jamsocket dev`:
+Then, install the `stateroom` command-line tool and the `wasm32-wasi` target, and run 
+`stateroom dev`:
 
 ```bash
-$ cargo install jamsocket-cli
+$ cargo install stateroom-cli
 $ rustup target add wasm32-wasi
-$ jamsocket dev
+$ stateroom dev
 ```
 
-`jamsocket dev` will build your app and serve it on port `:8080`. Then, open
+`stateroom dev` will build your app and serve it on port `:8080`. Then, open
 `http://localhost:8080/status` in your browser -- if all went well, you should see the
 status message `ok`. Open up developer tools in your browser and type:
 
@@ -93,10 +93,10 @@ If multiple clients are connected, each one will receive this message. Just like
 
 If you don't want to compile your service to WebAssembly (for example, if you want to use 
 capabilities that are
-not exposed by [WASI](https://wasi.dev/)), you can use `jamsocket-server`.
+not exposed by [WASI](https://wasi.dev/)), you can use `stateroom-server`.
 
 ```rust
-use jamsocket_server::*;
+use stateroom_server::*;
 
 fn main() -> std::io::Result<()> {
     serve::<SharedCounterServer>()?;
@@ -107,18 +107,18 @@ fn main() -> std::io::Result<()> {
 
 ## Modules
 
-Jamsocket has a modular architecture. If all you want to do is generate a Jamsocket service to
-be served with an existing Jamsocket WebAssembly server, the main crates you will interact with
-will probably be [`jamsocket-cli`](/jamsocket-cli), which provides a command-line tool, and
-[`jamsocket-wasm`](/jamsocket-wasm), the main Cargo dependency for building services.
+Stateroom has a modular architecture. If all you want to do is generate a Stateroom service to
+be served with an existing Stateroom WebAssembly server, the main crates you will interact with
+will probably be [`stateroom-cli`](/stateroom-cli), which provides a command-line tool, and
+[`stateroom-wasm`](/stateroom-wasm), the main Cargo dependency for building services.
 
-- [`jamsocket`](https://docs.rs/jamsocket/) is the core, minimal implementation of the service interface.
-- [`jamsocket-cli`](https://docs.rs/jamsocket-cli/) is a command-line interface for interacting with WebAssembly-compiled Jamsocket services.
-- [`jamsocket-server`](https://docs.rs/jamsocket-server/) provides [Actix](https://actix.rs/) actors to facilitate serving Jamsocket services in a WebSocket server.
-- [`jamsocket-wasm`](https://docs.rs/jamsocket-wasm/) provides a macro for generating WebAssembly modules from Jamsocket services.
-- [`jamsocket-wasm-host`](https://docs.rs/jamsocket-wasm-host/) provides a way to import Jamsocket services from WebAssembly modules.
+- [`stateroom`](https://docs.rs/stateroom/) is the core, minimal implementation of the service interface.
+- [`stateroom-cli`](https://docs.rs/stateroom-cli/) is a command-line interface for interacting with WebAssembly-compiled Stateroom services.
+- [`stateroom-server`](https://docs.rs/stateroom-server/) provides [Actix](https://actix.rs/) actors to facilitate serving Stateroom services in a WebSocket server.
+- [`stateroom-wasm`](https://docs.rs/stateroom-wasm/) provides a macro for generating WebAssembly modules from Stateroom services.
+- [`stateroom-wasm-host`](https://docs.rs/stateroom-wasm-host/) provides a way to import Stateroom services from WebAssembly modules.
 
 ## See Also
 
 [Aper](https://github.com/aper-dev/aper) is a state synchronization library which
-works with Jamsocket. 
+works with Stateroom. 

@@ -1,0 +1,24 @@
+[package]
+name = "stateroom-cli"
+version = "0.2.0"
+edition = "2018"
+readme = "README.md"
+repository = "https://github.com/drifting-in-space/stateroom"
+license = "MIT OR Apache-2.0"
+keywords = ["websocket"]
+description = "Command-line tool for developing Stateroom applications"
+
+[dependencies]
+stateroom = { path="../stateroom", version="0.2.0" }
+stateroom-stdio = { path="../stateroom-stdio", version="0.2.0" }
+stateroom-server = { path="../stateroom-server", version="0.2.0", features=["serve-static"] }
+stateroom-wasm-host = { path="../stateroom-wasm-host", version="0.2.0" }
+clap = { version = "3.0.0", features = ["derive"] }
+anyhow = "1.0.52"
+serde = { version = "1.0.127", features = ["derive"] }
+toml = "0.5.8"
+cargo_metadata = "0.14.0"
+tracing = "0.1.28"
+tracing-subscriber = { version = "0.3.5", features = ["env-filter"] }
+wasm-bindgen-cli-support = "0.2.78"
+fs_extra = "1.2.0"

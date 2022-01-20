@@ -1,14 +1,14 @@
-use jamsocket_wasm::prelude::*;
+use stateroom_wasm::prelude::*;
 
-#[jamsocket_wasm]
+#[stateroom_wasm]
 struct SharedCounterServer(i32);
 
-impl SimpleJamsocketService for SharedCounterServer {
-    fn new(_: &str, _: &impl JamsocketContext) -> Self {
+impl SimpleStateroomService for SharedCounterServer {
+    fn new(_: &str, _: &impl StateroomContext) -> Self {
         SharedCounterServer(0)
     }
 
-    fn message(&mut self, _: ClientId, message: &str, ctx: &impl JamsocketContext) {
+    fn message(&mut self, _: ClientId, message: &str, ctx: &impl StateroomContext) {
         match message {
             "increment" => self.0 += 1,
             "decrement" => self.0 -= 1,

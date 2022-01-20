@@ -8,6 +8,6 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-jamsocket = {path="../../jamsocket"}
-jamsocket-wasm = {path="../../jamsocket-wasm"}
+stateroom = {path="../../stateroom"}
+stateroom-wasm = {path="../../stateroom-wasm"}
 wasi = "0.10.2"

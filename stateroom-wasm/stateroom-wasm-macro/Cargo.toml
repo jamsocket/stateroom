@@ -1,0 +1,18 @@
+[package]
+name = "stateroom-wasm-macro"
+version = "0.2.0"
+authors = ["Paul Butler <paulgb@gmail.com>"]
+edition = "2018"
+readme = "README.md"
+repository = "https://github.com/drifting-in-space/stateroom"
+license = "MIT OR Apache-2.0"
+keywords = ["websocket", "webassembly", "stateroom"]
+description = "A macro for building a Stateroom service as a WebAssembly module."
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.36"
+quote = "1.0.14"
+syn = {version="1.0.84", features=["full"]}

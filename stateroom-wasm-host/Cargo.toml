@@ -1,0 +1,21 @@
+[package]
+name = "stateroom-wasm-host"
+version = "0.2.0"
+edition = "2018"
+readme = "README.md"
+repository = "https://github.com/drifting-in-space/stateroom"
+license = "MIT OR Apache-2.0"
+keywords = ["websocket", "webassembly", "stateroom"]
+description = "A Stateroom service implementation that takes a WebAssembly module and delegates behavior to it."
+
+[dependencies]
+anyhow = "1.0.45"
+byteorder = "1.4.3"
+stateroom = {path="../stateroom", version="0.2.0"}
+wasmtime-wasi = "0.33.0"
+tracing = "0.1.28"
+
+[dependencies.wasmtime]
+version = "0.33.0"
+default-features = false
+features = ["async", "wat", "jitdump", "parallel-compilation", "cranelift"]

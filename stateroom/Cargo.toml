@@ -1,0 +1,16 @@
+[package]
+name = "stateroom"
+version = "0.2.0"
+authors = ["Paul Butler <paulgb@gmail.com>"]
+edition = "2018"
+readme = "../README.md"
+repository = "https://github.com/drifting-in-space/stateroom"
+license = "MIT OR Apache-2.0"
+keywords = ["websocket"]
+description = "A lightweight framework for building WebSocket services."
+
+[dependencies]
+serde = { version = "1.0.133", features = ["derive"], optional=true }
+
+[features]
+default = []

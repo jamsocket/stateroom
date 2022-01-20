@@ -1,15 +1,15 @@
 use bytemuck::cast;
-use jamsocket_wasm::prelude::*;
+use stateroom_wasm::prelude::*;
 
-#[jamsocket_wasm]
+#[stateroom_wasm]
 struct RandomServer;
 
-impl SimpleJamsocketService for RandomServer {
-    fn new(_: &str, _: &impl JamsocketContext) -> Self {
+impl SimpleStateroomService for RandomServer {
+    fn new(_: &str, _: &impl StateroomContext) -> Self {
         RandomServer
     }
 
-    fn connect(&mut self, client_id: ClientId, ctx: &impl JamsocketContext) {
+    fn connect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
         let mut buf: [u8; 4] = [0, 0, 0, 0];
         unsafe {
             wasi::random_get(&mut buf[0] as *mut u8, 4).unwrap();
@@ -23,14 +23,14 @@ impl SimpleJamsocketService for RandomServer {
         );
     }
 
-    fn message(&mut self, client_id: ClientId, message: &str, ctx: &impl JamsocketContext) {
+    fn message(&mut self, client_id: ClientId, message: &str, ctx: &impl StateroomContext) {
         ctx.send_message(
             MessageRecipient::Broadcast,
             &format!("User {:?} sent '{}'", client_id, message),
         );
     }
 
-    fn disconnect(&mut self, client_id: ClientId, ctx: &impl JamsocketContext) {
+    fn disconnect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
         ctx.send_message(MessageRecipient::Broadcast, &format!("User {:?} left.", client_id));
     }
 }

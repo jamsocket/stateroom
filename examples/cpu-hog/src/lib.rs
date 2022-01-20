@@ -1,9 +1,9 @@
-use jamsocket_wasm::prelude::*;
+use stateroom_wasm::prelude::*;
 
 // Seconds per nanosecond. (`wasi::clock_time_get` uses nanos.)
 const SECONDS: u64 = 1_000_000_000;
 
-#[jamsocket_wasm]
+#[stateroom_wasm]
 struct CpuHog(String);
 
 fn get_time() -> u64 {
@@ -12,12 +12,12 @@ fn get_time() -> u64 {
     }
 }
 
-impl SimpleJamsocketService for CpuHog {
-    fn new(room_id: &str, _: &impl JamsocketContext) -> Self {
+impl SimpleStateroomService for CpuHog {
+    fn new(room_id: &str, _: &impl StateroomContext) -> Self {
         CpuHog(room_id.to_string())
     }
 
-    fn connect(&mut self, _: ClientId, ctx: &impl JamsocketContext) {
+    fn connect(&mut self, _: ClientId, ctx: &impl StateroomContext) {
         ctx.send_message(
             MessageRecipient::Broadcast,
             &format!("Connected to room {}", self.0),
