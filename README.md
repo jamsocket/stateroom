@@ -2,7 +2,7 @@
 
 [![crates.io](https://img.shields.io/crates/v/stateroom.svg)](https://crates.io/crates/stateroom)
 [![docs.rs](https://img.shields.io/badge/docs-release-brightgreen)](https://docs.rs/stateroom/0.1.0/stateroom/)
-[![wokflow state](https://github.com/stateroom/stateroom/workflows/test/badge.svg)](https://github.com/drifting-in-space/stateroom/actions/workflows/test.yml)
+[![wokflow state](https://github.com/drifting-in-space/stateroom/actions/workflows/test.yml/badge.svg)](https://github.com/drifting-in-space/stateroom/actions/workflows/test.yml)
 
 Stateroom is a minimalist framework for building lightweight, single-threaded services that send and
 receive messages through [WebSockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
