@@ -67,7 +67,7 @@ $ stateroom dev
 status message `ok`. Open up developer tools in your browser and type:
 
 ```javascript
-let ws = new WebSocket('ws://localhost:8080/ws/1');
+let ws = new WebSocket('ws://localhost:8080/ws');
 ws.onmessage = (c) => console.log(c.data);
 ```
 
