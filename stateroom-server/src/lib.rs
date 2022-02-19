@@ -108,9 +108,7 @@ impl Server {
     /// This function blocks until the server is terminated. While it is running, the following
     /// endpoints are available:
     /// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)
-    /// - `/new_room` (POST): create a new room, if not in `explicit` room creation mode.
-    /// - `/ws/{room_id}` (GET): initiate a WebSocket connection to the given room. If the room
-    ///     does not exist and the server is in `implicit` room creation mode, it will be created.
+    /// - `/ws` (GET): initiate a WebSocket connection to the stateroom service.
     pub fn serve(
         self,
         service_factory: impl StateroomServiceFactory<ServiceActorContext>,
