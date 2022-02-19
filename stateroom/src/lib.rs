@@ -126,21 +126,21 @@ pub trait SimpleStateroomService: Unpin + Send + Sync + 'static {
 #[allow(unused_variables)]
 pub trait StateroomService: Send + Sync + Unpin + 'static {
     /// Called each time a client connects to the service.
-    fn connect(&mut self, client: ClientId);
+    fn connect(&mut self, client: ClientId) {}
 
     /// Called each time a client disconnects from the service, unless that disconnection
     /// will cause the service to be destroyed.
-    fn disconnect(&mut self, client: ClientId);
+    fn disconnect(&mut self, client: ClientId) {}
 
     /// Called each time a client sends a text message to the service.
-    fn message(&mut self, client: ClientId, message: &str);
+    fn message(&mut self, client: ClientId, message: &str) {}
 
     /// Called each time a client sends a binary message to the service.
-    fn binary(&mut self, client: ClientId, message: &[u8]);
+    fn binary(&mut self, client: ClientId, message: &[u8]) {}
 
     /// Called when [StateroomContext::set_timer] has been called on this service's context,
     /// after the provided duration.
-    fn timer(&mut self);
+    fn timer(&mut self) {}
 }
 
 /// Enables an object to become a [StateroomService] of the associated `Service` type.
