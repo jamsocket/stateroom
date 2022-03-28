@@ -10,8 +10,6 @@ receive messages through [WebSockets](https://developer.mozilla.org/en-US/docs/W
 Services can either be native Rust code that runs in the server process, or be compiled into
 [WebAssembly](https://webassembly.org/) modules and loaded dynamically.
 
-*Stateroom was formerly known as jamsocket.*
-
 ## Usage
 
 To create a Stateroom service, implement the `SimpleStateroomService` trait. There's only one function that you *must* implement, the constructor `new`.
