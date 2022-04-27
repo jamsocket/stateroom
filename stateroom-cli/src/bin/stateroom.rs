@@ -17,7 +17,7 @@ fn main() -> anyhow::Result<()> {
 
     match opts.subcommand {
         SubCommand::Serve(serve_opts) => serve(serve_opts),
-        SubCommand::Dev {port} => dev(port),
+        SubCommand::Dev { port } => dev(port),
         SubCommand::Build => build(),
     }
 }

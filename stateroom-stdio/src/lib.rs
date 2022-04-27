@@ -2,8 +2,8 @@ use std::process::Command;
 
 use interactive_process::InteractiveProcess;
 use stateroom::{
-    StateroomContext, StateroomService, StateroomServiceFactory, MessageFromProcess,
-    MessagePayload, MessageToProcess,
+    MessageFromProcess, MessagePayload, MessageToProcess, StateroomContext, StateroomService,
+    StateroomServiceFactory,
 };
 
 pub struct StdioProcessServiceFactory {

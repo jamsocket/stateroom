@@ -1,8 +1,6 @@
 use crate::messages::{MessageData, MessageFromClient, MessageFromServer};
-use actix::{
-    prelude::SendError, Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle,
-};
-use stateroom::{StateroomContext, StateroomService, StateroomServiceFactory, MessageRecipient};
+use actix::{Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
+use stateroom::{MessageRecipient, StateroomContext, StateroomService, StateroomServiceFactory};
 use std::time::Duration;
 
 pub struct ServiceActor<J: StateroomService> {
@@ -31,15 +29,7 @@ pub struct ServiceActorContext {
 
 impl ServiceActorContext {
     fn try_send(&self, message: MessageFromServer) {
-        match self.send_message_recipient.do_send(message) {
-            Ok(_) => (),
-            Err(SendError::Closed(_)) => {
-                tracing::warn!("Attempted to send a message to a closed service");
-            }
-            Err(error) => {
-                tracing::error!(?error, "Encountered an error sending message to a service");
-            }
-        }
+        self.send_message_recipient.do_send(message);
     }
 }
 
@@ -59,13 +49,7 @@ impl StateroomContext for ServiceActorContext {
     }
 
     fn set_timer(&self, ms_delay: u32) {
-        if self
-            .set_timer_recipient
-            .do_send(SetTimer(ms_delay))
-            .is_err()
-        {
-            tracing::warn!("Encountered an error sending SetTimer message.");
-        }
+        self.set_timer_recipient.do_send(SetTimer(ms_delay));
     }
 }
 

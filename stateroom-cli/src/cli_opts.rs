@@ -13,7 +13,7 @@ pub enum SubCommand {
 
     Build,
     Dev {
-        #[clap(default_value="8080")]
+        #[clap(default_value = "8080")]
         port: u32,
     },
 }
