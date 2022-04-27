@@ -59,18 +59,12 @@ impl Handler<MessageFromServer> for RoomActor {
         match message.to_client {
             MessageRecipient::Broadcast => {
                 for addr in self.connections.values() {
-                    if addr.do_send(message.clone()).is_err() {
-                        tracing::warn!("Could not forward server-sent message to client",);
-                    }
+                    addr.do_send(message.clone());
                 }
             }
             MessageRecipient::Client(client_id) => {
                 if let Some(client_connection) = self.connections.get(&client_id) {
-                    if client_connection.do_send(message).is_err() {
-                        tracing::warn!(
-                            "Could not forward server-sent binary message to client in room",
-                        );
-                    }
+                    client_connection.do_send(message);
                 } else {
                     tracing::warn!(
                         ?client_id,
@@ -91,9 +85,7 @@ impl Handler<MessageFromClient> for RoomActor {
                 MessageFromClient::Connect(client, resp) => {
                     self.connections.insert(*client, resp.clone());
                     self.inactive_since = None;
-                    if service_actor.do_send(message).is_err() {
-                        tracing::warn!("Couldn't forward client message to service",);
-                    }
+                    service_actor.do_send(message);
 
                     // If this task was scheduled to shut down becuse the room is empty,
                     // cancel that.
@@ -106,14 +98,10 @@ impl Handler<MessageFromClient> for RoomActor {
                         self.inactive_since = Some(SystemTime::now());
                     }
 
-                    if service_actor.do_send(message).is_err() {
-                        tracing::warn!("Couldn't forward client message to service",);
-                    }
+                    service_actor.do_send(message);
                 }
                 MessageFromClient::Message { .. } => {
-                    if service_actor.do_send(message).is_err() {
-                        tracing::warn!("Couldn't forward message from client to service",);
-                    }
+                    service_actor.do_send(message);
                 }
             }
         } else {

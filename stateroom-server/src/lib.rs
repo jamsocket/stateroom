@@ -12,11 +12,11 @@ use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Re
 use actix_web_actors::ws::WsResponseBuilder;
 pub use client_socket_connection::ClientSocketConnection;
 use connection_info::ConnectionInfo;
-use stateroom::StateroomServiceFactory;
 pub use messages::{AssignClientId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
 use server_state::ServerState;
 pub use service_actor::{ServiceActor, ServiceActorContext};
+use stateroom::StateroomServiceFactory;
 use std::time::{Duration, Instant};
 
 const DEFAULT_IP: &str = "0.0.0.0";
