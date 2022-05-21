@@ -1861,14 +1861,14 @@ checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
 
 [[package]]
 name = "stateroom"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "stateroom-cli"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
  "anyhow",
  "cargo_metadata",
@@ -1887,7 +1887,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-server"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
  "actix",
  "actix-files",
@@ -1901,7 +1901,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-stdio"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
  "interactive_process",
  "serde",
@@ -1911,7 +1911,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-wasm"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
  "stateroom",
  "stateroom-wasm-macro",
@@ -1919,7 +1919,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-wasm-host"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
  "anyhow",
  "byteorder",
