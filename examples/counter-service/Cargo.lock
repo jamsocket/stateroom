@@ -3,6 +3,26 @@
 version = 3
 
 [[package]]
+name = "async-trait"
+version = "0.1.53"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed6aa3524a2dfcf9fe180c51eae2b58738348d819517ceadf95789c51fff7600"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "bincode"
+version = "1.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1f45e9417d87227c7a56d22e471c6206462cba514c7590c09aff4cf6d1ddcad"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "counter"
 version = "0.1.0"
 dependencies = [
@@ -29,13 +49,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde"
+version = "1.0.137"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61ea8d54c77f8315140a05f4c7237403bf38b72704d031543aa1d16abbf517d1"
+dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_derive"
+version = "1.0.137"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f26faba0c3959972377d3b2d306ee9f71faee9714294e41bb777f83f88578be"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "stateroom"
-version = "0.2.1"
+version = "0.2.2"
+dependencies = [
+ "async-trait",
+ "serde",
+]
 
 [[package]]
 name = "stateroom-wasm"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
+ "async-trait",
+ "bincode",
+ "serde",
  "stateroom",
  "stateroom-wasm-macro",
 ]
@@ -44,6 +91,7 @@ dependencies = [
 name = "stateroom-wasm-macro"
 version = "0.2.0"
 dependencies = [
+ "async-trait",
  "proc-macro2",
  "quote",
  "syn",

@@ -1,7 +1,7 @@
-use crate::messages::{MessageData, MessageFromClient, MessageFromServer};
+use crate::messages::{MessageFromClient, MessageFromServer};
 use actix::{Actor, ActorContext, AsyncContext, Handler, Recipient, SpawnHandle, StreamHandler};
 use actix_web_actors::ws;
-use stateroom::ClientId;
+use stateroom::{ClientId, MessagePayload};
 use std::time::{Duration, Instant};
 
 /// Represents a connection from a service to a client, which consists of a
@@ -53,8 +53,8 @@ impl Handler<MessageFromServer> for ClientSocketConnection {
 
     fn handle(&mut self, msg: MessageFromServer, ctx: &mut Self::Context) {
         match msg.data {
-            MessageData::String(st) => ctx.text(st),
-            MessageData::Binary(bin) => ctx.binary(bin),
+            MessagePayload::Text(st) => ctx.text(st),
+            MessagePayload::Bytes(bin) => ctx.binary(bin),
         };
     }
 }
@@ -66,15 +66,15 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ClientSocketConne
             Ok(ws::Message::Pong(_)) => self.last_seen = Instant::now(),
             Ok(ws::Message::Text(text)) => {
                 let message = MessageFromClient::Message {
-                    from_client: self.client_id,
-                    data: MessageData::String(text.to_string()),
+                    client: self.client_id,
+                    data: MessagePayload::Text(text.to_string()),
                 };
                 self.room.do_send(message);
             }
             Ok(ws::Message::Binary(data)) => {
                 let message = MessageFromClient::Message {
-                    from_client: self.client_id,
-                    data: MessageData::Binary(data.to_vec()),
+                    client: self.client_id,
+                    data: MessagePayload::Bytes(data.to_vec()),
                 };
                 self.room.do_send(message);
             }

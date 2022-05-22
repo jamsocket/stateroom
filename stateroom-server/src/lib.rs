@@ -1,22 +1,19 @@
 mod client_socket_connection;
-mod connection_info;
 mod messages;
 mod room_actor;
 mod server_state;
 mod service_actor;
 
-use crate::room_actor::GetConnectionInfo;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::web::{self, get};
-use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
+use actix_web::{web::Data, App, HttpRequest, HttpResponse, HttpServer};
 use actix_web_actors::ws::WsResponseBuilder;
 pub use client_socket_connection::ClientSocketConnection;
-use connection_info::ConnectionInfo;
 pub use messages::{AssignClientId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
 use server_state::ServerState;
 pub use service_actor::{ServiceActor, ServiceActorContext};
-use stateroom::StateroomServiceFactory;
+use stateroom::Stateroom;
 use std::time::{Duration, Instant};
 
 const DEFAULT_IP: &str = "0.0.0.0";
@@ -103,26 +100,22 @@ impl Server {
         self
     }
 
-    /// Start a server given a [StateroomService].
+    /// Start a server given a [Stateroom].
     ///
     /// This function blocks until the server is terminated. While it is running, the following
     /// endpoints are available:
     /// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)
     /// - `/ws` (GET): initiate a WebSocket connection to the stateroom service.
-    pub fn serve(
-        self,
-        service_factory: impl StateroomServiceFactory<ServiceActorContext>,
-    ) -> std::io::Result<()> {
+    pub fn serve<S: Stateroom + Send>(self, room: S) -> std::io::Result<()> {
         let host = format!("{}:{}", self.ip, self.port);
 
         actix_web::rt::System::new().block_on(async move {
-            let server_state = Data::new(ServerState::new(service_factory, self).unwrap());
+            let server_state = Data::new(ServerState::new::<S>(room, self).unwrap());
 
             let server = HttpServer::new(move || {
                 #[allow(unused_mut)] // mut only needed with crate feature `serve-static`.
                 let mut app = App::new()
                     .app_data(server_state.clone())
-                    .route("/status", get().to(status))
                     .route("/ws", get().to(websocket));
 
                 #[cfg(feature = "serve-static")]
@@ -180,16 +173,4 @@ async fn websocket(req: HttpRequest, stream: web::Payload) -> actix_web::Result<
         }
         Err(e) => Err(e),
     }
-}
-
-async fn status(req: HttpRequest) -> Result<web::Json<ConnectionInfo>, Error> {
-    let server_state: &Data<ServerState> = req.app_data().expect("Could not load ServerState.");
-
-    let room_addr = server_state.room_addr.clone();
-    let connection_info = room_addr
-        .send(GetConnectionInfo)
-        .await
-        .map_err(|_| ErrorInternalServerError("Error getting connection info."))?;
-
-    Ok(web::Json(connection_info))
 }

@@ -1,9 +1,9 @@
-use crate::service_actor::{ServiceActor, ServiceActorContext};
+use crate::service_actor::ServiceActor;
 use crate::{RoomActor, Server};
 use actix::dev::channel::channel;
 use actix::{Addr, Arbiter, Context};
 use actix_web::Result;
-use stateroom::{StateroomService, StateroomServiceFactory};
+use stateroom::Stateroom;
 
 const MAILBOX_SIZE: usize = 16;
 
@@ -13,12 +13,9 @@ pub struct ServerState {
 }
 
 impl ServerState {
-    pub fn new<J>(
-        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J>,
-        settings: Server,
-    ) -> Result<Self>
+    pub fn new<J>(stateroom: J, settings: Server) -> Result<Self>
     where
-        J: StateroomService,
+        J: Stateroom + Send,
     {
         let arbiter = Arbiter::new();
         let (room_tx, room_rx) = channel(MAILBOX_SIZE);
@@ -33,11 +30,7 @@ impl ServerState {
                 let room_ctx = Context::with_receiver(room_rx);
                 let service_ctx = Context::with_receiver(service_rx);
 
-                let service_actor = ServiceActor::<J>::new(
-                    &service_ctx,
-                    service_factory,
-                    room_addr.clone().recipient(),
-                );
+                let service_actor = ServiceActor::new(stateroom, room_addr.clone().recipient());
 
                 let room_actor = RoomActor::new(service_addr.recipient());
 

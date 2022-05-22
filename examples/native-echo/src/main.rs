@@ -1,17 +1,27 @@
 use stateroom::*;
 use stateroom_server::*;
 use tracing_subscriber::EnvFilter;
+use async_trait::async_trait;
 
 #[derive(Clone)]
 struct EchoServer;
 
-impl SimpleStateroomService for EchoServer {
-    fn new(_: &str, _: &impl StateroomContext) -> Self {
-        EchoServer
-    }
+#[async_trait]
+impl Stateroom for EchoServer {
+    async fn go<C: StateroomContext>(mut ctx: C) -> () {
+        loop {
+            let message = ctx.next_message().await;
 
-    fn message(&mut self, client: ClientId, message: &str, ctx: &impl StateroomContext) {
-        ctx.send_message(client, &format!("echo: {}", message));
+            match message {
+                MessageToRoom::Connect { .. } => {
+                    ctx.send(MessageRecipient::Broadcast, "Hello.");
+                },
+                MessageToRoom::Message { client, message: MessagePayload::Text(text) } => {
+                    ctx.send(client, &format!("Got message: {}", text));
+                },
+                _ => ()
+            }
+        }
     }
 }
 
@@ -20,7 +30,7 @@ fn main() -> std::io::Result<()> {
 
     tracing_subscriber::fmt().with_env_filter(env_filter).init();
 
-    Server::new().serve(EchoServer)?;
+    Server::new().serve::<EchoServer>()?;
 
     Ok(())
 }

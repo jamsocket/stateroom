@@ -1,13 +1,7 @@
-use crate::{
-    connection_info::ConnectionInfo,
-    messages::{AssignClientId, MessageFromClient, MessageFromServer},
-};
-use actix::{
-    dev::MessageResponse, Actor, ActorContext, AsyncContext, Context, Handler, Message,
-    MessageResult, Recipient, SpawnHandle,
-};
+use crate::messages::{AssignClientId, MessageFromClient, MessageFromServer};
+use actix::{dev::MessageResponse, Actor, ActorContext, Context, Handler, Message, Recipient};
 use stateroom::{ClientId, MessageRecipient};
-use std::{collections::HashMap, time::SystemTime};
+use std::collections::HashMap;
 
 /// Actor model representation of a “room”. A room is a set of clients
 /// that share an instance of a Stateroom instance. Conceptually, this
@@ -20,9 +14,6 @@ pub struct RoomActor {
     /// ensuring that they never overlap. `next_id` stores the next ID that
     /// will be assigned.
     next_id: u32,
-    shutdown_handle: Option<SpawnHandle>,
-
-    inactive_since: Option<SystemTime>,
 }
 
 struct Shutdown;
@@ -31,10 +22,6 @@ impl Message for Shutdown {
     type Result = ();
 }
 
-#[derive(Message)]
-#[rtype(result = "ConnectionInfo")]
-pub struct GetConnectionInfo;
-
 impl RoomActor {
     #[must_use]
     pub fn new(service_actor: Recipient<MessageFromClient>) -> Self {
@@ -42,8 +29,6 @@ impl RoomActor {
             service_actor: Some(service_actor),
             connections: HashMap::default(),
             next_id: 1,
-            shutdown_handle: None,
-            inactive_since: Some(SystemTime::now()),
         }
     }
 }
@@ -79,24 +64,15 @@ impl Handler<MessageFromServer> for RoomActor {
 impl Handler<MessageFromClient> for RoomActor {
     type Result = ();
 
-    fn handle(&mut self, message: MessageFromClient, ctx: &mut Context<Self>) {
+    fn handle(&mut self, message: MessageFromClient, _ctx: &mut Context<Self>) {
         if let Some(service_actor) = &self.service_actor {
             match &message {
                 MessageFromClient::Connect(client, resp) => {
                     self.connections.insert(*client, resp.clone());
-                    self.inactive_since = None;
                     service_actor.do_send(message);
-
-                    // If this task was scheduled to shut down becuse the room is empty,
-                    // cancel that.
-                    self.shutdown_handle.take().map(|t| ctx.cancel_future(t));
                 }
                 MessageFromClient::Disconnect(client_id) => {
                     self.connections.remove(client_id);
-
-                    if self.connections.is_empty() {
-                        self.inactive_since = Some(SystemTime::now());
-                    }
 
                     service_actor.do_send(message);
                 }
@@ -142,22 +118,5 @@ impl Handler<Shutdown> for RoomActor {
         );
 
         ctx.stop();
-    }
-}
-
-impl Handler<GetConnectionInfo> for RoomActor {
-    type Result = MessageResult<GetConnectionInfo>;
-
-    fn handle(&mut self, _: GetConnectionInfo, _: &mut Self::Context) -> Self::Result {
-        let seconds_inactive = self
-            .inactive_since
-            .map(|d| SystemTime::now().duration_since(d).unwrap().as_secs())
-            .unwrap_or(0);
-
-        MessageResult(ConnectionInfo {
-            active_connections: self.connections.len() as _,
-            listening: true,
-            seconds_inactive: seconds_inactive as _,
-        })
     }
 }

@@ -21,3 +21,5 @@ stateroom = {path="../stateroom", version="0.2.2"}
 serde = { version = "1.0.126", features = ["derive"] }
 serde_json = "1.0.68"
 tracing = "0.1.28"
+async-trait = "0.1.53"
+tokio = { version = "1.18.2", features = ["sync"] }

@@ -7,10 +7,8 @@ use std::{
     fmt::{Debug, Display},
 };
 pub use wasm_host::WasmHost;
-pub use wasm_host_factory::WasmHostFactory;
 
 mod wasm_host;
-mod wasm_host_factory;
 
 /// An error encountered while running WebAssembly.
 #[derive(Debug)]

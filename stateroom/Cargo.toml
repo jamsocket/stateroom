@@ -10,6 +10,7 @@ keywords = ["websocket"]
 description = "A lightweight framework for building WebSocket services."
 
 [dependencies]
+async-trait = "0.1.53"
 serde = { version = "1.0.133", features = ["derive"], optional=true }
 
 [features]

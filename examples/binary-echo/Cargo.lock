@@ -3,6 +3,17 @@
 version = 3
 
 [[package]]
+name = "async-trait"
+version = "0.1.53"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed6aa3524a2dfcf9fe180c51eae2b58738348d819517ceadf95789c51fff7600"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "binary-echo"
 version = "0.1.0"
 dependencies = [
@@ -29,11 +40,14 @@ dependencies = [
 
 [[package]]
 name = "stateroom"
-version = "0.2.1"
+version = "0.2.2"
+dependencies = [
+ "async-trait",
+]
 
 [[package]]
 name = "stateroom-wasm"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
  "stateroom",
  "stateroom-wasm-macro",

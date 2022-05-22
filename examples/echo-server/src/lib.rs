@@ -1,28 +1,25 @@
 use stateroom_wasm::prelude::*;
+use async_trait::async_trait;
 
 #[stateroom_wasm]
+#[derive(Default)]
 struct EchoServer;
 
-impl SimpleStateroomService for EchoServer {
-    fn new(_: &str, _: &impl StateroomContext) -> Self {
-        EchoServer
-    }
+#[async_trait]
+impl Stateroom for EchoServer {
+    async fn go<C: StateroomContext>(self, mut ctx: C) -> () {
+        loop {
+            let message = ctx.next_message().await;
 
-    fn connect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
-        ctx.send_message(client_id, &format!("User {:?} connected.", client_id));
-    }
-
-    fn message(&mut self, client_id: ClientId, message: &str, ctx: &impl StateroomContext) {
-        ctx.send_message(
-            MessageRecipient::Broadcast,
-            &format!("User {:?} sent '{}'", client_id, message),
-        );
-    }
-
-    fn disconnect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
-        ctx.send_message(
-            MessageRecipient::Broadcast,
-            &format!("User {:?} left.", client_id),
-        );
+            match message {
+                MessageToRoom::Connect { .. } => {
+                    ctx.send(MessageRecipient::Broadcast, "Hello.");
+                },
+                MessageToRoom::Message { client, message: MessagePayload::Text(text) } => {
+                    ctx.send(client, &format!("Got message: {}", text));
+                },
+                _ => ()
+            }
+        }
     }
 }

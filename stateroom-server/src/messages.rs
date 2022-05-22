@@ -1,5 +1,5 @@
 use actix::{Message, Recipient};
-use stateroom::{ClientId, MessageRecipient};
+use stateroom::{ClientId, MessagePayload, MessageRecipient};
 
 /// Represents a message or event initiated by a client.
 #[derive(Debug, Clone)]
@@ -12,8 +12,8 @@ pub enum MessageFromClient {
 
     /// A client sends a message.
     Message {
-        from_client: ClientId,
-        data: MessageData,
+        client: ClientId,
+        data: MessagePayload,
     },
 }
 
@@ -21,19 +21,11 @@ impl Message for MessageFromClient {
     type Result = ();
 }
 
-/// Message received or to be sent over a WebSocket connection, which may be
-/// textual or binary.
-#[derive(Debug, Clone)]
-pub enum MessageData {
-    String(String),
-    Binary(Vec<u8>),
-}
-
 /// Represents a message sent to one or more clients from the server.
 #[derive(Debug, Clone)]
 pub struct MessageFromServer {
     pub to_client: MessageRecipient,
-    pub data: MessageData,
+    pub data: MessagePayload,
 }
 
 impl Message for MessageFromServer {
@@ -45,7 +37,7 @@ impl MessageFromServer {
     pub fn new(to_client: MessageRecipient, data: String) -> Self {
         MessageFromServer {
             to_client,
-            data: MessageData::String(data),
+            data: MessagePayload::Text(data),
         }
     }
 
@@ -53,7 +45,7 @@ impl MessageFromServer {
     pub fn new_binary(to_client: MessageRecipient, data: Vec<u8>) -> Self {
         MessageFromServer {
             to_client,
-            data: MessageData::Binary(data),
+            data: MessagePayload::Bytes(data),
         }
     }
 }

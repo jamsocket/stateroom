@@ -2,14 +2,12 @@ use bytemuck::cast;
 use stateroom_wasm::prelude::*;
 
 #[stateroom_wasm]
+#[derive(Default)]
 struct RandomServer;
 
-impl SimpleStateroomService for RandomServer {
-    fn new(_: &str, _: &impl StateroomContext) -> Self {
-        RandomServer
-    }
-
-    fn connect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
+#[async_trait]
+impl Stateroom for RandomServer {
+    async fn go<C: StateroomContext>(self, mut ctx: C) -> () {
         let mut buf: [u8; 4] = [0, 0, 0, 0];
         unsafe {
             wasi::random_get(&mut buf[0] as *mut u8, 4).unwrap();
@@ -17,20 +15,29 @@ impl SimpleStateroomService for RandomServer {
 
         let num: [u32; 1] = cast(buf);
 
-        ctx.send_message(
-            client_id,
-            &format!("User {:?} connected. Random number: {}", client_id, num[0]),
-        );
-    }
-
-    fn message(&mut self, client_id: ClientId, message: &str, ctx: &impl StateroomContext) {
-        ctx.send_message(
-            MessageRecipient::Broadcast,
-            &format!("User {:?} sent '{}'", client_id, message),
-        );
-    }
-
-    fn disconnect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
-        ctx.send_message(MessageRecipient::Broadcast, &format!("User {:?} left.", client_id));
+        loop {
+            match ctx.next_message().await {
+                MessageToRoom::Connect { client } => {
+                    ctx.send(
+                        MessageRecipient::Broadcast,
+                        &format!("User {:?} connected. Random number: {}", client, num[0]),
+                    );
+                }
+                MessageToRoom::Disconnect { client } => {
+                    ctx.send(
+                        MessageRecipient::Broadcast,
+                        &format!("User {:?} left.", client),
+                    );
+                }
+                MessageToRoom::Message { client, message } => {
+                    if let MessagePayload::Text(t) = message {
+                        ctx.send(
+                            MessageRecipient::Broadcast,
+                            &format!("User {:?} sent: {}.", client, t),
+                        );
+                    }
+                }
+            }
+        }
     }
 }

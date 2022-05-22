@@ -1,12 +1,12 @@
 use crate::build_util::{do_build, locate_config};
 use stateroom_server::Server;
-use stateroom_wasm_host::WasmHostFactory;
+use stateroom_wasm_host::WasmHost;
 
 pub fn dev(port: u32) -> anyhow::Result<()> {
     let config = locate_config()?; // TODO: default to a configuration if file not found.
 
     let build_result = do_build(&config)?;
-    let host_factory = WasmHostFactory::new(build_result.server_wasm)?;
+    let host_factory = WasmHost::new(build_result.server_wasm)?;
 
     Server::default()
         .with_port(port)

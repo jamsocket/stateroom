@@ -1,20 +1,32 @@
 use stateroom_wasm::prelude::*;
 
 #[stateroom_wasm]
-struct SharedCounterServer(i32);
+#[derive(Default)]
+struct SharedCounterServer;
 
-impl SimpleStateroomService for SharedCounterServer {
-    fn new(_: &str, _: &impl StateroomContext) -> Self {
-        SharedCounterServer(0)
-    }
+#[async_trait]
+impl Stateroom for SharedCounterServer {
+    async fn go<C: StateroomContext>(self, mut ctx: C) -> () {
+        let mut c = 0;
 
-    fn message(&mut self, _: ClientId, message: &str, ctx: &impl StateroomContext) {
-        match message {
-            "increment" => self.0 += 1,
-            "decrement" => self.0 -= 1,
-            _ => (),
+        loop {
+            let message = ctx.next_message().await;
+            if let MessageToRoom::Message {
+                message: MessagePayload::Text(message),
+                ..
+            } = message
+            {
+                match message.trim().as_ref() {
+                    "increment" => c += 1,
+                    "decrement" => c -= 1,
+                    _ => (),
+                }
+
+                ctx.send(
+                    MessageRecipient::Broadcast,
+                    &format!("new value: {}", c),
+                );
+            }
         }
-
-        ctx.send_message(MessageRecipient::Broadcast, &format!("new value: {}", self.0));
     }
 }

@@ -284,6 +284,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-trait"
+version = "0.1.53"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed6aa3524a2dfcf9fe180c51eae2b58738348d819517ceadf95789c51fff7600"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -754,6 +765,7 @@ dependencies = [
 name = "native-echo"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "stateroom",
  "stateroom-server",
  "tracing-subscriber",
@@ -1052,18 +1064,23 @@ dependencies = [
 
 [[package]]
 name = "stateroom"
-version = "0.2.1"
+version = "0.2.2"
+dependencies = [
+ "async-trait",
+]
 
 [[package]]
 name = "stateroom-server"
-version = "0.2.0"
+version = "0.2.2"
 dependencies = [
  "actix",
  "actix-web",
  "actix-web-actors",
+ "async-trait",
  "serde",
  "serde_json",
  "stateroom",
+ "tokio",
  "tracing",
 ]
 
@@ -1122,9 +1139,9 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "1.18.0"
+version = "1.18.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f48b6d60512a392e34dbf7fd456249fd2de3c83669ab642e021903f4015185b"
+checksum = "4903bf0427cf68dddd5aa6a93220756f8be0c34fcfa9f5e6191e103e15a31395"
 dependencies = [
  "bytes",
  "libc",

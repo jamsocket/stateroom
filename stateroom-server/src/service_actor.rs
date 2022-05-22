@@ -1,30 +1,24 @@
-use crate::messages::{MessageData, MessageFromClient, MessageFromServer};
-use actix::{Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHandle};
-use stateroom::{MessageRecipient, StateroomContext, StateroomService, StateroomServiceFactory};
-use std::time::Duration;
+use crate::messages::{MessageFromClient, MessageFromServer};
+use actix::{Actor, Context, Handler, Recipient};
+use async_trait::async_trait;
+use stateroom::{MessageRecipient, MessageToRoom, Stateroom, StateroomContext};
+use std::marker::PhantomData;
+use tokio::{
+    sync::mpsc::{channel, Receiver, Sender},
+    task::JoinHandle,
+};
 
-pub struct ServiceActor<J: StateroomService> {
-    service: J,
-    timer_handle: Option<SpawnHandle>,
-}
-
-struct SetTimer(u32);
-
-impl Message for SetTimer {
-    type Result = ();
-}
-struct TimerFinished;
-
-impl Message for TimerFinished {
-    type Result = ();
+pub struct ServiceActor<J: Stateroom> {
+    _handle: JoinHandle<()>,
+    _ph: PhantomData<J>,
+    message_sender: Sender<MessageToRoom>,
 }
 
 /// A [StateroomContext] implementation for [StateroomService]s hosted in the
 /// context of a [ServiceActor].
-#[derive(Clone)]
 pub struct ServiceActorContext {
-    set_timer_recipient: Recipient<SetTimer>,
     send_message_recipient: Recipient<MessageFromServer>,
+    message_receiver: Receiver<MessageToRoom>,
 }
 
 impl ServiceActorContext {
@@ -33,8 +27,16 @@ impl ServiceActorContext {
     }
 }
 
+#[async_trait]
 impl StateroomContext for ServiceActorContext {
-    fn send_message(&self, recipient: impl Into<MessageRecipient>, message: &str) {
+    async fn next_message(&mut self) -> MessageToRoom {
+        self.message_receiver
+            .recv()
+            .await
+            .expect("Channel unexpectedly closed.")
+    }
+
+    fn send(&self, recipient: impl Into<MessageRecipient>, message: &str) {
         self.try_send(MessageFromServer::new(
             recipient.into(),
             message.to_string(),
@@ -47,34 +49,29 @@ impl StateroomContext for ServiceActorContext {
             message.to_vec(),
         ));
     }
-
-    fn set_timer(&self, ms_delay: u32) {
-        self.set_timer_recipient.do_send(SetTimer(ms_delay));
-    }
 }
 
-impl<J: StateroomService> ServiceActor<J> {
+impl<J: Stateroom> ServiceActor<J> {
     #[must_use]
-    pub fn new(
-        ctx: &Context<Self>,
-        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J>,
-        recipient: Recipient<MessageFromServer>,
-    ) -> Option<Self> {
+    pub fn new(stateroom: J, recipient: Recipient<MessageFromServer>) -> Option<Self> {
+        let (sender, receiver) = channel(256);
+
         let host_context = ServiceActorContext {
-            set_timer_recipient: ctx.address().recipient(),
             send_message_recipient: recipient,
+            message_receiver: receiver,
         };
 
-        let service = service_factory.build("", host_context).unwrap();
+        let handle = actix::spawn(async { stateroom.go(host_context).await });
 
         Some(ServiceActor {
-            service,
-            timer_handle: None,
+            _handle: handle,
+            message_sender: sender,
+            _ph: PhantomData::default(),
         })
     }
 }
 
-impl<J: StateroomService> Actor for ServiceActor<J> {
+impl<J: Stateroom> Actor for ServiceActor<J> {
     type Context = Context<Self>;
 
     fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::Running {
@@ -83,48 +80,29 @@ impl<J: StateroomService> Actor for ServiceActor<J> {
     }
 }
 
-impl<J: StateroomService> Handler<MessageFromClient> for ServiceActor<J> {
+impl<J: Stateroom> Handler<MessageFromClient> for ServiceActor<J> {
     type Result = ();
 
     fn handle(&mut self, msg: MessageFromClient, _ctx: &mut Self::Context) -> Self::Result {
         match msg {
-            MessageFromClient::Connect(u, _) => {
-                self.service.connect(u);
+            MessageFromClient::Connect(client, _) => {
+                self.message_sender
+                    .try_send(MessageToRoom::Connect { client })
+                    .expect("Buffer reached.");
             }
-            MessageFromClient::Disconnect(u) => {
-                self.service.disconnect(u);
+            MessageFromClient::Disconnect(client) => {
+                self.message_sender
+                    .try_send(MessageToRoom::Disconnect { client })
+                    .expect("Buffer reached.");
             }
-            MessageFromClient::Message { data, from_client } => match data {
-                MessageData::Binary(bin) => self.service.binary(from_client, &bin),
-                MessageData::String(st) => self.service.message(from_client, &st),
-            },
+            MessageFromClient::Message { data, client } => {
+                self.message_sender
+                    .try_send(MessageToRoom::Message {
+                        client,
+                        message: data,
+                    })
+                    .expect("Buffer reached.");
+            }
         }
-    }
-}
-
-impl<J: StateroomService> Handler<SetTimer> for ServiceActor<J> {
-    type Result = ();
-
-    fn handle(&mut self, SetTimer(duration_ms): SetTimer, ctx: &mut Self::Context) -> Self::Result {
-        tracing::info!(%duration_ms, "Timer set");
-
-        if let Some(timer_handle) = self.timer_handle.take() {
-            ctx.cancel_future(timer_handle);
-        }
-
-        if duration_ms > 0 {
-            let handle =
-                ctx.notify_later(TimerFinished, Duration::from_millis(u64::from(duration_ms)));
-            self.timer_handle = Some(handle);
-        }
-    }
-}
-
-impl<J: StateroomService> Handler<TimerFinished> for ServiceActor<J> {
-    type Result = ();
-
-    fn handle(&mut self, _: TimerFinished, _: &mut Self::Context) -> Self::Result {
-        tracing::info!("Timer finished.");
-        self.service.timer();
     }
 }

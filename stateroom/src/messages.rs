@@ -4,14 +4,15 @@ use serde::{Deserialize, Serialize};
 use crate::{ClientId, MessageRecipient};
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone)]
 pub enum MessagePayload {
     Bytes(Vec<u8>),
     Text(String),
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(tag = "type"))]
-pub enum MessageToProcess {
+#[derive(Debug, Clone)]
+pub enum MessageToRoom {
     Connect {
         client: ClientId,
     },
@@ -22,12 +23,11 @@ pub enum MessageToProcess {
         client: ClientId,
         message: MessagePayload,
     },
-    Timer,
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(tag = "type"))]
-pub enum MessageFromProcess {
+#[derive(Debug)]
+pub enum MessageFromRoom {
     Message {
         recipient: MessageRecipient,
         message: MessagePayload,
