@@ -1,6 +1,5 @@
 extern crate alloc;
 
-pub use async_trait::async_trait;
 /// Re-exports useful items from `stateroom` and `stateroom_wasm_macro`.
 pub use stateroom::{
     ClientId, MessagePayload, MessageRecipient, MessageToRoom, Stateroom, StateroomContext,
@@ -38,11 +37,6 @@ impl Future for NextMessageFuture {
         if let Some(message) = next_message {
             Poll::Ready(message)
         } else {
-            // unsafe {
-            //     assert!(MESSAGE_WAKER.is_none(), "Multiple concurrent futures are not supported.");
-            //     MESSAGE_WAKER.replace(cx.waker().clone());
-            // }
-
             Poll::Pending
         }
     }
@@ -82,12 +76,6 @@ pub fn initialize_room<T: Stateroom + Default>() {
     let room = T::default();
     let future = room.run(GlobalStateroomContext);
 
-    // let waker = dummy_waker::waker();
-    // let mut cx = Context::from_waker(&waker);
-    // match future.as_mut().poll(&mut cx) {
-    //     Poll::Ready(_) => panic!("Future returned ready!"),
-    //     Poll::Pending => (),
-    // }
     unsafe {
         MESSAGE_QUEUE.replace(VecDeque::new());
         ROOM_FUTURE.replace(future);
@@ -100,17 +88,6 @@ pub fn receive_message(message: MessageToRoom) {
             .as_mut()
             .expect("Queue not available.")
             .push_back(message);
-        // let fut = ROOM_FUTURE.as_mut().unwrap();
-        // let waker = dummy_waker::waker();
-        // let mut cx = Context::from_waker(&waker);
-        // match fut.as_mut().poll(&mut cx) {
-        //     Poll::Ready(_) => panic!("Future returned ready!"),
-        //     Poll::Pending => (),
-        // }
-
-        // if let Some(waker) = MESSAGE_WAKER.take() {
-        //     waker.wake();
-        // }
     }
 }
 

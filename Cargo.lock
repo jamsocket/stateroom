@@ -1867,7 +1867,6 @@ dependencies = [
 name = "stateroom-wasm"
 version = "0.2.2"
 dependencies = [
- "async-trait",
  "bincode",
  "serde",
  "stateroom",

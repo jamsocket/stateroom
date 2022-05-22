@@ -11,6 +11,5 @@ description = "A macro for building a Stateroom service as a WebAssembly module.
 [dependencies]
 stateroom-wasm-macro = {path="./stateroom-wasm-macro", version="0.2.0"}
 stateroom = {path="../stateroom", version="0.2.2", features=["serde"]}
-async-trait = "0.1.53"
 bincode = "1.3.3"
 serde = "1.0.137"

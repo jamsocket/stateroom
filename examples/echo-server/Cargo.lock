@@ -26,7 +26,6 @@ dependencies = [
 name = "echo-server"
 version = "0.1.0"
 dependencies = [
- "async-trait",
  "stateroom-wasm",
 ]
 
@@ -80,7 +79,6 @@ dependencies = [
 name = "stateroom-wasm"
 version = "0.2.2"
 dependencies = [
- "async-trait",
  "bincode",
  "serde",
  "stateroom",
@@ -91,7 +89,6 @@ dependencies = [
 name = "stateroom-wasm-macro"
 version = "0.2.0"
 dependencies = [
- "async-trait",
  "proc-macro2",
  "quote",
  "syn",

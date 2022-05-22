@@ -91,7 +91,6 @@ dependencies = [
 name = "stateroom-wasm-macro"
 version = "0.2.0"
 dependencies = [
- "async-trait",
  "proc-macro2",
  "quote",
  "syn",
