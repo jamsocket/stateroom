@@ -7,7 +7,7 @@ struct RandomServer;
 
 #[async_trait]
 impl Stateroom for RandomServer {
-    async fn go<C: StateroomContext>(self, mut ctx: C) -> () {
+    async fn run<C: StateroomContext>(self, mut ctx: C) -> () {
         let mut buf: [u8; 4] = [0, 0, 0, 0];
         unsafe {
             wasi::random_get(&mut buf[0] as *mut u8, 4).unwrap();

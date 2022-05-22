@@ -80,7 +80,7 @@ mod dummy_waker {
 
 pub fn initialize_room<T: Stateroom + Default>() {
     let room = T::default();
-    let future = room.go(GlobalStateroomContext);
+    let future = room.run(GlobalStateroomContext);
 
     // let waker = dummy_waker::waker();
     // let mut cx = Context::from_waker(&waker);

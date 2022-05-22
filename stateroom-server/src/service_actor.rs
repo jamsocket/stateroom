@@ -61,7 +61,7 @@ impl<J: Stateroom> ServiceActor<J> {
             message_receiver: receiver,
         };
 
-        let handle = actix::spawn(async { stateroom.go(host_context).await });
+        let handle = actix::spawn(async { stateroom.run(host_context).await });
 
         Some(ServiceActor {
             _handle: handle,

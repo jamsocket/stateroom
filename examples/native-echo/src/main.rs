@@ -8,7 +8,7 @@ struct EchoServer;
 
 #[async_trait]
 impl Stateroom for EchoServer {
-    async fn go<C: StateroomContext>(mut ctx: C) -> () {
+    async fn run<C: StateroomContext>(mut ctx: C) -> () {
         loop {
             let message = ctx.next_message().await;
 

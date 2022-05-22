@@ -27,5 +27,5 @@ pub trait StateroomContext: Unpin + Send {
 
 #[async_trait]
 pub trait Stateroom: Unpin + 'static {
-    async fn go<C: StateroomContext>(self, ctx: C) -> ();
+    async fn run<C: StateroomContext>(self, ctx: C) -> ();
 }

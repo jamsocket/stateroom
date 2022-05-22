@@ -17,7 +17,7 @@ impl StdioProcessService {
 
 #[async_trait]
 impl Stateroom for StdioProcessService {
-    async fn go<C: StateroomContext>(mut self, mut ctx: C) -> () {
+    async fn run<C: StateroomContext>(mut self, mut ctx: C) -> () {
         let (send, mut recv) = tokio::sync::mpsc::channel::<MessageFromRoom>(256);
 
         let mut process = {

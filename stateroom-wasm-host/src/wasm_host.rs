@@ -68,7 +68,7 @@ impl WasmHost {
 
 #[async_trait]
 impl Stateroom for WasmHost {
-    async fn go<C: StateroomContext>(mut self, mut ctx: C) -> ()
+    async fn run<C: StateroomContext>(mut self, mut ctx: C) -> ()
     where
         C: 'async_trait + StateroomContext,
     {
