@@ -125,6 +125,9 @@ impl StateroomContext for GlobalStateroomContext {
     }
 }
 
+#[cfg(not(test))]
+mod ffi {
+
 #[no_mangle]
 pub static STATEROOM_API_VERSION: i32 = 1;
 
@@ -163,4 +166,5 @@ pub unsafe extern "C" fn stateroom_malloc(size: u32) -> *mut u8 {
 pub unsafe extern "C" fn stateroom_free(ptr: *mut u8, size: u32) {
     let layout = core::alloc::Layout::from_size_align_unchecked(size as usize, 0);
     alloc::alloc::dealloc(ptr, layout);
+}
 }
