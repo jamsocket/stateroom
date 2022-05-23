@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use stateroom_wasm::prelude::*;
 
 #[stateroom_wasm]
@@ -18,8 +16,6 @@ async fn run<C: StateroomContext>(mut ctx: C) {
                 "decrement" => c -= 1,
                 _ => (),
             }
-
-            tokio::time::sleep(Duration::from_secs(2)).await;
 
             ctx.send(MessageRecipient::Broadcast, &format!("new value: {}", c));
         }

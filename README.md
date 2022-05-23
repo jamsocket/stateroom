@@ -12,11 +12,11 @@ Services can either be native Rust code that runs in the server process, or be c
 
 ## Usage
 
-To create a Stateroom service, implement the `Stateroom` trait, which consists of an async function called `run`.
+To create a Stateroom service, implement an async function called `run` that takes a `StateroomContext`, and annotate it with the `#[stateroom_wasm]` attribute macro.
 
-Let's implement a simple shared counter. Any connected client will be able to increment or decrement it by sending 
-`increment` or `decrement` messages (other messages will be ignored). Whenever the value is changed, we'll broadcast it 
-to every connected client.
+The example below implements a shared counter. Any connected client will be able to increment or decrement it by sending 
+`increment` or `decrement` messages (other messages will be ignored). Whenever the value is changed, we broadcast the new
+value to every connected client.
 
 ```rust,no_run
 use stateroom_wasm::prelude::*;
@@ -44,12 +44,13 @@ async fn run<C: StateroomContext>(mut ctx: C) {
 }
 ```
 
-Then, install the `stateroom` command-line tool and the `wasm32-wasi` target, and run 
+To run this example (see [examples/counter-service](examples/counter-service/)), install the `stateroom` command-line tool and the `wasm32-wasi` target, and run 
 `stateroom dev`:
 
 ```bash
 $ cargo install stateroom-cli
 $ rustup target add wasm32-wasi
+$ cd examples/counter-service
 $ stateroom dev
 ```
 
