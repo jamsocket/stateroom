@@ -17,7 +17,7 @@ is to make a crate for each service.
 It's possible to generate bindings for a service that belongs to another module using
 a `type` alias:
 
-```rust
+```rust,no_run
 use stateroom_wasm::stateroom_wasm;
 use some_module::SomeService;
 
