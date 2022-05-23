@@ -126,7 +126,7 @@ impl StateroomContext for GlobalStateroomContext {
 }
 
 #[cfg(not(test))]
-mod ffi {
+mod externs {
 
 #[no_mangle]
 pub static STATEROOM_API_VERSION: i32 = 1;
