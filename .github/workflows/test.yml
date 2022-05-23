@@ -20,6 +20,9 @@ jobs:
       with:
           toolchain: stable
           override: true
+    - uses: Swatinem/rust-cache@v1
+      with:
+        cache-on-failure: true
     - name: Run tests
       run: cargo test
       env:
