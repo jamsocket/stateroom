@@ -85,7 +85,7 @@ If multiple clients are connected, each one will receive this message. Just like
 If you don't want to compile your service to WebAssembly (for example, if you want to use 
 capabilities that are not exposed by [WASI](https://wasi.dev/)), you can use `stateroom-server`.
 
-```no_run
+```rust,no_run
 use stateroom::{Stateroom, StateroomContext, RoomEvent, MessagePayload, MessageRecipient};
 use stateroom_server::*;
 use async_trait::async_trait;
