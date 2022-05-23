@@ -1814,6 +1814,8 @@ version = "0.2.2"
 dependencies = [
  "async-trait",
  "serde",
+ "stateroom-server",
+ "stateroom-wasm",
 ]
 
 [[package]]

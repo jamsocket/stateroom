@@ -2,7 +2,7 @@ extern crate alloc;
 
 /// Re-exports useful items from `stateroom` and `stateroom_wasm_macro`.
 pub use stateroom::{
-    ClientId, MessagePayload, MessageRecipient, MessageToRoom, Stateroom, StateroomContext,
+    ClientId, MessagePayload, MessageRecipient, RoomEvent, Stateroom, StateroomContext,
 };
 pub use stateroom_wasm_macro::stateroom_wasm;
 use std::{
@@ -12,7 +12,7 @@ use std::{
     task::{Context, Poll},
 };
 
-static mut MESSAGE_QUEUE: Option<VecDeque<MessageToRoom>> = None;
+static mut MESSAGE_QUEUE: Option<VecDeque<RoomEvent>> = None;
 pub static mut ROOM_FUTURE: Option<Pin<Box<dyn Future<Output = ()>>>> = None;
 
 // Functions implemented by the host.
@@ -27,7 +27,7 @@ mod ffi {
 struct NextMessageFuture;
 
 impl Future for NextMessageFuture {
-    type Output = MessageToRoom;
+    type Output = RoomEvent;
 
     fn poll(
         self: std::pin::Pin<&mut Self>,
@@ -82,7 +82,7 @@ pub fn initialize_room<T: Stateroom + Default>() {
     }
 }
 
-pub fn receive_message(message: MessageToRoom) {
+pub fn receive_message(message: RoomEvent) {
     unsafe {
         MESSAGE_QUEUE
             .as_mut()
@@ -114,9 +114,9 @@ impl StateroomContext for GlobalStateroomContext {
         }
     }
 
-    fn next_message<'life0, 'async_trait>(
+    fn next_event<'life0, 'async_trait>(
         &'life0 mut self,
-    ) -> Pin<Box<dyn Future<Output = MessageToRoom> + Send + 'async_trait>>
+    ) -> Pin<Box<dyn Future<Output = RoomEvent> + Send + 'async_trait>>
     where
         'life0: 'async_trait,
         Self: 'async_trait,
@@ -136,7 +136,7 @@ extern "C" fn message(ptr: *const u8, len: usize) {
     unsafe {
         let bytes = std::slice::from_raw_parts(ptr, len).to_vec();
 
-        let message: MessageToRoom = bincode::deserialize(&bytes).expect("Error deserializing.");
+        let message: RoomEvent = bincode::deserialize(&bytes).expect("Error deserializing.");
 
         receive_message(message);
     }

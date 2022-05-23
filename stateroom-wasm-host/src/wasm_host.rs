@@ -3,7 +3,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use byteorder::{LittleEndian, ReadBytesExt};
 use stateroom::MessagePayload;
-use stateroom::{MessageFromRoom, MessageRecipient, MessageToRoom, Stateroom, StateroomContext};
+use stateroom::{MessageFromRoom, MessageRecipient, RoomEvent, Stateroom, StateroomContext};
 use std::borrow::BorrowMut;
 use std::path::Path;
 use tokio::sync::mpsc::{channel, Receiver};
@@ -49,7 +49,7 @@ impl WasmHost {
         Ok((pt, len))
     }
 
-    fn try_message(&mut self, message: MessageToRoom) -> Result<()> {
+    fn try_message(&mut self, message: RoomEvent) -> Result<()> {
         let (pt, len) = self
             .put_data(&bincode::serialize(&message).expect("Error serializing message."))
             .expect("Error putting data.");
@@ -79,7 +79,7 @@ impl Stateroom for WasmHost {
 
         loop {
             tokio::select! {
-                message = ctx.next_message() => {
+                message = ctx.next_event() => {
                     self.try_message(message).expect("Error on message.");
                     self.fn_poll.call(&mut self.store, ()).expect("Poll after message failed.");
                 },

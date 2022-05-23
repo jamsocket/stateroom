@@ -32,7 +32,7 @@ impl Stateroom for StdioProcessService {
 
         loop {
             tokio::select! {
-                message = ctx.next_message() => {
+                message = ctx.next_event() => {
                     process
                         .send(&serde_json::to_string(&message).expect("Could not jsonify message."))
                         .expect("Could not send message to process.");

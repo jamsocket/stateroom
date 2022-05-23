@@ -1,7 +1,7 @@
 use crate::messages::{MessageFromClient, MessageFromServer};
 use actix::{Actor, Context, Handler, Recipient};
 use async_trait::async_trait;
-use stateroom::{MessageRecipient, MessageToRoom, Stateroom, StateroomContext};
+use stateroom::{MessageRecipient, RoomEvent, Stateroom, StateroomContext};
 use std::marker::PhantomData;
 use tokio::{
     sync::mpsc::{channel, Receiver, Sender},
@@ -11,14 +11,14 @@ use tokio::{
 pub struct ServiceActor<J: Stateroom> {
     _handle: JoinHandle<()>,
     _ph: PhantomData<J>,
-    message_sender: Sender<MessageToRoom>,
+    message_sender: Sender<RoomEvent>,
 }
 
 /// A [StateroomContext] implementation for [StateroomService]s hosted in the
 /// context of a [ServiceActor].
 pub struct ServiceActorContext {
     send_message_recipient: Recipient<MessageFromServer>,
-    message_receiver: Receiver<MessageToRoom>,
+    message_receiver: Receiver<RoomEvent>,
 }
 
 impl ServiceActorContext {
@@ -29,7 +29,7 @@ impl ServiceActorContext {
 
 #[async_trait]
 impl StateroomContext for ServiceActorContext {
-    async fn next_message(&mut self) -> MessageToRoom {
+    async fn next_event(&mut self) -> RoomEvent {
         self.message_receiver
             .recv()
             .await
@@ -87,17 +87,17 @@ impl<J: Stateroom> Handler<MessageFromClient> for ServiceActor<J> {
         match msg {
             MessageFromClient::Connect(client, _) => {
                 self.message_sender
-                    .try_send(MessageToRoom::Connect { client })
+                    .try_send(RoomEvent::Connect { client })
                     .expect("Buffer reached.");
             }
             MessageFromClient::Disconnect(client) => {
                 self.message_sender
-                    .try_send(MessageToRoom::Disconnect { client })
+                    .try_send(RoomEvent::Disconnect { client })
                     .expect("Buffer reached.");
             }
             MessageFromClient::Message { data, client } => {
                 self.message_sender
-                    .try_send(MessageToRoom::Message {
+                    .try_send(RoomEvent::Message {
                         client,
                         message: data,
                     })

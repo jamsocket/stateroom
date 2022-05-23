@@ -1,7 +1,7 @@
 use stateroom_wasm::prelude::*;
 
 #[stateroom_wasm]
-async fn run<C: StateroomContext>(self, mut ctx: C) {
+async fn run<C: StateroomContext>(mut ctx: C) {
     let mut c = 0;
 
     loop {

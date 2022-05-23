@@ -1,7 +1,9 @@
+#![doc = include_str!("../README.md")]
+
 use async_trait::async_trait;
 pub use client_id::ClientId;
 pub use message_recipient::MessageRecipient;
-pub use messages::{MessageFromRoom, MessagePayload, MessageToRoom};
+pub use messages::{MessageFromRoom, MessagePayload, RoomEvent};
 
 mod client_id;
 mod message_recipient;
@@ -10,7 +12,7 @@ mod messages;
 /// Provides an interface for a [StateroomService] instance to send and receive messages from its host environment.
 #[async_trait]
 pub trait StateroomContext: Unpin + Send {
-    async fn next_message(&mut self) -> MessageToRoom;
+    async fn next_event(&mut self) -> RoomEvent;
 
     /// Sends a message to a currently connected user, or broadcast a message to all users.
     ///

@@ -12,43 +12,36 @@ Services can either be native Rust code that runs in the server process, or be c
 
 ## Usage
 
-To create a Stateroom service, implement the `SimpleStateroomService` trait. There's only one function that you *must* implement, the constructor `new`.
+To create a Stateroom service, implement the `Stateroom` trait, which consists of an async function called `run`.
 
 Let's implement a simple shared counter. Any connected client will be able to increment or decrement it by sending 
 `increment` or `decrement` messages (other messages will be ignored). Whenever the value is changed, we'll broadcast it 
 to every connected client.
 
 ```rust
-impl SimpleStateroomService for SharedCounterServer {
-    fn new(_: &str,
-           _: &impl StateroomContext) -> Self {
-        SharedCounterServer(0)
-    }
-
-    fn message(&mut self, _: ClientId,
-               message: &str,
-               ctx: &impl StateroomContext) {
-        match message {
-            "increment" => self.0 += 1,
-            "decrement" => self.0 -= 1,
-            _ => (),
-        }
-
-        ctx.send_message(
-            MessageRecipient::Broadcast,
-            &format!("new value: {}", self.0));
-    }
-}
-```
-
-To serve this service, we will compile it into a WebAssembly module. We import the `#[stateroom_wasm]`
-annotation macro and apply it to the existing `SharedCounterServer` declaration.
-
-```rust
-use stateroom_wasm::stateroom_wasm;
+use stateroom_wasm::prelude::*;
 
 #[stateroom_wasm]
-struct SharedCounterServer(i32);
+async fn run<C: StateroomContext>(mut ctx: C) {
+    let mut c = 0;
+
+    loop {
+        let message = ctx.next_event().await;
+        if let RoomEvent::Message {
+            message: MessagePayload::Text(message),
+            ..
+        } = message
+        {
+            match message.trim().as_ref() {
+                "increment" => c += 1,
+                "decrement" => c -= 1,
+                _ => (),
+            }
+
+            ctx.send(MessageRecipient::Broadcast, &format!("new value: {}", c));
+        }
+    }
+}
 ```
 
 Then, install the `stateroom` command-line tool and the `wasm32-wasi` target, and run 
@@ -81,7 +74,7 @@ ws.send('increment')
 
 If everything is set up correctly, the result will be printed out:
 
-```
+```text
 new value: 1
 ```
 
@@ -90,14 +83,41 @@ If multiple clients are connected, each one will receive this message. Just like
 ## Using without WebAssembly
 
 If you don't want to compile your service to WebAssembly (for example, if you want to use 
-capabilities that are
-not exposed by [WASI](https://wasi.dev/)), you can use `stateroom-server`.
+capabilities that are not exposed by [WASI](https://wasi.dev/)), you can use `stateroom-server`.
 
-```rust
+```no_run
+use stateroom::{Stateroom, StateroomContext, RoomEvent, MessagePayload, MessageRecipient};
 use stateroom_server::*;
+use async_trait::async_trait;
+
+struct CounterServer;
+
+#[async_trait]
+impl Stateroom for CounterServer {
+    async fn run<C: StateroomContext>(self, mut ctx: C) {
+        let mut c = 0;
+
+        loop {
+            let message = ctx.next_event().await;
+            if let RoomEvent::Message {
+                message: MessagePayload::Text(message),
+                ..
+            } = message
+            {
+                match message.trim().as_ref() {
+                    "increment" => c += 1,
+                    "decrement" => c -= 1,
+                    _ => (),
+                }
+
+                ctx.send(MessageRecipient::Broadcast, &format!("new value: {}", c));
+            }
+        }
+    }
+}
 
 fn main() -> std::io::Result<()> {
-    serve::<SharedCounterServer>()?;
+    Server::default().serve(CounterServer)?;
 
     Ok(())
 }

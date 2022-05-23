@@ -1,7 +1,7 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{FnArg, ItemFn, Receiver, ReturnType};
+use syn::{ItemFn, ReturnType};
 
 #[allow(clippy::too_many_lines)]
 fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStream {
@@ -22,16 +22,8 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
     }
 
     let inputs: Vec<_> = func.sig.inputs.iter().collect();
-    if inputs.len() != 2 {
-        panic!("The function wrapped by #[stateroom_wasm] should have exactly two arguments.");
-    }
-
-    if let FnArg::Receiver(Receiver {
-        reference: None, ..
-    }) = inputs[0]
-    {
-    } else {
-        panic!("The first argument to the function wrapped by #[stateroom_wasm] should be `self` (mutability allowed, reference is not).")
+    if inputs.len() != 1 {
+        panic!("The function wrapped by #[stateroom_wasm] should have exactly one argument (a StateroomContext.)");
     }
 
     let inputs = func.sig.inputs;
@@ -42,7 +34,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
             // extern crate alloc;
 
             use super::*;
-            use stateroom_wasm::prelude::{GlobalStateroomContext, ROOM_FUTURE};
+            use stateroom_wasm::prelude::{Stateroom, StateroomContext, GlobalStateroomContext, ROOM_FUTURE, RoomEvent, MessagePayload, MessageRecipient, initialize_room};
             use std::pin::Pin;
             use std::boxed::Box;
             use std::future::Future;
@@ -51,7 +43,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
             struct StateroomService;
 
             impl Stateroom for StateroomService {
-                fn run<'async_trait, C>(#inputs) -> Pin<Box<dyn Future<Output = ()> + Send + 'async_trait>> where
+                fn run<'async_trait, C>(self, #inputs) -> Pin<Box<dyn Future<Output = ()> + Send + 'async_trait>> where
                     C: 'async_trait + StateroomContext,
                     Self: 'async_trait
                 {

@@ -12,7 +12,7 @@ pub enum MessagePayload {
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[derive(Debug, Clone)]
-pub enum MessageToRoom {
+pub enum RoomEvent {
     Connect {
         client: ClientId,
     },
