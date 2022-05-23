@@ -22,3 +22,5 @@ jobs:
           override: true
     - name: Run tests
       run: cargo test
+      env:
+        RUST_BACKTRACE: 1
