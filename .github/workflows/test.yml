@@ -15,11 +15,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Update rust
-      uses: actions-rs/toolchain@v1
-      with:
-          toolchain: stable
-          override: true
     - uses: Swatinem/rust-cache@v1
       with:
         cache-on-failure: true
