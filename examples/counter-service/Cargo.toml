@@ -10,3 +10,4 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 stateroom = {path="../../stateroom"}
 stateroom-wasm = {path="../../stateroom-wasm"}
+tokio = { version = "1.18.2", features = ["time"] }
