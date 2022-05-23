@@ -18,7 +18,7 @@ Let's implement a simple shared counter. Any connected client will be able to in
 `increment` or `decrement` messages (other messages will be ignored). Whenever the value is changed, we'll broadcast it 
 to every connected client.
 
-```rust
+```rust,no_run
 use stateroom_wasm::prelude::*;
 
 #[stateroom_wasm]
