@@ -20,5 +20,5 @@ toml = "0.5.8"
 cargo_metadata = "0.14.0"
 tracing = "0.1.28"
 tracing-subscriber = { version = "0.3.5", features = ["env-filter"] }
-wasm-bindgen-cli-support = "0.2.78"
+wasm-bindgen-cli-support = "0.2.82"
 fs_extra = "1.2.0"
