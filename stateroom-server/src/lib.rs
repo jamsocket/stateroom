@@ -16,7 +16,7 @@ pub use messages::{AssignClientId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
 use server_state::ServerState;
 pub use service_actor::{ServiceActor, ServiceActorContext};
-use stateroom::StateroomServiceFactory;
+use stateroom::{StateroomServiceFactory, StateroomService};
 use std::time::{Duration, Instant};
 
 const DEFAULT_IP: &str = "0.0.0.0";
@@ -109,10 +109,10 @@ impl Server {
     /// endpoints are available:
     /// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)
     /// - `/ws` (GET): initiate a WebSocket connection to the stateroom service.
-    pub fn serve(
+    pub fn serve<J>(
         self,
-        service_factory: impl StateroomServiceFactory<ServiceActorContext>,
-    ) -> std::io::Result<()> {
+        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J> + Send + 'static,
+    ) -> std::io::Result<()> where J: StateroomService + Send + Sync + Unpin + 'static {
         let host = format!("{}:{}", self.ip, self.port);
 
         actix_web::rt::System::new().block_on(async move {

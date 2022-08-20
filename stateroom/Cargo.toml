@@ -1,6 +1,6 @@
 [package]
 name = "stateroom"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Paul Butler <paulgb@gmail.com>"]
 edition = "2018"
 readme = "../README.md"

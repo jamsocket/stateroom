@@ -1,6 +1,6 @@
 [package]
 name = "stateroom-wasm-host"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2018"
 readme = "README.md"
 repository = "https://github.com/drifting-in-space/stateroom"
@@ -11,7 +11,7 @@ description = "A Stateroom service implementation that takes a WebAssembly modul
 [dependencies]
 anyhow = "1.0.45"
 byteorder = "1.4.3"
-stateroom = {path="../stateroom", version="0.2.2"}
+stateroom = {path="../stateroom", version="0.2.3"}
 wasmtime-wasi = "0.39.1"
 tracing = "0.1.28"
 

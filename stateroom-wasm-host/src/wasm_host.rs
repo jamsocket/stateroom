@@ -174,7 +174,7 @@ impl WasmHost {
         room_id: &str,
         module: &Module,
         engine: &Engine,
-        context: &Arc<impl StateroomContext>,
+        context: &Arc<impl StateroomContext + Send + Sync + 'static>,
     ) -> Result<Self> {
         let wasi = WasiCtxBuilder::new().build();
 

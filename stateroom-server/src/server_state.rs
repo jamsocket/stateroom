@@ -14,11 +14,11 @@ pub struct ServerState {
 
 impl ServerState {
     pub fn new<J>(
-        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J>,
+        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J> + Send + 'static,
         settings: Server,
     ) -> Result<Self>
     where
-        J: StateroomService,
+        J: StateroomService + Send + Sync + Unpin + 'static,
     {
         let arbiter = Arbiter::new();
         let (room_tx, room_rx) = channel(MAILBOX_SIZE);

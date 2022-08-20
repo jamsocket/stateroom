@@ -72,7 +72,7 @@ mod message_recipient;
 mod messages;
 
 /// Provides an interface for a [StateroomService] instance to send messages back to its host environment.
-pub trait StateroomContext: Unpin + 'static + Send + Sync {
+pub trait StateroomContext {
     /// Sends a message to a currently connected user, or broadcast a message to all users.
     ///
     /// Recipient can be a `u32` representing an individual user to send a message to, or
@@ -99,7 +99,7 @@ pub trait StateroomContext: Unpin + 'static + Send + Sync {
 ///
 /// See module documentation for usage examples.
 #[allow(unused_variables)]
-pub trait SimpleStateroomService: Unpin + Send + Sync + 'static {
+pub trait SimpleStateroomService {
     /// Called when the service is created, before any client has had a chance to connect.
     fn new(room_id: &str, context: &impl StateroomContext) -> Self;
 
@@ -124,7 +124,7 @@ pub trait SimpleStateroomService: Unpin + Send + Sync + 'static {
 /// The host interface to a Stateroom service. Implementations should instead implement the trait
 /// [SimpleStateroomService].
 #[allow(unused_variables)]
-pub trait StateroomService: Send + Sync + Unpin + 'static {
+pub trait StateroomService {
     /// Called each time a client connects to the service.
     fn connect(&mut self, client: ClientId) {}
 
@@ -144,7 +144,7 @@ pub trait StateroomService: Send + Sync + Unpin + 'static {
 }
 
 /// Enables an object to become a [StateroomService] of the associated `Service` type.
-pub trait StateroomServiceFactory<C: StateroomContext>: Send + Sync + 'static {
+pub trait StateroomServiceFactory<C: StateroomContext> {
     /// The type of [StateroomService] that the object implementing this trait builds.
     type Service: StateroomService;
     type Error: std::fmt::Debug;

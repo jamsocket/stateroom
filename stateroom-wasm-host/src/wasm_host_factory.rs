@@ -15,7 +15,7 @@ pub struct WasmHostFactory {
     module: Arc<Module>,
 }
 
-impl<T: StateroomContext> StateroomServiceFactory<T> for WasmHostFactory {
+impl<T: StateroomContext + Send + Sync + 'static> StateroomServiceFactory<T> for WasmHostFactory {
     type Service = WasmHost;
     type Error = anyhow::Error;
 

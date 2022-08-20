@@ -3,7 +3,7 @@ use actix::{Actor, AsyncContext, Context, Handler, Message, Recipient, SpawnHand
 use stateroom::{MessageRecipient, StateroomContext, StateroomService, StateroomServiceFactory};
 use std::time::Duration;
 
-pub struct ServiceActor<J: StateroomService> {
+pub struct ServiceActor<J: StateroomService + Send + Sync + 'static> {
     service: J,
     timer_handle: Option<SpawnHandle>,
 }
@@ -53,7 +53,7 @@ impl StateroomContext for ServiceActorContext {
     }
 }
 
-impl<J: StateroomService> ServiceActor<J> {
+impl<J: StateroomService + Send + Sync + 'static + Unpin> ServiceActor<J> {
     #[must_use]
     pub fn new(
         ctx: &Context<Self>,
@@ -74,7 +74,7 @@ impl<J: StateroomService> ServiceActor<J> {
     }
 }
 
-impl<J: StateroomService> Actor for ServiceActor<J> {
+impl<J: StateroomService + Send + Sync + 'static + Unpin> Actor for ServiceActor<J> {
     type Context = Context<Self>;
 
     fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::Running {
@@ -83,7 +83,7 @@ impl<J: StateroomService> Actor for ServiceActor<J> {
     }
 }
 
-impl<J: StateroomService> Handler<MessageFromClient> for ServiceActor<J> {
+impl<J: StateroomService + Send + Sync + 'static + Unpin> Handler<MessageFromClient> for ServiceActor<J> {
     type Result = ();
 
     fn handle(&mut self, msg: MessageFromClient, _ctx: &mut Self::Context) -> Self::Result {
@@ -102,7 +102,7 @@ impl<J: StateroomService> Handler<MessageFromClient> for ServiceActor<J> {
     }
 }
 
-impl<J: StateroomService> Handler<SetTimer> for ServiceActor<J> {
+impl<J: StateroomService + Send + Sync + 'static + Unpin> Handler<SetTimer> for ServiceActor<J> {
     type Result = ();
 
     fn handle(&mut self, SetTimer(duration_ms): SetTimer, ctx: &mut Self::Context) -> Self::Result {
@@ -120,7 +120,7 @@ impl<J: StateroomService> Handler<SetTimer> for ServiceActor<J> {
     }
 }
 
-impl<J: StateroomService> Handler<TimerFinished> for ServiceActor<J> {
+impl<J: StateroomService + Send + Sync + 'static + Unpin> Handler<TimerFinished> for ServiceActor<J> {
     type Result = ();
 
     fn handle(&mut self, _: TimerFinished, _: &mut Self::Context) -> Self::Result {
