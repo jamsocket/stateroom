@@ -176,7 +176,7 @@ impl WasmHost {
         engine: &Engine,
         context: &Arc<impl StateroomContext + Send + Sync + 'static>,
     ) -> Result<Self> {
-        let wasi = WasiCtxBuilder::new().build();
+        let wasi = WasiCtxBuilder::new().inherit_stdio().build();
 
         let mut store = Store::new(engine, wasi);
         let mut linker = Linker::new(engine);
