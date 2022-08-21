@@ -188,11 +188,11 @@ impl WasmHost {
             linker.func_wrap(
                 ENV,
                 EXT_FN_SEND_MESSAGE,
-                move |mut caller: Caller<'_, WasiCtx>, client: u32, start: u32, len: u32| {
+                move |mut caller: Caller<'_, WasiCtx>, client: i32, start: u32, len: u32| {
                     let memory = get_memory(&mut caller);
                     let message = get_string(&caller, &memory, start, len)?;
 
-                    context.send_message(MessageRecipient::decode_u32(client), message);
+                    context.send_message(MessageRecipient::decode_i32(client), message);
 
                     Ok(())
                 },
@@ -205,11 +205,11 @@ impl WasmHost {
             linker.func_wrap(
                 ENV,
                 EXT_FN_SEND_BINARY,
-                move |mut caller: Caller<'_, WasiCtx>, client: u32, start: u32, len: u32| {
+                move |mut caller: Caller<'_, WasiCtx>, client: i32, start: u32, len: u32| {
                     let memory = get_memory(&mut caller);
                     let message = get_u8_vec(&caller, &memory, start, len);
 
-                    context.send_binary(MessageRecipient::decode_u32(client), message);
+                    context.send_binary(MessageRecipient::decode_i32(client), message);
 
                     Ok(())
                 },

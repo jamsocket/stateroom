@@ -62,6 +62,13 @@ impl Handler<MessageFromServer> for RoomActor {
                     addr.do_send(message.clone());
                 }
             }
+            MessageRecipient::EveryoneExcept(skip_client_id) => {
+                for (client_id, addr) in self.connections.iter() {
+                    if client_id != &skip_client_id {
+                        addr.do_send(message.clone());
+                    }
+                }
+            }
             MessageRecipient::Client(client_id) => {
                 if let Some(client_connection) = self.connections.get(&client_id) {
                     client_connection.do_send(message);

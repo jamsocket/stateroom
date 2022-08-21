@@ -13,22 +13,25 @@ use serde::{Deserialize, Serialize};
 pub enum MessageRecipient {
     Broadcast,
     Client(ClientId),
+    EveryoneExcept(ClientId),
 }
 
 impl MessageRecipient {
     #[must_use]
-    pub fn encode_u32(&self) -> u32 {
+    pub fn encode_i32(&self) -> i32 {
         match self {
             Self::Broadcast => 0,
-            Self::Client(c) => (*c).into(),
+            Self::Client(c) => c.0 as i32,
+            Self::EveryoneExcept(c) => -(c.0 as i32),
         }
     }
 
     #[must_use]
-    pub fn decode_u32(enc_client_id: u32) -> Self {
+    pub fn decode_i32(enc_client_id: i32) -> Self {
         match enc_client_id {
             0 => Self::Broadcast,
-            c => Self::Client(c.into()),
+            c if c > 0 => Self::Client((c as u32).into()),
+            c => Self::EveryoneExcept((c as u32).into()),
         }
     }
 }
@@ -45,17 +48,20 @@ mod tests {
 
     #[test]
     fn test_decode() {
-        assert_eq!(MessageRecipient::Broadcast, MessageRecipient::decode_u32(0));
+        assert_eq!(MessageRecipient::Broadcast, MessageRecipient::decode_i32(0));
         assert_eq!(
             MessageRecipient::Client(3.into()),
-            MessageRecipient::decode_u32(3)
+            MessageRecipient::decode_i32(3)
         );
         assert_eq!(
             MessageRecipient::Client(9.into()),
             ClientId::from(9u32).into()
         );
 
-        assert_eq!(0, MessageRecipient::Broadcast.encode_u32());
-        assert_eq!(443, MessageRecipient::Client(443.into()).encode_u32());
+        assert_eq!(0, MessageRecipient::Broadcast.encode_i32());
+        assert_eq!(443, MessageRecipient::Client(443.into()).encode_i32());
+
+        assert_eq!(-4, MessageRecipient::EveryoneExcept(4.into()).encode_i32());
+        assert_eq!(MessageRecipient::EveryoneExcept(119.into()), MessageRecipient::decode_i32(-119));
     }
 }

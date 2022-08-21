@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Hash, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 
-pub struct ClientId(u32);
+pub struct ClientId(pub u32);
 
 impl From<ClientId> for u32 {
     fn from(c: ClientId) -> Self {

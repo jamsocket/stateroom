@@ -58,7 +58,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
                 fn send_message(&self, recipient: impl Into<MessageRecipient>, message: &str) {
                     unsafe {
                         ffi::send_message(
-                            recipient.into().encode_u32(),
+                            recipient.into().encode_i32(),
                             &message.as_bytes()[0] as *const u8 as u32,
                             message.len() as u32,
                         );
@@ -68,7 +68,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
                 fn send_binary(&self, recipient: impl Into<MessageRecipient>, message: &[u8]) {
                     unsafe {
                         ffi::send_binary(
-                            recipient.into().encode_u32(),
+                            recipient.into().encode_i32(),
                             &message[0] as *const u8 as u32,
                             message.len() as u32,
                         );
@@ -79,9 +79,9 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
             // Functions implemented by the host.
             mod ffi {
                 extern "C" {
-                    pub fn send_message(client: u32, message: u32, message_len: u32);
+                    pub fn send_message(client: i32, message: u32, message_len: u32);
 
-                    pub fn send_binary(client: u32, message: u32, message_len: u32);
+                    pub fn send_binary(client: i32, message: u32, message_len: u32);
 
                     pub fn set_timer(ms_delay: u32);
                 }
