@@ -31,7 +31,7 @@ impl MessageRecipient {
         match enc_client_id {
             0 => Self::Broadcast,
             c if c > 0 => Self::Client((c as u32).into()),
-            c => Self::EveryoneExcept((c as u32).into()),
+            c => Self::EveryoneExcept((-c as u32).into()),
         }
     }
 }
@@ -63,5 +63,7 @@ mod tests {
 
         assert_eq!(-4, MessageRecipient::EveryoneExcept(4.into()).encode_i32());
         assert_eq!(MessageRecipient::EveryoneExcept(119.into()), MessageRecipient::decode_i32(-119));
+
+        assert_eq!(MessageRecipient::EveryoneExcept(1.into()), MessageRecipient::decode_i32(-1));
     }
 }
