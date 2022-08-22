@@ -30,11 +30,11 @@ dependencies = [
 
 [[package]]
 name = "stateroom"
-version = "0.2.1"
+version = "0.2.4"
 
 [[package]]
 name = "stateroom-wasm"
-version = "0.2.0"
+version = "0.2.4"
 dependencies = [
  "stateroom",
  "stateroom-wasm-macro",
@@ -42,7 +42,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-wasm-macro"
-version = "0.2.0"
+version = "0.2.4"
 dependencies = [
  "proc-macro2",
  "quote",
