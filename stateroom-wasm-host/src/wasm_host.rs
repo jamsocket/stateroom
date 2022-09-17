@@ -1,3 +1,4 @@
+use crate::WasmRuntimeError;
 use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt};
 use stateroom::{ClientId, MessageRecipient, StateroomContext, StateroomService};
@@ -5,8 +6,6 @@ use std::{borrow::BorrowMut, sync::Arc};
 use wasmtime::{Caller, Engine, Extern, Instance, Linker, Memory, Module, Store, TypedFunc, Val};
 use wasmtime_wasi::sync::WasiCtxBuilder;
 use wasmtime_wasi::WasiCtx;
-
-use crate::WasmRuntimeError;
 
 const ENV: &str = "env";
 const EXT_MEMORY: &str = "memory";

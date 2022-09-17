@@ -12,10 +12,10 @@ description = "A Stateroom service implementation that takes a WebAssembly modul
 anyhow = "1.0.45"
 byteorder = "1.4.3"
 stateroom = {path="../stateroom", version="0.2.4"}
-wasmtime-wasi = "0.39.1"
+wasmtime-wasi = "0.40.1"
 tracing = "0.1.28"
 
 [dependencies.wasmtime]
-version = "0.39.1"
+version = "0.40.1"
 default-features = false
 features = ["async", "wat", "jitdump", "parallel-compilation", "cranelift"]
