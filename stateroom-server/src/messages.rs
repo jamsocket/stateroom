@@ -61,9 +61,11 @@ impl MessageFromServer {
 /// Represents a request to reserve a client ID and return it. Client IDs are
 /// unique only in the context of a room.
 ///
-/// Currently, client IDs are assigned sequentially, but this is an implementation
-/// detail and should not be relied on.
-pub struct AssignClientId;
+/// An arbitrary string value may be passed as a token. If the token has been
+/// seen before in this room, the same value is returned every time.
+pub struct AssignClientId {
+    pub token: Option<String>,
+}
 
 impl Message for AssignClientId {
     type Result = ClientId;

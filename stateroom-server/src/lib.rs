@@ -7,16 +7,17 @@ mod service_actor;
 
 use crate::room_actor::GetConnectionInfo;
 use actix_web::error::ErrorInternalServerError;
-use actix_web::web::{self, get};
+use actix_web::web::{self, get, Query};
 use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use actix_web_actors::ws::WsResponseBuilder;
 pub use client_socket_connection::ClientSocketConnection;
 use connection_info::ConnectionInfo;
 pub use messages::{AssignClientId, MessageFromClient, MessageFromServer};
 pub use room_actor::RoomActor;
+use serde::Deserialize;
 use server_state::ServerState;
 pub use service_actor::{ServiceActor, ServiceActorContext};
-use stateroom::{StateroomServiceFactory, StateroomService};
+use stateroom::{StateroomService, StateroomServiceFactory};
 use std::time::{Duration, Instant};
 
 const DEFAULT_IP: &str = "0.0.0.0";
@@ -112,7 +113,10 @@ impl Server {
     pub fn serve<J>(
         self,
         service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J> + Send + 'static,
-    ) -> std::io::Result<()> where J: StateroomService + Send + Sync + Unpin + 'static {
+    ) -> std::io::Result<()>
+    where
+        J: StateroomService + Send + Sync + Unpin + 'static,
+    {
         let host = format!("{}:{}", self.ip, self.port);
 
         actix_web::rt::System::new().block_on(async move {
@@ -149,12 +153,20 @@ impl Server {
     }
 }
 
+#[derive(Debug, Deserialize)]
+struct WebsocketRequest {
+    token: Option<String>,
+}
+
 async fn websocket(req: HttpRequest, stream: web::Payload) -> actix_web::Result<HttpResponse> {
     let server_state: &Data<ServerState> = req.app_data().expect("Could not load ServerState.");
 
+    let Query(WebsocketRequest { token }) =
+        Query::<WebsocketRequest>::from_query(req.query_string())?;
+
     let room_addr = server_state.room_addr.clone();
     let client_id = room_addr
-        .send(AssignClientId)
+        .send(AssignClientId { token })
         .await
         .map_err(|_| ErrorInternalServerError("Error getting room."))?;
 

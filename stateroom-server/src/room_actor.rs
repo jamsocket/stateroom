@@ -20,8 +20,8 @@ pub struct RoomActor {
     /// ensuring that they never overlap. `next_id` stores the next ID that
     /// will be assigned.
     next_id: u32,
+    token_to_client: HashMap<String, ClientId>,
     shutdown_handle: Option<SpawnHandle>,
-
     inactive_since: Option<SystemTime>,
 }
 
@@ -41,6 +41,7 @@ impl RoomActor {
         RoomActor {
             service_actor: Some(service_actor),
             connections: HashMap::default(),
+            token_to_client: HashMap::default(),
             next_id: 1,
             shutdown_handle: None,
             inactive_since: Some(SystemTime::now()),
@@ -132,11 +133,22 @@ impl MessageResponse<RoomActor, AssignClientId> for ClientId {
 impl Handler<AssignClientId> for RoomActor {
     type Result = ClientId;
 
-    fn handle(&mut self, _: AssignClientId, _ctx: &mut Context<Self>) -> ClientId {
-        let result = self.next_id;
-        self.next_id += 1;
-
-        result.into()
+    fn handle(&mut self, AssignClientId { token }: AssignClientId, _ctx: &mut Context<Self>) -> ClientId {
+        if let Some(token) = &token {
+            let entry = self.token_to_client.entry(token.clone());
+            let next_id = &mut self.next_id;
+            let result = entry.or_insert_with(|| {
+                let result = *next_id;
+                *next_id += 1;
+                result.into()
+            });
+            *result
+        } else {
+            let result = self.next_id;
+            self.next_id += 1;
+    
+            result.into()
+        }
     }
 }
 
