@@ -1,6 +1,6 @@
 [package]
 name = "stateroom-wasm"
-version = "0.2.4"
+version = "0.2.5"
 edition = "2018"
 readme = "README.md"
 repository = "https://github.com/drifting-in-space/stateroom"
