@@ -11,7 +11,7 @@ description = "A Stateroom service implementation that takes a WebAssembly modul
 [dependencies]
 anyhow = "1.0.45"
 byteorder = "1.4.3"
-stateroom = {path="../stateroom", version="0.2.4"}
+stateroom = {path="../stateroom", version="0.2.6"}
 wasmtime-wasi = "1.0.0"
 tracing = "0.1.28"
 
