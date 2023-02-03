@@ -103,6 +103,49 @@ impl Server {
         self.ip = ip;
         self
     }
+    /// Start a server given a [StateroomService].
+    ///
+    /// This function blocks until the server is terminated. While it is running, the following
+    /// endpoints are available:
+    /// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)
+    /// - `/ws` (GET): initiate a WebSocket connection to the stateroom service.
+    pub async fn serve_async<J>(
+        self,
+        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J> + Send + 'static,
+    ) -> std::io::Result<()>
+        where
+            J: StateroomService + Send + Sync + Unpin + 'static,
+    {
+        let host = format!("{}:{}", self.ip, self.port);
+        let server_state = Data::new(ServerState::new(service_factory, self).unwrap());
+        let server = HttpServer::new(move || {
+            #[allow(unused_mut)] // mut only needed with crate feature `serve-static`.
+                let mut app = App::new()
+                .app_data(server_state.clone())
+                .route("/status", get().to(status))
+                .route("/ws", get().to(websocket));
+
+            #[cfg(feature = "serve-static")]
+            {
+                if let Some(client_path) = &server_state.settings.client_path {
+                    //let client_dir = Path::new(client_path).parent().unwrap();
+                    app = app.service(actix_files::Files::new("/client", client_path));
+                }
+
+                if let Some(static_path) = &server_state.settings.static_path {
+                    app = app.service(
+                        actix_files::Files::new("/", static_path).index_file("index.html"),
+                    );
+                }
+            }
+
+            app
+        })
+            .bind(&host)?;
+
+        tracing::info!(%host, "Server is listening");
+        server.run().await
+    }
 
     /// Start a server given a [StateroomService].
     ///
@@ -117,38 +160,8 @@ impl Server {
     where
         J: StateroomService + Send + Sync + Unpin + 'static,
     {
-        let host = format!("{}:{}", self.ip, self.port);
-
         actix_web::rt::System::new().block_on(async move {
-            let server_state = Data::new(ServerState::new(service_factory, self).unwrap());
-
-            let server = HttpServer::new(move || {
-                #[allow(unused_mut)] // mut only needed with crate feature `serve-static`.
-                let mut app = App::new()
-                    .app_data(server_state.clone())
-                    .route("/status", get().to(status))
-                    .route("/ws", get().to(websocket));
-
-                #[cfg(feature = "serve-static")]
-                {
-                    if let Some(client_path) = &server_state.settings.client_path {
-                        //let client_dir = Path::new(client_path).parent().unwrap();
-                        app = app.service(actix_files::Files::new("/client", client_path));
-                    }
-
-                    if let Some(static_path) = &server_state.settings.static_path {
-                        app = app.service(
-                            actix_files::Files::new("/", static_path).index_file("index.html"),
-                        );
-                    }
-                }
-
-                app
-            })
-            .bind(&host)?;
-
-            tracing::info!(%host, "Server is listening");
-            server.run().await
+            self.serve_async(service_factory).await
         })
     }
 }
