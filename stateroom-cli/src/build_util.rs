@@ -107,6 +107,7 @@ pub fn do_build(config: &StateroomConfig) -> Result<BuildResult> {
             .input_path(client_wasm_path)
             .web(true)?
             .emit_start(false)
+            .typescript(true)
             .generate("client-pkg")?;
 
         // TODO: run wasm-opt
