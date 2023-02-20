@@ -232,11 +232,11 @@ impl WasmHost {
         let instance = linker.instantiate(&mut store, module)?;
 
         let initialize =
-            instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_FN_INITIALIZE)?;
+            instance.get_typed_func::<(u32, u32), ()>(&mut store, EXT_FN_INITIALIZE)?;
 
-        let fn_malloc = instance.get_typed_func::<u32, u32, _>(&mut store, EXT_FN_MALLOC)?;
+        let fn_malloc = instance.get_typed_func::<u32, u32>(&mut store, EXT_FN_MALLOC)?;
 
-        let fn_free = instance.get_typed_func::<(u32, u32), (), _>(&mut store, EXT_FN_FREE)?;
+        let fn_free = instance.get_typed_func::<(u32, u32), ()>(&mut store, EXT_FN_FREE)?;
 
         let mut memory = instance
             .get_memory(&mut store, EXT_MEMORY)
@@ -266,17 +266,17 @@ impl WasmHost {
             return Err(WasmRuntimeError::InvalidProtocolVersion.into());
         }
 
-        let fn_connect = instance.get_typed_func::<u32, (), _>(&mut store, EXT_FN_CONNECT)?;
+        let fn_connect = instance.get_typed_func::<u32, ()>(&mut store, EXT_FN_CONNECT)?;
 
-        let fn_disconnect = instance.get_typed_func::<u32, (), _>(&mut store, EXT_FN_DISCONNECT)?;
+        let fn_disconnect = instance.get_typed_func::<u32, ()>(&mut store, EXT_FN_DISCONNECT)?;
 
-        let fn_timer = instance.get_typed_func::<(), (), _>(&mut store, EXT_FN_TIMER)?;
+        let fn_timer = instance.get_typed_func::<(), ()>(&mut store, EXT_FN_TIMER)?;
 
         let fn_message =
-            instance.get_typed_func::<(u32, u32, u32), (), _>(&mut store, EXT_FN_MESSAGE)?;
+            instance.get_typed_func::<(u32, u32, u32), ()>(&mut store, EXT_FN_MESSAGE)?;
 
         let fn_binary =
-            instance.get_typed_func::<(u32, u32, u32), (), _>(&mut store, EXT_FN_BINARY)?;
+            instance.get_typed_func::<(u32, u32, u32), ()>(&mut store, EXT_FN_BINARY)?;
 
         Ok(WasmHost {
             store,

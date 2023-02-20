@@ -13,10 +13,10 @@ stateroom = { path="../stateroom", version="0.2.6" }
 stateroom-stdio = { path="../stateroom-stdio", version="0.2.6" }
 stateroom-server = { path="../stateroom-server", version="0.2.6", features=["serve-static"] }
 stateroom-wasm-host = { path="../stateroom-wasm-host", version="0.2.6" }
-clap = { version = "3.0.0", features = ["derive"] }
+clap = { version = "4.1.6", features = ["derive"] }
 anyhow = "1.0.52"
 serde = { version = "1.0.127", features = ["derive"] }
-toml = "0.5.8"
+toml = "0.7.2"
 cargo_metadata = "0.15.0"
 tracing = "0.1.28"
 tracing-subscriber = { version = "0.3.5", features = ["env-filter"] }
