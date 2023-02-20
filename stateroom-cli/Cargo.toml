@@ -9,10 +9,10 @@ keywords = ["websocket"]
 description = "Command-line tool for developing Stateroom applications"
 
 [dependencies]
-stateroom = { path="../stateroom", version="0.2.6" }
-stateroom-stdio = { path="../stateroom-stdio", version="0.2.6" }
-stateroom-server = { path="../stateroom-server", version="0.2.6", features=["serve-static"] }
-stateroom-wasm-host = { path="../stateroom-wasm-host", version="0.2.6" }
+stateroom = { path="../stateroom", version="0.2.7" }
+stateroom-stdio = { path="../stateroom-stdio", version="0.2.7" }
+stateroom-server = { path="../stateroom-server", version="0.2.7", features=["serve-static"] }
+stateroom-wasm-host = { path="../stateroom-wasm-host", version="0.2.7" }
 clap = { version = "4.1.6", features = ["derive"] }
 anyhow = "1.0.52"
 serde = { version = "1.0.127", features = ["derive"] }

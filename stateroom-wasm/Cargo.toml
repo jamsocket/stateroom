@@ -9,5 +9,5 @@ keywords = ["websocket", "webassembly", "stateroom"]
 description = "A macro for building a Stateroom service as a WebAssembly module."
 
 [dependencies]
-stateroom-wasm-macro = {path="./stateroom-wasm-macro", version="0.2.6"}
-stateroom = {path="../stateroom", version="0.2.6"}
+stateroom-wasm-macro = {path="./stateroom-wasm-macro", version="0.2.7"}
+stateroom = {path="../stateroom", version="0.2.7"}
