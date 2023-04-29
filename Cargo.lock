@@ -1905,7 +1905,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-cli"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "anyhow",
  "cargo_metadata",
@@ -1924,7 +1924,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-server"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "actix",
  "actix-files",
@@ -1938,7 +1938,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-stdio"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "interactive_process",
  "serde",
@@ -1948,7 +1948,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-wasm"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "stateroom",
  "stateroom-wasm-macro",
@@ -1956,7 +1956,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-wasm-host"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -1968,7 +1968,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-wasm-macro"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "proc-macro2",
  "quote",
