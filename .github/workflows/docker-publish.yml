@@ -1,4 +1,4 @@
-name: Docker
+name: Build and push image
 
 on:
   push:
@@ -17,10 +17,13 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - uses: depot/setup-action@v1
 
       - name: Log into registry ${{ env.REGISTRY }}
         if: github.event_name != 'pull_request'
@@ -40,9 +43,12 @@ jobs:
             type=raw,value=latest
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        id: build-and-push
+        uses: depot/build-push-action@v1
         with:
+          project: 58j0517pw2
           context: .
           push: ${{ github.event_name != 'pull_request' }}
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
