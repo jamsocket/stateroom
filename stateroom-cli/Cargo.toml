@@ -9,16 +9,16 @@ keywords = ["websocket"]
 description = "Command-line tool for developing Stateroom applications"
 
 [dependencies]
-stateroom = { path="../stateroom", version="0.2.8" }
-stateroom-stdio = { path="../stateroom-stdio", version="0.2.8" }
-stateroom-server = { path="../stateroom-server", version="0.2.8", features=["serve-static"] }
-stateroom-wasm-host = { path="../stateroom-wasm-host", version="0.2.8" }
-clap = { version = "4.1.6", features = ["derive"] }
 anyhow = "1.0.52"
+cargo_metadata = "0.18.1"
+clap = { version = "4.1.6", features = ["derive"] }
+fs_extra = "1.2.0"
 serde = { version = "1.0.127", features = ["derive"] }
-toml = "0.7.2"
-cargo_metadata = "0.15.0"
+stateroom = { path="../stateroom", version="0.2.8" }
+stateroom-server = { path="../stateroom-server", version="0.2.8", features=["serve-static"] }
+stateroom-stdio = { path="../stateroom-stdio", version="0.2.8" }
+stateroom-wasm-host = { path="../stateroom-wasm-host", version="0.2.8" }
+toml = "0.8.12"
 tracing = "0.1.28"
 tracing-subscriber = { version = "0.3.5", features = ["env-filter"] }
 wasm-bindgen-cli-support = "0.2.83"
-fs_extra = "1.2.0"
