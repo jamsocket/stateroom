@@ -24,7 +24,7 @@ impl<T: StateroomContext + Send + Sync + 'static> StateroomServiceFactory<T> for
     type Error = std::io::Error;
 
     fn build(&self, _room_id: &str, context: T) -> Result<Self::Service, Self::Error> {
-        let process = InteractiveProcess::new(Command::new(&self.command), move |line| {
+        let process = InteractiveProcess::new(&mut Command::new(&self.command), move |line| {
             let line = line.expect("Error reading line from stdin.");
             let message: MessageFromProcess =
                 serde_json::from_str(&line).expect("Couldn't parse message from process.");
