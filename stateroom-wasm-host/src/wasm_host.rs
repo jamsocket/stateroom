@@ -4,8 +4,7 @@ use byteorder::{LittleEndian, ReadBytesExt};
 use stateroom::{ClientId, MessageRecipient, StateroomContext, StateroomService};
 use std::{borrow::BorrowMut, sync::Arc};
 use wasmtime::{Caller, Engine, Extern, Instance, Linker, Memory, Module, Store, TypedFunc, Val};
-use wasmtime_wasi::sync::WasiCtxBuilder;
-use wasmtime_wasi::WasiCtx;
+use wasi_common::{sync::WasiCtxBuilder, WasiCtx};
 
 const ENV: &str = "env";
 const EXT_MEMORY: &str = "memory";
@@ -179,7 +178,7 @@ impl WasmHost {
 
         let mut store = Store::new(engine, wasi);
         let mut linker = Linker::new(engine);
-        wasmtime_wasi::add_to_linker(&mut linker, |s| s)?;
+        wasi_common::sync::add_to_linker(&mut linker, |s| s)?;
 
         {
             #[allow(clippy::redundant_clone)]
