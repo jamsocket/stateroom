@@ -1,7 +1,12 @@
 [package]
 name = "stateroom-server"
-version = "0.2.8"
+version = "0.3.0"
 edition = "2021"
+readme = "README.md"
+repository = "https://github.com/drifting-in-space/stateroom"
+license = "MIT OR Apache-2.0"
+keywords = ["websocket"]
+description = "Server for Stateroom services over WebSockets"
 
 [dependencies]
 axum = { version = "0.7.5", features = ["ws"] }
