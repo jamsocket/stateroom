@@ -1,3 +1,4 @@
+use crate::server::Event;
 use axum::{
     extract::{ws::WebSocket, State, WebSocketUpgrade},
     routing::get,
@@ -11,8 +12,6 @@ use std::{
     time::Duration,
 };
 use tokio::{net::TcpListener, select};
-
-use crate::server::Event;
 
 mod server;
 
