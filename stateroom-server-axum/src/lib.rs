@@ -12,6 +12,8 @@ use std::{
 };
 use tokio::{net::TcpListener, select};
 
+use crate::server::Event;
+
 mod server;
 
 const DEFAULT_IP: &str = "0.0.0.0";
@@ -170,7 +172,7 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<ServerState>) {
             },
             msg = socket.recv() => {
                 match msg {
-                    Some(Ok(msg)) => send.send((client_id, msg)).await.unwrap(),
+                    Some(Ok(msg)) => send.send(Event::Message { client: client_id, message: msg }).await.unwrap(),
                     Some(Err(_)) => todo!("Error receiving message from client."),
                     None => break,
                 }

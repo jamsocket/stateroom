@@ -3,7 +3,10 @@ use dashmap::DashMap;
 use stateroom::{
     ClientId, MessageRecipient, StateroomContext, StateroomService, StateroomServiceFactory,
 };
-use std::sync::{atomic::AtomicU32, Arc};
+use std::{
+    sync::{atomic::AtomicU32, Arc},
+    time::Duration,
+};
 use tokio::{
     sync::mpsc::{Receiver, Sender},
     task::JoinHandle,
@@ -14,6 +17,7 @@ use tokio::{
 #[derive(Clone)]
 pub struct ServiceActorContext {
     senders: Arc<DashMap<ClientId, Sender<Message>>>,
+    event_sender: Sender<Event>,
 }
 
 impl ServiceActorContext {
@@ -48,42 +52,49 @@ impl StateroomContext for ServiceActorContext {
     }
 
     fn send_binary(&self, recipient: impl Into<MessageRecipient>, message: &[u8]) {
-        // self.try_send(MessageFromServer::new_binary(
-        //     recipient.into(),
-        //     message.to_vec(),
-        // ));
-        todo!()
+        self.try_send(recipient.into(), Message::Binary(message.to_vec()));
     }
 
     fn set_timer(&self, ms_delay: u32) {
-        // self.set_timer_recipient.do_send(SetTimer(ms_delay));
-        todo!()
+        // TODO: setting the timer should replace the previous timer?
+        let sender = self.event_sender.clone();
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(ms_delay as u64)).await;
+            sender.send(Event::TimerEvent).await.unwrap();
+        });
     }
 }
 
 #[derive(Debug)]
 pub struct ServerState {
     pub handle: JoinHandle<()>,
-    pub inbound_sender: Sender<(ClientId, Message)>,
+    pub inbound_sender: Sender<Event>,
     pub receivers: Arc<DashMap<ClientId, Sender<Message>>>,
     pub next_client_id: AtomicU32,
+}
+
+pub enum Event {
+    Message { client: ClientId, message: Message },
+    TimerEvent,
 }
 
 impl ServerState {
     pub fn new<T: StateroomService + Send + Sync + 'static>(
         service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = T> + Send + 'static,
     ) -> Self {
-        let (tx, mut rx) = tokio::sync::mpsc::channel::<(ClientId, Message)>(100);
+        let (tx, mut rx) = tokio::sync::mpsc::channel::<Event>(100);
 
         let receivers = Arc::new(DashMap::new());
 
         let receivers_ = receivers.clone();
+        let tx_ = tx.clone();
         let handle = tokio::spawn(async move {
             let mut service = service_factory
                 .build(
                     "",
                     ServiceActorContext {
                         senders: receivers_.clone(),
+                        event_sender: tx_,
                     },
                 )
                 .unwrap();
@@ -91,8 +102,14 @@ impl ServerState {
             loop {
                 let msg = rx.recv().await;
                 match msg {
-                    Some((client, Message::Text(msg))) => service.message(client, &msg),
-                    Some(_) => todo!(),
+                    Some(Event::Message { client, message }) => match message {
+                        Message::Text(msg) => service.message(client, &msg),
+                        Message::Binary(msg) => service.binary(client, &msg),
+                        _ => todo!(),
+                    },
+                    Some(Event::TimerEvent) => {
+                        service.timer();
+                    }
                     None => break,
                 }
             }
@@ -110,7 +127,7 @@ impl ServerState {
         self.receivers.remove(client);
     }
 
-    pub fn connect(&self) -> (Sender<(ClientId, Message)>, Receiver<Message>, ClientId) {
+    pub fn connect(&self) -> (Sender<Event>, Receiver<Message>, ClientId) {
         let client_id = self
             .next_client_id
             .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
