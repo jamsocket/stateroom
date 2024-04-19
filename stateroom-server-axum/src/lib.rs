@@ -4,7 +4,7 @@ use axum::{
     Router,
 };
 use server::{ServerState, ServiceActorContext};
-use stateroom::{SimpleStateroomService, StateroomContext, StateroomService, StateroomServiceFactory};
+use stateroom::{StateroomService, StateroomServiceFactory};
 use std::{
     net::{IpAddr, SocketAddr},
     sync::Arc,
@@ -104,7 +104,10 @@ impl Server {
     /// - `/ws` (GET): initiate a WebSocket connection to the stateroom service.
     pub async fn serve_async<J: StateroomService + Send + Sync + Unpin + 'static>(
         self,
-        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J> + Send + Sync + 'static,
+        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J>
+            + Send
+            + Sync
+            + 'static,
     ) -> std::io::Result<()>
     where
         J: StateroomService + Send + Sync + Unpin + 'static,
@@ -131,7 +134,10 @@ impl Server {
     /// - `/ws` (GET): initiate a WebSocket connection to the stateroom service.
     pub fn serve<J>(
         self,
-        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J> + Send + Sync + 'static,
+        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J>
+            + Send
+            + Sync
+            + 'static,
     ) -> std::io::Result<()>
     where
         J: StateroomService + Send + Sync + Unpin + 'static,
@@ -158,14 +164,14 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<ServerState>) {
         select! {
             msg = recv.recv() => {
                 match msg {
-                    Some((_, msg)) => socket.send(msg).await.unwrap(),
+                    Some(msg) => socket.send(msg).await.unwrap(),
                     None => break,
                 }
             },
             msg = socket.recv() => {
                 match msg {
                     Some(Ok(msg)) => send.send((client_id, msg)).await.unwrap(),
-                    Some(Err(e)) => todo!("Error receiving message from client."),
+                    Some(Err(_)) => todo!("Error receiving message from client."),
                     None => break,
                 }
             }
