@@ -19,7 +19,9 @@ impl StdioProcessServiceFactory {
     }
 }
 
-impl<T: StateroomContext + Send + Sync + 'static> StateroomServiceFactory<T> for StdioProcessServiceFactory {
+impl<T: StateroomContext + Send + Sync + 'static> StateroomServiceFactory<T>
+    for StdioProcessServiceFactory
+{
     type Service = StdioProcessService;
     type Error = std::io::Error;
 

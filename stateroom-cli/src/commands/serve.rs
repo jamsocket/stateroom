@@ -1,8 +1,8 @@
-use std::{ffi::OsStr, path::Path, time::Duration};
 use crate::cli_opts::ServeCommand;
-use stateroom_server_axum::Server;
+use stateroom_server::Server;
 use stateroom_stdio::StdioProcessServiceFactory;
 use stateroom_wasm_host::WasmHostFactory;
+use std::{ffi::OsStr, path::Path, time::Duration};
 
 pub fn serve(serve_opts: ServeCommand) -> anyhow::Result<()> {
     let ServeCommand {

@@ -3,8 +3,8 @@ use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt};
 use stateroom::{ClientId, MessageRecipient, StateroomContext, StateroomService};
 use std::{borrow::BorrowMut, sync::Arc};
-use wasmtime::{Caller, Engine, Extern, Instance, Linker, Memory, Module, Store, TypedFunc, Val};
 use wasi_common::{sync::WasiCtxBuilder, WasiCtx};
+use wasmtime::{Caller, Engine, Extern, Instance, Linker, Memory, Module, Store, TypedFunc, Val};
 
 const ENV: &str = "env";
 const EXT_MEMORY: &str = "memory";

@@ -1,5 +1,5 @@
 use crate::build_util::{do_build, locate_config};
-use stateroom_server_axum::Server;
+use stateroom_server::Server;
 use stateroom_wasm_host::WasmHostFactory;
 
 pub fn dev(port: u16) -> anyhow::Result<()> {
