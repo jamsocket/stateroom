@@ -14,7 +14,7 @@ pub enum SubCommand {
     Build,
     Dev {
         #[clap(default_value = "8080")]
-        port: u32,
+        port: u16,
     },
 }
 
@@ -34,7 +34,7 @@ pub struct ServeCommand {
 
     /// The port to serve on.
     #[clap(short, long, default_value = "8080")]
-    pub port: u32,
+    pub port: u16,
 
     /// The time interval (in seconds) between WebSocket heartbeat pings.
     #[clap(short = 'i', long, default_value = "30")]

@@ -62,8 +62,14 @@ mod tests {
         assert_eq!(443, MessageRecipient::Client(443.into()).encode_i32());
 
         assert_eq!(-4, MessageRecipient::EveryoneExcept(4.into()).encode_i32());
-        assert_eq!(MessageRecipient::EveryoneExcept(119.into()), MessageRecipient::decode_i32(-119));
+        assert_eq!(
+            MessageRecipient::EveryoneExcept(119.into()),
+            MessageRecipient::decode_i32(-119)
+        );
 
-        assert_eq!(MessageRecipient::EveryoneExcept(1.into()), MessageRecipient::decode_i32(-1));
+        assert_eq!(
+            MessageRecipient::EveryoneExcept(1.into()),
+            MessageRecipient::decode_i32(-1)
+        );
     }
 }

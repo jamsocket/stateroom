@@ -1,28 +1,23 @@
-mod client_socket_connection;
-mod connection_info;
-mod messages;
-mod room_actor;
-mod server_state;
-mod service_actor;
-
-use crate::room_actor::GetConnectionInfo;
-use actix_web::error::ErrorInternalServerError;
-use actix_web::web::{self, get, Query};
-use actix_web::{web::Data, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
-use actix_web_actors::ws::WsResponseBuilder;
-pub use client_socket_connection::ClientSocketConnection;
-use connection_info::ConnectionInfo;
-pub use messages::{AssignClientId, MessageFromClient, MessageFromServer};
-pub use room_actor::RoomActor;
-use serde::Deserialize;
-use server_state::ServerState;
-pub use service_actor::{ServiceActor, ServiceActorContext};
+use crate::server::Event;
+use axum::{
+    extract::{ws::WebSocket, State, WebSocketUpgrade},
+    routing::get,
+    Router,
+};
+use server::{ServerState, ServiceActorContext};
 use stateroom::{StateroomService, StateroomServiceFactory};
-use std::time::{Duration, Instant};
+use std::{
+    net::{IpAddr, SocketAddr},
+    sync::Arc,
+    time::Duration,
+};
+use tokio::{net::TcpListener, select};
+
+mod server;
 
 const DEFAULT_IP: &str = "0.0.0.0";
 
-/// Settings used by the server.
+#[derive(Debug)]
 pub struct Server {
     /// The duration of time between server-initiated WebSocket heartbeats.
     ///
@@ -35,7 +30,7 @@ pub struct Server {
     pub heartbeat_timeout: Duration,
 
     /// The port to run the server on. Defaults to 8080.
-    pub port: u32,
+    pub port: u16,
 
     /// The IP to listen on. Defaults to 0.0.0.0.
     pub ip: String,
@@ -66,14 +61,12 @@ impl Server {
         Server::default()
     }
 
-    #[cfg(feature = "serve-static")]
     #[must_use]
     pub fn with_static_path(mut self, static_path: Option<String>) -> Self {
         self.static_path = static_path;
         self
     }
 
-    #[cfg(feature = "serve-static")]
     #[must_use]
     pub fn with_client_path(mut self, client_path: Option<String>) -> Self {
         self.client_path = client_path;
@@ -93,7 +86,7 @@ impl Server {
     }
 
     #[must_use]
-    pub fn with_port(mut self, port: u32) -> Self {
+    pub fn with_port(mut self, port: u16) -> Self {
         self.port = port;
         self
     }
@@ -103,48 +96,35 @@ impl Server {
         self.ip = ip;
         self
     }
+
     /// Start a server given a [StateroomService].
     ///
     /// This function blocks until the server is terminated. While it is running, the following
     /// endpoints are available:
     /// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)
     /// - `/ws` (GET): initiate a WebSocket connection to the stateroom service.
-    pub async fn serve_async<J>(
+    pub async fn serve_async<J: StateroomService + Send + Sync + Unpin + 'static>(
         self,
-        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J> + Send + 'static,
+        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J>
+            + Send
+            + Sync
+            + 'static,
     ) -> std::io::Result<()>
-        where
-            J: StateroomService + Send + Sync + Unpin + 'static,
+    where
+        J: StateroomService + Send + Sync + Unpin + 'static,
     {
-        let host = format!("{}:{}", self.ip, self.port);
-        let server_state = Data::new(ServerState::new(service_factory, self).unwrap());
-        let server = HttpServer::new(move || {
-            #[allow(unused_mut)] // mut only needed with crate feature `serve-static`.
-                let mut app = App::new()
-                .app_data(server_state.clone())
-                .route("/status", get().to(status))
-                .route("/ws", get().to(websocket));
+        let server_state = Arc::new(ServerState::new(service_factory));
 
-            #[cfg(feature = "serve-static")]
-            {
-                if let Some(client_path) = &server_state.settings.client_path {
-                    //let client_dir = Path::new(client_path).parent().unwrap();
-                    app = app.service(actix_files::Files::new("/client", client_path));
-                }
+        let app = Router::new()
+            .route("/ws", get(serve_websocket))
+            .with_state(server_state);
 
-                if let Some(static_path) = &server_state.settings.static_path {
-                    app = app.service(
-                        actix_files::Files::new("/", static_path).index_file("index.html"),
-                    );
-                }
-            }
+        let ip = self.ip.parse::<IpAddr>().unwrap();
+        let addr = SocketAddr::new(ip, self.port);
+        let listener = TcpListener::bind(&addr).await?;
+        axum::serve(listener, app).await?;
 
-            app
-        })
-            .bind(&host)?;
-
-        tracing::info!(%host, "Server is listening");
-        server.run().await
+        Ok(())
     }
 
     /// Start a server given a [StateroomService].
@@ -155,66 +135,49 @@ impl Server {
     /// - `/ws` (GET): initiate a WebSocket connection to the stateroom service.
     pub fn serve<J>(
         self,
-        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J> + Send + 'static,
+        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J>
+            + Send
+            + Sync
+            + 'static,
     ) -> std::io::Result<()>
     where
         J: StateroomService + Send + Sync + Unpin + 'static,
     {
-        actix_web::rt::System::new().block_on(async move {
-            self.serve_async(service_factory).await
-        })
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async { self.serve_async(service_factory).await })
     }
 }
 
-#[derive(Debug, Deserialize)]
-struct WebsocketRequest {
-    token: Option<String>,
+pub async fn serve_websocket(
+    ws: WebSocketUpgrade,
+    State(state): State<Arc<ServerState>>,
+) -> axum::response::Response {
+    ws.on_upgrade(move |socket| handle_socket(socket, state))
 }
 
-async fn websocket(req: HttpRequest, stream: web::Payload) -> actix_web::Result<HttpResponse> {
-    let server_state: &Data<ServerState> = req.app_data().expect("Could not load ServerState.");
+async fn handle_socket(mut socket: WebSocket, state: Arc<ServerState>) {
+    let (send, mut recv, client_id) = state.connect();
 
-    let Query(WebsocketRequest { token }) =
-        Query::<WebsocketRequest>::from_query(req.query_string())?;
-
-    let room_addr = server_state.room_addr.clone();
-    let client_id = room_addr
-        .send(AssignClientId { token })
-        .await
-        .map_err(|_| ErrorInternalServerError("Error getting room."))?;
-
-    match WsResponseBuilder::new(
-        ClientSocketConnection {
-            room: room_addr.clone().recipient(),
-            client_id,
-            last_seen: Instant::now(),
-            heartbeat_interval: server_state.settings.heartbeat_interval,
-            heartbeat_timeout: server_state.settings.heartbeat_timeout,
-            interval_handle: None,
-        },
-        &req,
-        stream,
-    )
-    .start_with_addr()
-    {
-        Ok((addr, resp)) => {
-            tracing::info!(?client_id, "New connection",);
-            room_addr.do_send(MessageFromClient::Connect(client_id, addr.recipient()));
-
-            Ok(resp)
+    loop {
+        select! {
+            msg = recv.recv() => {
+                match msg {
+                    Some(msg) => socket.send(msg).await.unwrap(),
+                    None => break,
+                }
+            },
+            msg = socket.recv() => {
+                match msg {
+                    Some(Ok(msg)) => send.send(Event::Message { client: client_id, message: msg }).await.unwrap(),
+                    Some(Err(_)) => todo!("Error receiving message from client."),
+                    None => break,
+                }
+            }
         }
-        Err(e) => Err(e),
     }
-}
 
-async fn status(req: HttpRequest) -> Result<web::Json<ConnectionInfo>, Error> {
-    let server_state: &Data<ServerState> = req.app_data().expect("Could not load ServerState.");
-
-    let room_addr = server_state.room_addr.clone();
-    let connection_info = room_addr
-        .send(GetConnectionInfo)
-        .await
-        .map_err(|_| ErrorInternalServerError("Error getting connection info."))?;
-
-    Ok(web::Json(connection_info))
+    state.remove(&client_id);
 }
