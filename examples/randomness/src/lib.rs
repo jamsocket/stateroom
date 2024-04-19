@@ -31,6 +31,9 @@ impl SimpleStateroomService for RandomServer {
     }
 
     fn disconnect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
-        ctx.send_message(MessageRecipient::Broadcast, &format!("User {:?} left.", client_id));
+        ctx.send_message(
+            MessageRecipient::Broadcast,
+            &format!("User {:?} left.", client_id),
+        );
     }
 }
