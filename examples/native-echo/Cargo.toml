@@ -1,9 +1,0 @@
-[package]
-name = "native-echo"
-version = "0.1.0"
-edition = "2018"
-
-[dependencies]
-stateroom = {path = "../../stateroom"}
-stateroom-server = {path = "../../stateroom-server"}
-tracing-subscriber = {version="0.3.1", features=["fmt", "env-filter"]}

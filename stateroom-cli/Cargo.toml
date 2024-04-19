@@ -16,7 +16,6 @@ fs_extra = "1.2.0"
 serde = { version = "1.0.127", features = ["derive"] }
 stateroom = { path="../stateroom", version="0.2.8" }
 stateroom-server = { path="../stateroom-server", version="0.3.0" }
-stateroom-stdio = { path="../stateroom-stdio", version="0.2.8" }
 stateroom-wasm-host = { path="../stateroom-wasm-host", version="0.2.8" }
 toml = "0.8.12"
 tracing = "0.1.28"
