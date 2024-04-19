@@ -1,6 +1,5 @@
 use crate::cli_opts::ServeCommand;
 use stateroom_server::Server;
-use stateroom_stdio::StdioProcessServiceFactory;
 use stateroom_wasm_host::WasmHostFactory;
 use std::{ffi::OsStr, path::Path, time::Duration};
 
@@ -29,9 +28,7 @@ pub fn serve(serve_opts: ServeCommand) -> anyhow::Result<()> {
         let host_factory = WasmHostFactory::new(&module)?;
         server_settings.serve(host_factory).map_err(|e| e.into())
     } else if path.is_file() {
-        // Assume that module represents a system process.
-        let host_factory = StdioProcessServiceFactory::new(&module);
-        server_settings.serve(host_factory).map_err(|e| e.into())
+        unimplemented!("Only .wasm and .wat files are supported.");
     } else if path.is_dir() {
         let server_module = path.join("server.wasm");
 
