@@ -1,0 +1,8 @@
+[package]
+name = "serialized-map"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+brotli = "5.0.0"
+thiserror = "1.0.59"
