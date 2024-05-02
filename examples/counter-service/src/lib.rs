@@ -1,4 +1,6 @@
-use stateroom_wasm::prelude::*;
+use stateroom_wasm::{
+    stateroom_wasm, ClientId, MessageRecipient, StateroomContext, StateroomService,
+};
 
 #[stateroom_wasm]
 #[derive(Default)]
@@ -12,6 +14,9 @@ impl StateroomService for SharedCounterServer {
             _ => (),
         }
 
-        ctx.send_message(MessageRecipient::Broadcast, &format!("new value: {}", self.0));
+        ctx.send_message(
+            MessageRecipient::Broadcast,
+            &format!("new value: {}", self.0),
+        );
     }
 }

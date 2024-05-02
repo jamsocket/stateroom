@@ -6,7 +6,6 @@ version = 3
 name = "clock"
 version = "0.1.0"
 dependencies = [
- "stateroom",
  "stateroom-wasm",
 ]
 

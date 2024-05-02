@@ -96,7 +96,7 @@ impl ServerState {
 
             let mut service = factory.build("", context.clone()).unwrap();
             service.init(context.as_ref());
-            
+
             loop {
                 let msg = rx.recv().await;
                 match msg {
@@ -126,9 +126,7 @@ impl ServerState {
 
     pub fn remove(&self, client: &ClientId) {
         self.inbound_sender
-            .try_send(Event::Leave {
-                client: *client,
-            })
+            .try_send(Event::Leave { client: *client })
             .unwrap();
         self.senders.remove(client);
     }
