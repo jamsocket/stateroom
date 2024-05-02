@@ -1,7 +1,8 @@
 use axum::extract::ws::Message;
 use dashmap::DashMap;
 use stateroom::{
-    ClientId, MessageRecipient, StateroomContext, StateroomService, StateroomServiceFactory,
+    ClientId, MessagePayload, MessageRecipient, StateroomContext, StateroomService,
+    StateroomServiceFactory,
 };
 use std::{
     sync::{atomic::AtomicU32, Arc},
@@ -46,12 +47,17 @@ impl ServerStateroomContext {
 }
 
 impl StateroomContext for ServerStateroomContext {
-    fn send_message(&self, recipient: impl Into<MessageRecipient>, message: &str) {
-        self.try_send(recipient.into(), Message::Text(message.to_string()));
-    }
-
-    fn send_binary(&self, recipient: impl Into<MessageRecipient>, message: &[u8]) {
-        self.try_send(recipient.into(), Message::Binary(message.to_vec()));
+    fn send_message(
+        &self,
+        recipient: impl Into<MessageRecipient>,
+        message: impl Into<MessagePayload>,
+    ) {
+        let message: MessagePayload = message.into();
+        let message: Message = match message {
+            MessagePayload::Text(s) => Message::Text(s),
+            MessagePayload::Bytes(b) => Message::Binary(b),
+        };
+        self.try_send(recipient.into(), message);
     }
 
     fn set_timer(&self, ms_delay: u32) {
@@ -101,8 +107,12 @@ impl ServerState {
                 let msg = rx.recv().await;
                 match msg {
                     Some(Event::Message { client, message }) => match message {
-                        Message::Text(msg) => service.message(client, &msg, context.as_ref()),
-                        Message::Binary(msg) => service.binary(client, &msg, context.as_ref()),
+                        Message::Text(msg) => {
+                            service.message(client, MessagePayload::Text(msg), context.as_ref())
+                        }
+                        Message::Binary(msg) => {
+                            service.message(client, MessagePayload::Bytes(msg), context.as_ref())
+                        }
                         Message::Close(_) => {}
                         msg => tracing::warn!("Ignoring unhandled message: {:?}", msg),
                     },

@@ -1790,6 +1790,7 @@ dependencies = [
 name = "stateroom-wasm"
 version = "0.2.9"
 dependencies = [
+ "bincode",
  "stateroom",
  "stateroom-wasm-macro",
 ]
@@ -1799,6 +1800,7 @@ name = "stateroom-wasm-host"
 version = "0.2.9"
 dependencies = [
  "anyhow",
+ "bincode",
  "byteorder",
  "stateroom",
  "tracing",

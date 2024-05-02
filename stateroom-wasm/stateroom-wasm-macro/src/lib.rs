@@ -31,127 +31,39 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
 
             use super::#name;
 
-            // Instance-global stateroom service.
-            static mut SERVER_STATE: Option<#name> = None;
-
-            #[no_mangle]
-            pub static JAMSOCKET_API_VERSION: i32 = 1;
-
-            #[no_mangle]
-            pub static JAMSOCKET_API_PROTOCOL: i32 = 0;
-
-            struct GlobalStateroomContext;
-
-            impl stateroom_wasm::StateroomContext for GlobalStateroomContext {
-                fn set_timer(&self, ms_delay: u32) {
-                    unsafe {
-                        ffi::set_timer(ms_delay);
-                    }
-                }
-
-                fn send_message(&self, recipient: impl Into<stateroom_wasm::MessageRecipient>, message: &str) {
-                    unsafe {
-                        ffi::send_message(
-                            recipient.into().encode_i32(),
-                            &message.as_bytes()[0] as *const u8 as u32,
-                            message.len() as u32,
-                        );
-                    }
-                }
-
-                fn send_binary(&self, recipient: impl Into<stateroom_wasm::MessageRecipient>, message: &[u8]) {
-                    unsafe {
-                        ffi::send_binary(
-                            recipient.into().encode_i32(),
-                            &message[0] as *const u8 as u32,
-                            message.len() as u32,
-                        );
-                    }
-                }
-            }
-
             // Functions implemented by the host.
             mod ffi {
                 extern "C" {
-                    pub fn send_message(client: i32, message: u32, message_len: u32);
-
-                    pub fn send_binary(client: i32, message: u32, message_len: u32);
-
-                    pub fn set_timer(ms_delay: u32);
+                    pub fn stateroom_send(message_ptr: *const u8, message_len: u32);
                 }
             }
 
-            // Functions provided to the host.
+            // Instance-global stateroom service.
+            static mut SERVER_STATE: Option<stateroom_wasm::WrappedStateroomService<#name>> = None;
+
             #[no_mangle]
-            extern "C" fn initialize(room_id_ptr: *const u8, room_id_len: usize) {
-                let room_id = unsafe {
-                    String::from_utf8(std::slice::from_raw_parts(room_id_ptr, room_id_len).to_vec()).map_err(|e| format!("Error parsing UTF-8 from host {:?}", e)).unwrap()
+            pub static STATEROOM_API_VERSION: i32 = 1;
+
+            #[no_mangle]
+            pub static STATEROOM_API_PROTOCOL: i32 = 0;
+
+            #[no_mangle]
+            extern "C" fn stateroom_recv(message_ptr: *const u8, message_len: u32) {
+                let state = unsafe {
+                    match SERVER_STATE.as_mut() {
+                        Some(s) => s,
+                        None => {
+                            let s = stateroom_wasm::WrappedStateroomService::new(#name::default(), ffi::stateroom_send);
+                            SERVER_STATE.replace(s);
+                            SERVER_STATE.as_mut().unwrap()
+                        }
+                    }
                 };
-                let mut c = #name::default();
-
-                unsafe {
-                    SERVER_STATE.replace(c);
-                }
+                state.recv(message_ptr, message_len);
             }
 
             #[no_mangle]
-            extern "C" fn connect(client_id: stateroom_wasm::ClientId) {
-                match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => stateroom_wasm::StateroomService::connect(st, client_id.into(), &GlobalStateroomContext),
-                    None => ()
-                }
-            }
-
-            #[no_mangle]
-            extern "C" fn disconnect(client_id: stateroom_wasm::ClientId) {
-                match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => stateroom_wasm::StateroomService::disconnect(st, client_id.into(), &GlobalStateroomContext),
-                    None => ()
-                }
-            }
-
-            #[no_mangle]
-            extern "C" fn timer() {
-                match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => stateroom_wasm::StateroomService::timer(st, &GlobalStateroomContext),
-                    None => ()
-                }
-            }
-
-            #[no_mangle]
-            extern "C" fn init() {
-                match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => stateroom_wasm::StateroomService::init(st, &GlobalStateroomContext),
-                    None => ()
-                }
-            }
-
-            #[no_mangle]
-            extern "C" fn message(client_id: stateroom_wasm::ClientId, ptr: *const u8, len: usize) {
-                unsafe {
-                    let string = String::from_utf8(std::slice::from_raw_parts(ptr, len).to_vec()).expect("Error parsing UTF-8 from host {:?}");
-
-                    match SERVER_STATE.as_mut() {
-                        Some(st) => stateroom_wasm::StateroomService::message(st, client_id.into(), &string, &GlobalStateroomContext),
-                        None => ()
-                    }
-                }
-            }
-
-            #[no_mangle]
-            extern "C" fn binary(client_id: stateroom_wasm::ClientId, ptr: *const u8, len: usize) {
-                unsafe {
-                    let data = std::slice::from_raw_parts(ptr, len);
-
-                    match SERVER_STATE.as_mut() {
-                        Some(st) => stateroom_wasm::StateroomService::binary(st, client_id.into(), data, &GlobalStateroomContext),
-                        None => ()
-                    }
-                }
-            }
-
-            #[no_mangle]
-            pub unsafe extern "C" fn jam_malloc(size: u32) -> *mut u8 {
+            pub unsafe extern "C" fn stateroom_malloc(size: u32) -> *mut u8 {
                 if size == 0 {
                     return core::ptr::null_mut();
                 }
@@ -160,7 +72,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
             }
 
             #[no_mangle]
-            pub unsafe extern "C" fn jam_free(ptr: *mut u8, size: u32) {
+            pub unsafe extern "C" fn stateroom_free(ptr: *mut u8, size: u32) {
                 if size == 0 {
                     return;
                 }

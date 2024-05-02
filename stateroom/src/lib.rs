@@ -75,12 +75,11 @@ pub trait StateroomContext: Send + Sync + 'static {
     /// Recipient can be a `u32` representing an individual user to send a message to, or
     /// `MessageRecipient::Broadcast` to broadcast a message to all connected users.
     /// The message is a string which is sent verbatim to the user(s) indicated.
-    fn send_message(&self, recipient: impl Into<MessageRecipient>, message: &str);
-
-    /// Sends a binary message to a currently connected user, or broadcast a message to all users.
-    ///
-    /// See [StateroomContext::send_message] for details on the semantics of `recipient`.
-    fn send_binary(&self, recipient: impl Into<MessageRecipient>, message: &[u8]);
+    fn send_message(
+        &self,
+        recipient: impl Into<MessageRecipient>,
+        message: impl Into<MessagePayload>,
+    );
 
     /// Sets a timer to wake up the service in the given number of milliseconds by invoking `timer()`.
     ///
@@ -108,10 +107,13 @@ pub trait StateroomService: Send + Sync + 'static {
     fn disconnect(&mut self, client: ClientId, context: &impl StateroomContext) {}
 
     /// Called each time a client sends a text message to the service.
-    fn message(&mut self, client: ClientId, message: &str, context: &impl StateroomContext) {}
-
-    /// Called each time a client sends a binary message to the service.
-    fn binary(&mut self, client: ClientId, message: &[u8], context: &impl StateroomContext) {}
+    fn message(
+        &mut self,
+        client: ClientId,
+        message: MessagePayload,
+        context: &impl StateroomContext,
+    ) {
+    }
 
     /// Called when [StateroomContext::set_timer] has been called on this service's context,
     /// after the provided duration.

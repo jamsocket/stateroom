@@ -4,14 +4,22 @@ use serde::{Deserialize, Serialize};
 use crate::{ClientId, MessageRecipient};
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug)]
 pub enum MessagePayload {
     Bytes(Vec<u8>),
     Text(String),
 }
 
+impl Into<MessagePayload> for String {
+    fn into(self) -> MessagePayload {
+        MessagePayload::Text(self.to_string())
+    }
+}
+
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(tag = "type"))]
+#[derive(Debug)]
 pub enum MessageToProcess {
+    Init,
     Connect {
         client: ClientId,
     },
@@ -19,17 +27,19 @@ pub enum MessageToProcess {
         client: ClientId,
     },
     Message {
-        client: ClientId,
+        sender: ClientId,
         message: MessagePayload,
     },
     Timer,
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(tag = "type"))]
 pub enum MessageFromProcess {
     Message {
         recipient: MessageRecipient,
         message: MessagePayload,
+    },
+    SetTimer {
+        ms_delay: u32,
     },
 }

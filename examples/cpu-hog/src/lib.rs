@@ -15,7 +15,7 @@ fn get_time() -> u64 {
 
 impl StateroomService for CpuHog {
     fn connect(&mut self, _: ClientId, ctx: &impl StateroomContext) {
-        ctx.send_message(MessageRecipient::Broadcast, &format!("Connected."));
+        ctx.send_message(MessageRecipient::Broadcast, format!("Connected."));
 
         let init_time = get_time();
         loop {
@@ -25,6 +25,6 @@ impl StateroomService for CpuHog {
             }
         }
 
-        ctx.send_message(MessageRecipient::Broadcast, &format!("Finished."));
+        ctx.send_message(MessageRecipient::Broadcast, format!("Finished."));
     }
 }
