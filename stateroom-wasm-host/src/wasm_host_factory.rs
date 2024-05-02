@@ -15,17 +15,16 @@ pub struct WasmHostFactory {
     module: Arc<Module>,
 }
 
-impl<T: StateroomContext + Send + Sync + 'static> StateroomServiceFactory<T> for WasmHostFactory {
+impl StateroomServiceFactory for WasmHostFactory {
     type Service = WasmHost;
     type Error = anyhow::Error;
 
-    fn build(&self, room_id: &str, context: T) -> Result<Self::Service, Self::Error> {
-        WasmHost::new(
-            room_id,
-            self.module.as_ref(),
-            self.engine.as_ref(),
-            &Arc::new(context),
-        )
+    fn build(
+        &self,
+        room_id: &str,
+        context: Arc<impl StateroomContext>,
+    ) -> Result<Self::Service, Self::Error> {
+        WasmHost::new(room_id, self.module.as_ref(), self.engine.as_ref(), context)
     }
 }
 

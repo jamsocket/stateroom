@@ -17,11 +17,7 @@
 //!     client_to_nickname: HashMap<ClientId, String>,
 //! }
 //!
-//! impl SimpleStateroomService for ChatServer {
-//!     fn new(room_id: &str, _: &impl StateroomContext) -> Self {
-//!         Default::default()
-//!     }
-//!
+//! impl StateroomService for ChatServer {
 //!     /// This is called when a user connects.
 //!     fn connect(&mut self, client: ClientId, ctx: &impl StateroomContext) {
 //!         let username = format!("client{}", u32::from(client));
@@ -62,17 +58,18 @@
 //!     }
 //! }
 
+use std::sync::Arc;
+
 pub use client_id::ClientId;
 pub use message_recipient::MessageRecipient;
 pub use messages::{MessageFromProcess, MessagePayload, MessageToProcess};
-use std::convert::Infallible;
 
 mod client_id;
 mod message_recipient;
 mod messages;
 
 /// Provides an interface for a [StateroomService] instance to send messages back to its host environment.
-pub trait StateroomContext {
+pub trait StateroomContext: Send + Sync + 'static {
     /// Sends a message to a currently connected user, or broadcast a message to all users.
     ///
     /// Recipient can be a `u32` representing an individual user to send a message to, or
@@ -99,9 +96,9 @@ pub trait StateroomContext {
 ///
 /// See module documentation for usage examples.
 #[allow(unused_variables)]
-pub trait SimpleStateroomService {
+pub trait StateroomService: Send + Sync + 'static {
     /// Called when the service is created, before any client has had a chance to connect.
-    fn new(room_id: &str, context: &impl StateroomContext) -> Self;
+    fn init(&mut self, context: &impl StateroomContext) {}
 
     /// Called each time a client connects to the service.
     fn connect(&mut self, client: ClientId, context: &impl StateroomContext) {}
@@ -121,80 +118,15 @@ pub trait SimpleStateroomService {
     fn timer(&mut self, context: &impl StateroomContext) {}
 }
 
-/// The host interface to a Stateroom service. Implementations should instead implement the trait
-/// [SimpleStateroomService].
-#[allow(unused_variables)]
-pub trait StateroomService {
-    /// Called each time a client connects to the service.
-    fn connect(&mut self, client: ClientId) {}
-
-    /// Called each time a client disconnects from the service, unless that disconnection
-    /// will cause the service to be destroyed.
-    fn disconnect(&mut self, client: ClientId) {}
-
-    /// Called each time a client sends a text message to the service.
-    fn message(&mut self, client: ClientId, message: &str) {}
-
-    /// Called each time a client sends a binary message to the service.
-    fn binary(&mut self, client: ClientId, message: &[u8]) {}
-
-    /// Called when [StateroomContext::set_timer] has been called on this service's context,
-    /// after the provided duration.
-    fn timer(&mut self) {}
-}
-
-/// Enables an object to become a [StateroomService] of the associated `Service` type.
-pub trait StateroomServiceFactory<C: StateroomContext> {
+pub trait StateroomServiceFactory: Send + Sync + 'static {
     /// The type of [StateroomService] that the object implementing this trait builds.
     type Service: StateroomService;
     type Error: std::fmt::Debug;
 
     /// Non-destructively build a [StateroomService] from `self`.
-    fn build(&self, room_id: &str, context: C) -> Result<Self::Service, Self::Error>;
-}
-
-impl<C: StateroomContext, S: SimpleStateroomService + Clone> StateroomServiceFactory<C> for S {
-    type Service = WrappedStateroomService<S, C>;
-    type Error = Infallible;
-
-    fn build(&self, _room_id: &str, context: C) -> Result<Self::Service, Self::Error> {
-        Ok(WrappedStateroomService::new(self.clone(), context))
-    }
-}
-
-/// Combines a [SimpleStateroomService] with an owned [StateroomContext] in order to implement
-/// [StateroomService].
-pub struct WrappedStateroomService<S: SimpleStateroomService, C: StateroomContext> {
-    service: S,
-    context: C,
-}
-
-impl<S: SimpleStateroomService, C: StateroomContext> WrappedStateroomService<S, C> {
-    pub fn new(service: S, context: C) -> Self {
-        WrappedStateroomService { service, context }
-    }
-}
-
-impl<S: SimpleStateroomService, C: StateroomContext> StateroomService
-    for WrappedStateroomService<S, C>
-{
-    fn connect(&mut self, client: ClientId) {
-        self.service.connect(client, &self.context);
-    }
-
-    fn disconnect(&mut self, client: ClientId) {
-        self.service.disconnect(client, &self.context);
-    }
-
-    fn message(&mut self, client: ClientId, message: &str) {
-        self.service.message(client, message, &self.context);
-    }
-
-    fn timer(&mut self) {
-        self.service.timer(&self.context);
-    }
-
-    fn binary(&mut self, client: ClientId, message: &[u8]) {
-        self.service.binary(client, message, &self.context);
-    }
+    fn build(
+        &self,
+        room_id: &str,
+        context: Arc<impl StateroomContext>,
+    ) -> Result<Self::Service, Self::Error>;
 }

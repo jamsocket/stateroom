@@ -14,13 +14,12 @@ use tokio::{
 
 /// A [StateroomContext] implementation for [StateroomService]s hosted in the
 /// context of a [ServiceActor].
-#[derive(Clone)]
-pub struct ServiceActorContext {
+pub struct ServerStateroomContext {
     senders: Arc<DashMap<ClientId, Sender<Message>>>,
-    event_sender: Sender<Event>,
+    event_sender: Arc<Sender<Event>>,
 }
 
-impl ServiceActorContext {
+impl ServerStateroomContext {
     pub fn try_send(&self, recipient: MessageRecipient, message: Message) {
         match recipient {
             MessageRecipient::Broadcast => {
@@ -39,14 +38,14 @@ impl ServiceActorContext {
                 if let Some(sender) = self.senders.get(&client_id) {
                     sender.try_send(message).unwrap();
                 } else {
-                    println!("No sender for client {:?}", client_id);
+                    tracing::error!(?client_id, "No sender for client.");
                 }
             }
         }
     }
 }
 
-impl StateroomContext for ServiceActorContext {
+impl StateroomContext for ServerStateroomContext {
     fn send_message(&self, recipient: impl Into<MessageRecipient>, message: &str) {
         self.try_send(recipient.into(), Message::Text(message.to_string()));
     }
@@ -60,7 +59,7 @@ impl StateroomContext for ServiceActorContext {
         let sender = self.event_sender.clone();
         tokio::spawn(async move {
             tokio::time::sleep(Duration::from_millis(ms_delay as u64)).await;
-            sender.send(Event::TimerEvent).await.unwrap();
+            sender.send(Event::Timer).await.unwrap();
         });
     }
 }
@@ -78,13 +77,11 @@ pub enum Event {
     Message { client: ClientId, message: Message },
     Join { client: ClientId },
     Leave { client: ClientId },
-    TimerEvent,
+    Timer,
 }
 
 impl ServerState {
-    pub fn new<T: StateroomService + Send + Sync + 'static>(
-        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = T> + Send + 'static,
-    ) -> Self {
+    pub fn new(factory: impl StateroomServiceFactory) -> Self {
         let (tx, mut rx) = tokio::sync::mpsc::channel::<Event>(100);
 
         let senders = Arc::new(DashMap::new());
@@ -92,30 +89,27 @@ impl ServerState {
         let senders_ = senders.clone();
         let tx_ = tx.clone();
         let handle = tokio::spawn(async move {
-            let mut service = service_factory
-                .build(
-                    "",
-                    ServiceActorContext {
-                        senders: senders_.clone(),
-                        event_sender: tx_,
-                    },
-                )
-                .unwrap();
+            let context = Arc::new(ServerStateroomContext {
+                senders: senders_.clone(),
+                event_sender: Arc::new(tx_),
+            });
 
+            let mut service = factory.build("", context.clone()).unwrap();
+            service.init(context.as_ref());
+            
             loop {
                 let msg = rx.recv().await;
-                println!("{:?}", msg);
                 match msg {
                     Some(Event::Message { client, message }) => match message {
-                        Message::Text(msg) => service.message(client, &msg),
-                        Message::Binary(msg) => service.binary(client, &msg),
+                        Message::Text(msg) => service.message(client, &msg, context.as_ref()),
+                        Message::Binary(msg) => service.binary(client, &msg, context.as_ref()),
                         Message::Close(_) => {}
-                        msg => println!("Ignoring unhandled message: {:?}", msg),
+                        msg => tracing::warn!("Ignoring unhandled message: {:?}", msg),
                     },
-                    Some(Event::Join { client }) => service.connect(client),
-                    Some(Event::Leave { client }) => service.disconnect(client),
-                    Some(Event::TimerEvent) => {
-                        service.timer();
+                    Some(Event::Join { client }) => service.connect(client, context.as_ref()),
+                    Some(Event::Leave { client }) => service.disconnect(client, context.as_ref()),
+                    Some(Event::Timer) => {
+                        service.timer(context.as_ref());
                     }
                     None => break,
                 }
@@ -133,7 +127,7 @@ impl ServerState {
     pub fn remove(&self, client: &ClientId) {
         self.inbound_sender
             .try_send(Event::Leave {
-                client: client.clone(),
+                client: *client,
             })
             .unwrap();
         self.senders.remove(client);

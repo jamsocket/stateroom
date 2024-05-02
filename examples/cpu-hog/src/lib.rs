@@ -4,7 +4,8 @@ use stateroom_wasm::prelude::*;
 const SECONDS: u64 = 1_000_000_000;
 
 #[stateroom_wasm]
-struct CpuHog(String);
+#[derive(Default)]
+struct CpuHog;
 
 fn get_time() -> u64 {
     unsafe {
@@ -12,15 +13,11 @@ fn get_time() -> u64 {
     }
 }
 
-impl SimpleStateroomService for CpuHog {
-    fn new(room_id: &str, _: &impl StateroomContext) -> Self {
-        CpuHog(room_id.to_string())
-    }
-
+impl StateroomService for CpuHog {
     fn connect(&mut self, _: ClientId, ctx: &impl StateroomContext) {
         ctx.send_message(
             MessageRecipient::Broadcast,
-            &format!("Connected to room {}", self.0),
+            &format!("Connected."),
         );
         
         let init_time = get_time();
@@ -33,7 +30,7 @@ impl SimpleStateroomService for CpuHog {
     
         ctx.send_message(
             MessageRecipient::Broadcast,
-            &format!("Finished in room {}", self.0),
+            &format!("Finished."),
         );
     }
 }

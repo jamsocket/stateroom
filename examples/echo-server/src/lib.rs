@@ -1,13 +1,10 @@
 use stateroom_wasm::prelude::*;
 
 #[stateroom_wasm]
+#[derive(Default)]
 struct EchoServer;
 
-impl SimpleStateroomService for EchoServer {
-    fn new(_: &str, _: &impl StateroomContext) -> Self {
-        EchoServer
-    }
-
+impl StateroomService for EchoServer {
     fn connect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
         ctx.send_message(client_id, &format!("User {:?} connected.", client_id));
     }

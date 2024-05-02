@@ -11,6 +11,7 @@ const EXT_MEMORY: &str = "memory";
 const EXT_FN_CONNECT: &str = "connect";
 const EXT_FN_DISCONNECT: &str = "disconnect";
 const EXT_FN_BINARY: &str = "binary";
+const EXT_FN_INIT: &str = "init";
 const EXT_FN_MESSAGE: &str = "message";
 const EXT_FN_SEND_MESSAGE: &str = "send_message";
 const EXT_FN_SEND_BINARY: &str = "send_binary";
@@ -32,6 +33,7 @@ pub struct WasmHost {
 
     fn_malloc: TypedFunc<u32, u32>,
     fn_free: TypedFunc<(u32, u32), ()>,
+    fn_init: TypedFunc<(), ()>,
     fn_message: TypedFunc<(u32, u32, u32), ()>,
     fn_binary: TypedFunc<(u32, u32, u32), ()>,
     fn_connect: TypedFunc<u32, ()>,
@@ -65,7 +67,7 @@ impl WasmHost {
         let (pt, len) = self.put_data(message)?;
 
         self.fn_binary
-            .call(&mut self.store, (client.into(), pt as u32, len))?;
+            .call(&mut self.store, (client.into(), pt, len))?;
 
         self.fn_free.call(&mut self.store, (pt, len))?;
 
@@ -74,31 +76,37 @@ impl WasmHost {
 }
 
 impl StateroomService for WasmHost {
-    fn message(&mut self, client: ClientId, message: &str) {
+    fn init(&mut self, _: &impl StateroomContext) {
+        if let Err(error) = self.fn_init.call(&mut self.store, ()) {
+            tracing::error!(?error, "Error calling `init` on wasm host");
+        }
+    }
+
+    fn message(&mut self, client: ClientId, message: &str, _: &impl StateroomContext) {
         if let Err(error) = self.try_message(client, message) {
             tracing::error!(?error, "Error calling `message` on wasm host");
         }
     }
 
-    fn connect(&mut self, client: ClientId) {
+    fn connect(&mut self, client: ClientId, _: &impl StateroomContext) {
         if let Err(error) = self.fn_connect.call(&mut self.store, client.into()) {
             tracing::error!(?error, "Error calling `connect` on wasm host");
         }
     }
 
-    fn disconnect(&mut self, client: ClientId) {
+    fn disconnect(&mut self, client: ClientId, _: &impl StateroomContext) {
         if let Err(error) = self.fn_disconnect.call(&mut self.store, client.into()) {
             tracing::error!(?error, "Error calling `disconnect` on wasm host");
         };
     }
 
-    fn timer(&mut self) {
+    fn timer(&mut self, _: &impl StateroomContext) {
         if let Err(error) = self.fn_timer.call(&mut self.store, ()) {
             tracing::error!(?error, "Error calling `timer` on wasm host");
         };
     }
 
-    fn binary(&mut self, client: ClientId, message: &[u8]) {
+    fn binary(&mut self, client: ClientId, message: &[u8], _: &impl StateroomContext) {
         if let Err(error) = self.try_binary(client, message) {
             tracing::error!(?error, "Error calling `binary` on wasm host");
         };
@@ -172,7 +180,7 @@ impl WasmHost {
         room_id: &str,
         module: &Module,
         engine: &Engine,
-        context: &Arc<impl StateroomContext + Send + Sync + 'static>,
+        context: Arc<impl StateroomContext>,
     ) -> Result<Self> {
         let wasi = WasiCtxBuilder::new().inherit_stdio().build();
 
@@ -271,6 +279,8 @@ impl WasmHost {
 
         let fn_timer = instance.get_typed_func::<(), ()>(&mut store, EXT_FN_TIMER)?;
 
+        let fn_init = instance.get_typed_func::<(), ()>(&mut store, EXT_FN_INIT)?;
+
         let fn_message =
             instance.get_typed_func::<(u32, u32, u32), ()>(&mut store, EXT_FN_MESSAGE)?;
 
@@ -282,6 +292,7 @@ impl WasmHost {
             memory,
             fn_malloc,
             fn_free,
+            fn_init,
             fn_message,
             fn_binary,
             fn_connect,

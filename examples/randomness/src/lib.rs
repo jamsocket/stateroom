@@ -2,13 +2,10 @@ use bytemuck::cast;
 use stateroom_wasm::prelude::*;
 
 #[stateroom_wasm]
+#[derive(Default)]
 struct RandomServer;
 
-impl SimpleStateroomService for RandomServer {
-    fn new(_: &str, _: &impl StateroomContext) -> Self {
-        RandomServer
-    }
-
+impl StateroomService for RandomServer {
     fn connect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
         let mut buf: [u8; 4] = [0, 0, 0, 0];
         unsafe {

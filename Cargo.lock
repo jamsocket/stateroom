@@ -1783,6 +1783,7 @@ dependencies = [
  "futures-util",
  "stateroom",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
