@@ -8,6 +8,5 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-stateroom = {path="../../stateroom"}
 stateroom-wasm = {path="../../stateroom-wasm"}
 wasi = "0.10.2"

@@ -1,4 +1,4 @@
-use stateroom_wasm::prelude::*;
+use stateroom_wasm::{stateroom_wasm, MessageRecipient, StateroomContext, StateroomService};
 
 #[stateroom_wasm]
 #[derive(Default)]

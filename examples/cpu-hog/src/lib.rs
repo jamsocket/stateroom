@@ -1,4 +1,6 @@
-use stateroom_wasm::prelude::*;
+use stateroom_wasm::{
+    stateroom_wasm, ClientId, MessageRecipient, StateroomContext, StateroomService,
+};
 
 // Seconds per nanosecond. (`wasi::clock_time_get` uses nanos.)
 const SECONDS: u64 = 1_000_000_000;
@@ -8,18 +10,13 @@ const SECONDS: u64 = 1_000_000_000;
 struct CpuHog;
 
 fn get_time() -> u64 {
-    unsafe {
-        wasi::clock_time_get(wasi::CLOCKID_REALTIME, 0).unwrap()
-    }
+    unsafe { wasi::clock_time_get(wasi::CLOCKID_REALTIME, 0).unwrap() }
 }
 
 impl StateroomService for CpuHog {
     fn connect(&mut self, _: ClientId, ctx: &impl StateroomContext) {
-        ctx.send_message(
-            MessageRecipient::Broadcast,
-            &format!("Connected."),
-        );
-        
+        ctx.send_message(MessageRecipient::Broadcast, &format!("Connected."));
+
         let init_time = get_time();
         loop {
             let cur_time = get_time();
@@ -27,10 +24,7 @@ impl StateroomService for CpuHog {
                 break;
             }
         }
-    
-        ctx.send_message(
-            MessageRecipient::Broadcast,
-            &format!("Finished."),
-        );
+
+        ctx.send_message(MessageRecipient::Broadcast, &format!("Finished."));
     }
 }

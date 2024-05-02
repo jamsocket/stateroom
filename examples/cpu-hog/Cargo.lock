@@ -6,7 +6,6 @@ version = 3
 name = "cpu-hog"
 version = "0.1.0"
 dependencies = [
- "stateroom",
  "stateroom-wasm",
  "wasi",
 ]
