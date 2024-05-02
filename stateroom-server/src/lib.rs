@@ -4,8 +4,8 @@ use axum::{
     routing::get,
     Router,
 };
-use server::{ServerState, ServiceActorContext};
-use stateroom::{StateroomService, StateroomServiceFactory};
+use server::ServerState;
+use stateroom::StateroomServiceFactory;
 use std::{
     net::{IpAddr, SocketAddr},
     sync::Arc,
@@ -103,17 +103,8 @@ impl Server {
     /// endpoints are available:
     /// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)
     /// - `/ws` (GET): initiate a WebSocket connection to the stateroom service.
-    pub async fn serve_async<J: StateroomService + Send + Sync + Unpin + 'static>(
-        self,
-        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J>
-            + Send
-            + Sync
-            + 'static,
-    ) -> std::io::Result<()>
-    where
-        J: StateroomService + Send + Sync + Unpin + 'static,
-    {
-        let server_state = Arc::new(ServerState::new(service_factory));
+    pub async fn serve_async(self, factory: impl StateroomServiceFactory) -> std::io::Result<()> {
+        let server_state = Arc::new(ServerState::new(factory));
 
         let app = Router::new()
             .route("/ws", get(serve_websocket))
@@ -133,21 +124,12 @@ impl Server {
     /// endpoints are available:
     /// - `/` (GET): return HTTP 200 if the server is running (useful as a baseline status check)
     /// - `/ws` (GET): initiate a WebSocket connection to the stateroom service.
-    pub fn serve<J>(
-        self,
-        service_factory: impl StateroomServiceFactory<ServiceActorContext, Service = J>
-            + Send
-            + Sync
-            + 'static,
-    ) -> std::io::Result<()>
-    where
-        J: StateroomService + Send + Sync + Unpin + 'static,
-    {
+    pub fn serve(self, factory: impl StateroomServiceFactory) -> std::io::Result<()> {
         tokio::runtime::Builder::new_multi_thread()
             .enable_all()
             .build()
             .unwrap()
-            .block_on(async { self.serve_async(service_factory).await })
+            .block_on(async { self.serve_async(factory).await })
     }
 }
 

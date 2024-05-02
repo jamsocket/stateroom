@@ -1,13 +1,10 @@
 use stateroom_wasm::prelude::*;
 
 #[stateroom_wasm]
+#[derive(Default)]
 struct BinaryEcho;
 
-impl SimpleStateroomService for BinaryEcho {
-    fn new(_: &str, _: &impl StateroomContext) -> Self {
-        BinaryEcho
-    }
-
+impl StateroomService for BinaryEcho {
     fn message(&mut self, _: ClientId, message: &str, ctx: &impl StateroomContext) {
         ctx.send_binary(
             MessageRecipient::Broadcast,

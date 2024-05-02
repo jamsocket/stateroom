@@ -14,3 +14,4 @@ dashmap = "5.5.3"
 futures-util = "0.3.30"
 stateroom = {path="../stateroom", version="0.2.8"}
 tokio = { version = "1.37.0", features = ["rt-multi-thread"] }
+tracing = "0.1.40"

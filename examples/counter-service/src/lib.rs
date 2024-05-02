@@ -1,13 +1,10 @@
 use stateroom_wasm::prelude::*;
 
 #[stateroom_wasm]
+#[derive(Default)]
 struct SharedCounterServer(i32);
 
-impl SimpleStateroomService for SharedCounterServer {
-    fn new(_: &str, _: &impl StateroomContext) -> Self {
-        SharedCounterServer(0)
-    }
-
+impl StateroomService for SharedCounterServer {
     fn message(&mut self, _: ClientId, message: &str, ctx: &impl StateroomContext) {
         match message {
             "increment" => self.0 += 1,

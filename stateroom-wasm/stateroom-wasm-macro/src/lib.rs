@@ -32,7 +32,6 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
             use super::*;
             use stateroom_wasm::prelude::{
                 MessageRecipient,
-                SimpleStateroomService,
                 StateroomContext,
                 ClientId,
             };
@@ -93,7 +92,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
                 let room_id = unsafe {
                     String::from_utf8(std::slice::from_raw_parts(room_id_ptr, room_id_len).to_vec()).map_err(|e| format!("Error parsing UTF-8 from host {:?}", e)).unwrap()
                 };
-                let mut c = #name::new(&room_id, &GlobalStateroomContext);
+                let mut c = #name::default();
 
                 unsafe {
                     SERVER_STATE.replace(c);
@@ -103,7 +102,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
             #[no_mangle]
             extern "C" fn connect(client_id: ClientId) {
                 match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => SimpleStateroomService::connect(st, client_id.into(), &GlobalStateroomContext),
+                    Some(st) => StateroomService::connect(st, client_id.into(), &GlobalStateroomContext),
                     None => ()
                 }
             }
@@ -111,7 +110,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
             #[no_mangle]
             extern "C" fn disconnect(client_id: ClientId) {
                 match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => SimpleStateroomService::disconnect(st, client_id.into(), &GlobalStateroomContext),
+                    Some(st) => StateroomService::disconnect(st, client_id.into(), &GlobalStateroomContext),
                     None => ()
                 }
             }
@@ -119,7 +118,15 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
             #[no_mangle]
             extern "C" fn timer() {
                 match unsafe { SERVER_STATE.as_mut() } {
-                    Some(st) => SimpleStateroomService::timer(st, &GlobalStateroomContext),
+                    Some(st) => StateroomService::timer(st, &GlobalStateroomContext),
+                    None => ()
+                }
+            }
+
+            #[no_mangle]
+            extern "C" fn init() {
+                match unsafe { SERVER_STATE.as_mut() } {
+                    Some(st) => StateroomService::init(st, &GlobalStateroomContext),
                     None => ()
                 }
             }
@@ -130,7 +137,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
                     let string = String::from_utf8(std::slice::from_raw_parts(ptr, len).to_vec()).expect("Error parsing UTF-8 from host {:?}");
 
                     match SERVER_STATE.as_mut() {
-                        Some(st) => SimpleStateroomService::message(st, client_id.into(), &string, &GlobalStateroomContext),
+                        Some(st) => StateroomService::message(st, client_id.into(), &string, &GlobalStateroomContext),
                         None => ()
                     }
                 }
@@ -142,7 +149,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
                     let data = std::slice::from_raw_parts(ptr, len);
 
                     match SERVER_STATE.as_mut() {
-                        Some(st) => SimpleStateroomService::binary(st, client_id.into(), data, &GlobalStateroomContext),
+                        Some(st) => StateroomService::binary(st, client_id.into(), data, &GlobalStateroomContext),
                         None => ()
                     }
                 }
@@ -169,7 +176,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
     }
 }
 
-/// Exposes a `stateroom_wasm::SimpleStateroomService`-implementing trait as a WebAssembly module.
+/// Exposes a `stateroom_wasm::StateroomService`-implementing trait as a WebAssembly module.
 #[proc_macro_attribute]
 pub fn stateroom_wasm(_attr: TokenStream, item: TokenStream) -> TokenStream {
     #[allow(clippy::needless_borrow)]
