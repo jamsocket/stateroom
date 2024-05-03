@@ -1,6 +1,4 @@
-use stateroom_wasm::{
-    stateroom_wasm, ClientId, MessageRecipient, StateroomContext, StateroomService, MessagePayload
-};
+use stateroom_wasm::*;
 
 #[stateroom_wasm]
 #[derive(Default)]
@@ -8,9 +6,8 @@ struct SharedCounterServer(i32);
 
 impl StateroomService for SharedCounterServer {
     fn message(&mut self, _: ClientId, message: MessagePayload, ctx: &impl StateroomContext) {
-        let message = match message {
-            MessagePayload::Text(s) => s,
-            MessagePayload::Bytes(_) => return,
+        let Some(message) = message.text() else {
+            return;
         };
 
         match &message[..] {

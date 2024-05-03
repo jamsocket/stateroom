@@ -1,6 +1,4 @@
-use stateroom_wasm::{
-    stateroom_wasm, ClientId, MessageRecipient, StateroomContext, StateroomService,
-};
+use stateroom_wasm::*;
 
 // Seconds per nanosecond. (`wasi::clock_time_get` uses nanos.)
 const SECONDS: u64 = 1_000_000_000;
@@ -15,7 +13,7 @@ fn get_time() -> u64 {
 
 impl StateroomService for CpuHog {
     fn connect(&mut self, _: ClientId, ctx: &impl StateroomContext) {
-        ctx.send_message(MessageRecipient::Broadcast, format!("Connected."));
+        ctx.send_message(MessageRecipient::Broadcast, "Connected.");
 
         let init_time = get_time();
         loop {
@@ -25,6 +23,6 @@ impl StateroomService for CpuHog {
             }
         }
 
-        ctx.send_message(MessageRecipient::Broadcast, format!("Finished."));
+        ctx.send_message(MessageRecipient::Broadcast, "Finished.");
     }
 }

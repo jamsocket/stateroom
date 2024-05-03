@@ -1,6 +1,4 @@
-use stateroom_wasm::{
-    stateroom_wasm, ClientId, MessageRecipient, StateroomContext, StateroomService, MessagePayload,
-};
+use stateroom_wasm::*;
 
 #[stateroom_wasm]
 #[derive(Default)]
@@ -12,9 +10,8 @@ impl StateroomService for EchoServer {
     }
 
     fn message(&mut self, client_id: ClientId, message: MessagePayload, ctx: &impl StateroomContext) {
-        let message = match message {
-            MessagePayload::Text(s) => s,
-            MessagePayload::Bytes(b) => unimplemented!(),
+        let Some(message) = message.text() else {
+            return;
         };
 
         ctx.send_message(

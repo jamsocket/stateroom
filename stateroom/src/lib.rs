@@ -24,13 +24,13 @@
 //!
 //!         // Send a welcome message.
 //!         ctx.send_message(client,
-//!             &format!("Welcome to the chat! Your name is {}. \
+//!             format!("Welcome to the chat! Your name is {}. \
 //!                      Send /nick <username> to change it.",
 //!                      &username));
 //!
 //!         // Alert all other connected users to the new user.
 //!         ctx.send_message(MessageRecipient::Broadcast,
-//!             &format!("{} has joined the chat", &username));
+//!             format!("{} has joined the chat", &username));
 //!     }
 //!
 //!     /// This is called when a user disconnects.
@@ -39,21 +39,26 @@
 //!
 //!         // Alert all remaining users that a user has left.
 //!         ctx.send_message(MessageRecipient::Broadcast,
-//!            &format!("{} has left the chat", &username));
+//!            format!("{} has left the chat", &username));
 //!     }
 //!
 //!     /// This is called when a user sends a message.
-//!     fn message(&mut self, client: ClientId, message: &str, ctx: &impl StateroomContext) {
+//!     fn message(&mut self, client: ClientId, message: MessagePayload, ctx: &impl StateroomContext) {
+//!         let Some(message) = message.text() else {
+//!             // Ignore binary messages.
+//!             return;
+//!         };
+//!
 //!         if let Some(new_nick) = message.strip_prefix("/nick ") {
 //!             // This message is a /nick command, so process accordingly.
 //!             let old_nick = self.client_to_nickname.insert(client, new_nick.to_string()).unwrap();
 //!             ctx.send_message(MessageRecipient::Broadcast,
-//!                &format!("{} is now known as {}", old_nick, new_nick));
+//!                format!("{} is now known as {}", old_nick, new_nick));
 //!         } else {
 //!             // Broadcast the message to all connected users, prefixed by the username.
 //!             let username = self.client_to_nickname.get(&client).unwrap();
 //!             ctx.send_message(MessageRecipient::Broadcast,
-//!                &format!("{}: {}", username, message));
+//!                format!("{}: {}", username, message));
 //!         }
 //!     }
 //! }

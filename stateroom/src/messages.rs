@@ -10,9 +10,43 @@ pub enum MessagePayload {
     Text(String),
 }
 
+impl MessagePayload {
+    pub fn text(&self) -> Option<&str> {
+        match self {
+            MessagePayload::Text(s) => Some(s),
+            _ => None,
+        }
+    }
+
+    pub fn bytes(&self) -> Option<&[u8]> {
+        match self {
+            MessagePayload::Bytes(b) => Some(b),
+            _ => None,
+        }
+    }
+}
+
 impl Into<MessagePayload> for String {
     fn into(self) -> MessagePayload {
+        MessagePayload::Text(self)
+    }
+}
+
+impl Into<MessagePayload> for &str {
+    fn into(self) -> MessagePayload {
         MessagePayload::Text(self.to_string())
+    }
+}
+
+impl Into<MessagePayload> for Vec<u8> {
+    fn into(self) -> MessagePayload {
+        MessagePayload::Bytes(self)
+    }
+}
+
+impl Into<MessagePayload> for &[u8] {
+    fn into(self) -> MessagePayload {
+        MessagePayload::Bytes(self.to_vec())
     }
 }
 
