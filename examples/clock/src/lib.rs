@@ -10,7 +10,7 @@ impl StateroomService for ClockServer {
     }
 
     fn timer(&mut self, ctx: &impl StateroomContext) {
-        ctx.send_message(MessageRecipient::Broadcast, &format!("Timer @ {}", self.0));
+        ctx.send_message(MessageRecipient::Broadcast, format!("Timer @ {}", self.0));
         self.0 += 1;
         ctx.set_timer(4000);
     }
