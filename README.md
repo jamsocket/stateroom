@@ -19,36 +19,48 @@ Let's implement a simple shared counter. Any connected client will be able to in
 to every connected client.
 
 ```rust
-impl SimpleStateroomService for SharedCounterServer {
-    fn new(_: &str,
-           _: &impl StateroomContext) -> Self {
-        SharedCounterServer(0)
+use stateroom_wasm::*;
+
+#[stateroom_wasm]
+#[derive(Default)]
+struct EchoServer;
+
+impl StateroomService for EchoServer {
+    fn connect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
+        ctx.send_message(client_id, format!("User {:?} connected.", client_id));
     }
 
-    fn message(&mut self, _: ClientId,
-               message: &str,
-               ctx: &impl StateroomContext) {
-        match message {
-            "increment" => self.0 += 1,
-            "decrement" => self.0 -= 1,
-            _ => (),
-        }
+    fn message(&mut self, client_id: ClientId, message: MessagePayload, ctx: &impl StateroomContext) {
+        let Some(message) = message.text() else {
+            return;
+        };
 
         ctx.send_message(
             MessageRecipient::Broadcast,
-            &format!("new value: {}", self.0));
+            format!("User {:?} sent '{}'", client_id, message),
+        );
+    }
+
+    fn disconnect(&mut self, client_id: ClientId, ctx: &impl StateroomContext) {
+        ctx.send_message(
+            MessageRecipient::Broadcast,
+            format!("User {:?} left.", client_id),
+        );
     }
 }
 ```
 
 To serve this service, we will compile it into a WebAssembly module. We import the `#[stateroom_wasm]`
-annotation macro and apply it to the existing `SharedCounterServer` declaration.
+annotation macro and apply it to the existing `SharedCounter` declaration.
 
 ```rust
-use stateroom_wasm::stateroom_wasm;
+use stateroom_wasm::*;
 
 #[stateroom_wasm]
-struct SharedCounterServer(i32);
+#[derive(Default)]
+struct SharedCounter(i32);
+
+impl StateroomService for SharedCounter {}
 ```
 
 Then, install the `stateroom` command-line tool and the `wasm32-wasi` target, and run 
@@ -81,27 +93,11 @@ ws.send('increment')
 
 If everything is set up correctly, the result will be printed out:
 
-```
+```text
 new value: 1
 ```
 
 If multiple clients are connected, each one will receive this message. Just like that, we have a mechanism for sharing some (very basic) application state between clients.
-
-## Using without WebAssembly
-
-If you don't want to compile your service to WebAssembly (for example, if you want to use 
-capabilities that are
-not exposed by [WASI](https://wasi.dev/)), you can use `stateroom-server`.
-
-```rust
-use stateroom_server::*;
-
-fn main() -> std::io::Result<()> {
-    serve::<SharedCounterServer>()?;
-
-    Ok(())
-}
-```
 
 ## Modules
 
@@ -112,7 +108,7 @@ will probably be [`stateroom-cli`](/stateroom-cli), which provides a command-lin
 
 - [`stateroom`](https://docs.rs/stateroom/) is the core, minimal implementation of the service interface.
 - [`stateroom-cli`](https://docs.rs/stateroom-cli/) is a command-line interface for interacting with WebAssembly-compiled Stateroom services.
-- [`stateroom-server`](https://docs.rs/stateroom-server/) provides [Actix](https://actix.rs/) actors to facilitate serving Stateroom services in a WebSocket server.
+- [`stateroom-server`](https://docs.rs/stateroom-server/) provides an [Axum](https://github.com/tokio-rs/axum)-based WebSocket server that runs a Stateroom service.
 - [`stateroom-wasm`](https://docs.rs/stateroom-wasm/) provides a macro for generating WebAssembly modules from Stateroom services.
 - [`stateroom-wasm-host`](https://docs.rs/stateroom-wasm-host/) provides a way to import Stateroom services from WebAssembly modules.
 

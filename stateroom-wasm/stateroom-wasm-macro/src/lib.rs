@@ -39,7 +39,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
             }
 
             // Instance-global stateroom service.
-            static mut SERVER_STATE: Option<stateroom_wasm::WrappedStateroomService<#name>> = None;
+            static mut SERVER_STATE: Option<$crate::WrappedStateroomService<#name>> = None;
 
             #[no_mangle]
             pub static STATEROOM_API_VERSION: i32 = 1;
@@ -53,7 +53,7 @@ fn stateroom_wasm_impl(item: &proc_macro2::TokenStream) -> proc_macro2::TokenStr
                     match SERVER_STATE.as_mut() {
                         Some(s) => s,
                         None => {
-                            let s = stateroom_wasm::WrappedStateroomService::new(#name::default(), ffi::stateroom_send);
+                            let s = $crate::WrappedStateroomService::new(#name::default(), ffi::stateroom_send);
                             SERVER_STATE.replace(s);
                             SERVER_STATE.as_mut().unwrap()
                         }
