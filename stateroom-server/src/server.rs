@@ -5,7 +5,7 @@ use stateroom::{
     StateroomServiceFactory,
 };
 use std::{
-    sync::{atomic::AtomicU32, Arc},
+    sync::{atomic::AtomicU32, Arc, Mutex},
     time::Duration,
 };
 use tokio::{
@@ -18,6 +18,7 @@ use tokio::{
 pub struct ServerStateroomContext {
     senders: Arc<DashMap<ClientId, Sender<Message>>>,
     event_sender: Arc<Sender<Event>>,
+    timer_handle: Mutex<Option<tokio::task::JoinHandle<()>>>,
 }
 
 impl ServerStateroomContext {
@@ -61,12 +62,20 @@ impl StateroomContext for ServerStateroomContext {
     }
 
     fn set_timer(&self, ms_delay: u32) {
-        // TODO: setting the timer should replace the previous timer?
         let sender = self.event_sender.clone();
-        tokio::spawn(async move {
+        let handle = tokio::spawn(async move {
             tokio::time::sleep(Duration::from_millis(ms_delay as u64)).await;
             sender.send(Event::Timer).await.unwrap();
         });
+
+        let mut c = self
+            .timer_handle
+            .lock()
+            .expect("timer handle lock poisoned");
+        if let Some(c) = c.take() {
+            c.abort();
+        }
+        *c = Some(handle);
     }
 }
 
@@ -98,6 +107,7 @@ impl ServerState {
             let context = Arc::new(ServerStateroomContext {
                 senders: senders_.clone(),
                 event_sender: Arc::new(tx_),
+                timer_handle: Mutex::new(None),
             });
 
             let mut service = factory.build("", context.clone()).unwrap();
