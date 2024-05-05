@@ -138,6 +138,7 @@ pub trait StateroomServiceFactory: Send + Sync + 'static {
     ) -> Result<Self::Service, Self::Error>;
 }
 
+#[derive(Default)]
 pub struct DefaultStateroomFactory<T: StateroomService + Default> {
     _marker: std::marker::PhantomData<T>,
 }
@@ -146,11 +147,7 @@ impl<T: StateroomService + Default> StateroomServiceFactory for DefaultStateroom
     type Service = T;
     type Error = Infallible;
 
-    fn build(
-        &self,
-        _: &str,
-        _: Arc<impl StateroomContext>,
-    ) -> Result<Self::Service, Self::Error> {
+    fn build(&self, _: &str, _: Arc<impl StateroomContext>) -> Result<Self::Service, Self::Error> {
         Ok(T::default())
     }
 }
