@@ -63,7 +63,7 @@
 //!     }
 //! }
 
-use std::sync::Arc;
+use std::{convert::Infallible, sync::Arc};
 
 pub use client_id::ClientId;
 pub use message_recipient::MessageRecipient;
@@ -136,4 +136,21 @@ pub trait StateroomServiceFactory: Send + Sync + 'static {
         room_id: &str,
         context: Arc<impl StateroomContext>,
     ) -> Result<Self::Service, Self::Error>;
+}
+
+pub struct DefaultStateroomFactory<T: StateroomService + Default> {
+    _marker: std::marker::PhantomData<T>,
+}
+
+impl<T: StateroomService + Default> StateroomServiceFactory for DefaultStateroomFactory<T> {
+    type Service = T;
+    type Error = Infallible;
+
+    fn build(
+        &self,
+        _: &str,
+        _: Arc<impl StateroomContext>,
+    ) -> Result<Self::Service, Self::Error> {
+        Ok(T::default())
+    }
 }
