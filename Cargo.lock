@@ -1751,14 +1751,14 @@ checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
 
 [[package]]
 name = "stateroom"
-version = "0.2.8"
+version = "0.4.0"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "stateroom-cli"
-version = "0.2.9"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "cargo_metadata",
@@ -1776,7 +1776,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-server"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "axum",
  "dashmap",
@@ -1788,7 +1788,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-wasm"
-version = "0.2.9"
+version = "0.4.0"
 dependencies = [
  "bincode",
  "stateroom",
@@ -1797,7 +1797,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-wasm-host"
-version = "0.2.9"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "bincode",
@@ -1810,7 +1810,7 @@ dependencies = [
 
 [[package]]
 name = "stateroom-wasm-macro"
-version = "0.2.9"
+version = "0.4.0"
 dependencies = [
  "proc-macro2",
  "quote",
