@@ -12,6 +12,7 @@ use std::{
     time::Duration,
 };
 use tokio::{net::TcpListener, select};
+use tower_http::services::ServeDir;
 
 mod server;
 
@@ -106,9 +107,17 @@ impl Server {
     pub async fn serve_async(self, factory: impl StateroomServiceFactory) -> std::io::Result<()> {
         let server_state = Arc::new(ServerState::new(factory));
 
-        let app = Router::new()
+        let mut app = Router::new()
             .route("/ws", get(serve_websocket))
             .with_state(server_state);
+
+        if let Some(static_path) = self.static_path {
+            app = app.nest_service("/", ServeDir::new(static_path));
+        }
+
+        if let Some(client_path) = self.client_path {
+            app = app.nest_service("/client", ServeDir::new(client_path));
+        }
 
         let ip = self.ip.parse::<IpAddr>().unwrap();
         let addr = SocketAddr::new(ip, self.port);
