@@ -36,6 +36,7 @@ impl WasmHostFactory {
         let engine = Engine::default();
         tracing::info!(wasm_file=?wasm_file.as_ref(), "Loading WebAssembly module");
         let module = Module::from_file(&engine, wasm_file)?;
+        tracing::info!("WebAssembly module loaded");
 
         Ok(WasmHostFactory {
             engine: Arc::new(engine),

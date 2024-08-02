@@ -1,10 +1,10 @@
-FROM rust:latest as build
+FROM rust:1.80-slim as build
 
 WORKDIR /work
 COPY . .
 RUN cargo build -p stateroom-cli --release
 
-FROM gcr.io/distroless/cc-debian11
+FROM debian:bookworm-slim
 
 COPY --from=build /work/target/release/stateroom /stateroom
 ENTRYPOINT [ "/stateroom" ]
