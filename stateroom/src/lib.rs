@@ -74,7 +74,7 @@ mod message_recipient;
 mod messages;
 
 /// Provides an interface for a [StateroomService] instance to send messages back to its host environment.
-pub trait StateroomContext: Send + Sync + 'static {
+pub trait StateroomContext: Send + Sync + Clone + 'static {
     /// Sends a message to a currently connected user, or broadcast a message to all users.
     ///
     /// Recipient can be a `u32` representing an individual user to send a message to, or

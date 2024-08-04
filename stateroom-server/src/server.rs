@@ -15,10 +15,11 @@ use tokio::{
 
 /// A [StateroomContext] implementation for [StateroomService]s hosted in the
 /// context of a [ServiceActor].
+#[derive(Clone)]
 pub struct ServerStateroomContext {
     senders: Arc<DashMap<ClientId, Sender<Message>>>,
     event_sender: Arc<Sender<Event>>,
-    timer_handle: Mutex<Option<tokio::task::JoinHandle<()>>>,
+    timer_handle: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
 }
 
 impl ServerStateroomContext {
@@ -107,7 +108,7 @@ impl ServerState {
             let context = Arc::new(ServerStateroomContext {
                 senders: senders_.clone(),
                 event_sender: Arc::new(tx_),
-                timer_handle: Mutex::new(None),
+                timer_handle: Arc::new(Mutex::new(None)),
             });
 
             let mut service = factory.build("", context.clone()).unwrap();

@@ -42,6 +42,7 @@ impl<S: StateroomService> WrappedStateroomService<S> {
     }
 }
 
+#[derive(Clone)]
 struct WasmStateroomContext {
     callback: Callback,
 }
