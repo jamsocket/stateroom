@@ -27,10 +27,10 @@ impl<S: StateroomService> WrappedStateroomService<S> {
                 self.state.init(&self.context);
             }
             MessageToProcess::Connect { client } => {
-                self.state.connect(client.into(), &self.context);
+                self.state.connect(client, &self.context);
             }
             MessageToProcess::Disconnect { client } => {
-                self.state.disconnect(client.into(), &self.context);
+                self.state.disconnect(client, &self.context);
             }
             MessageToProcess::Message { sender, message } => {
                 self.state.message(sender, message, &self.context);

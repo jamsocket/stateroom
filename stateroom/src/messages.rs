@@ -26,27 +26,27 @@ impl MessagePayload {
     }
 }
 
-impl Into<MessagePayload> for String {
-    fn into(self) -> MessagePayload {
-        MessagePayload::Text(self)
+impl From<String> for MessagePayload {
+    fn from(val: String) -> Self {
+        MessagePayload::Text(val)
     }
 }
 
-impl Into<MessagePayload> for &str {
-    fn into(self) -> MessagePayload {
-        MessagePayload::Text(self.to_string())
+impl From<&str> for MessagePayload {
+    fn from(val: &str) -> Self {
+        MessagePayload::Text(val.to_string())
     }
 }
 
-impl Into<MessagePayload> for Vec<u8> {
-    fn into(self) -> MessagePayload {
-        MessagePayload::Bytes(self)
+impl From<Vec<u8>> for MessagePayload {
+    fn from(val: Vec<u8>) -> Self {
+        MessagePayload::Bytes(val)
     }
 }
 
-impl Into<MessagePayload> for &[u8] {
-    fn into(self) -> MessagePayload {
-        MessagePayload::Bytes(self.to_vec())
+impl From<&[u8]> for MessagePayload {
+    fn from(val: &[u8]) -> Self {
+        MessagePayload::Bytes(val.to_vec())
     }
 }
 

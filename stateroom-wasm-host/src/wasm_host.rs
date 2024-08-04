@@ -65,16 +65,12 @@ impl StateroomService for WasmHost {
     }
 
     fn connect(&mut self, client: ClientId, _: &impl StateroomContext) {
-        let message = MessageToProcess::Connect {
-            client: client.into(),
-        };
+        let message = MessageToProcess::Connect { client };
         self.try_recv(message).unwrap();
     }
 
     fn disconnect(&mut self, client: ClientId, _: &impl StateroomContext) {
-        let message = MessageToProcess::Disconnect {
-            client: client.into(),
-        };
+        let message = MessageToProcess::Disconnect { client };
         self.try_recv(message).unwrap();
     }
 
@@ -157,7 +153,7 @@ impl WasmHost {
                 move |mut caller: Caller<'_, WasiCtx>, start: u32, len: u32| {
                     let memory = get_memory(&mut caller);
                     let message = get_u8_vec(&caller, &memory, start, len);
-                    let message: MessageFromProcess = bincode::deserialize(&message).unwrap();
+                    let message: MessageFromProcess = bincode::deserialize(message).unwrap();
 
                     match message {
                         MessageFromProcess::Message { recipient, message } => {
