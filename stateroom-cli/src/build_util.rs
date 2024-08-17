@@ -58,6 +58,10 @@ pub fn run_cargo_build_command(
                         .extension()
                         .map_or(false, |ext| ext.to_ascii_lowercase() == "wasm")
                     {
+                        if filename.parent().map_or(false, |p| p.ends_with("deps")) {
+                            continue;
+                        }
+
                         found_wasm_modules.push(filename);
                     }
                 }
@@ -79,7 +83,12 @@ pub fn run_cargo_build_command(
     let result = match found_wasm_modules.as_slice() {
         [] => return Err(anyhow!("No .wasm files emitted by build.")),
         [a] => a,
-        _ => return Err(anyhow!("Multiple .wasm files emitted by build.")),
+        files => {
+            return Err(anyhow!(
+                "Multiple .wasm files emitted by build ({:?}).",
+                files
+            ))
+        }
     };
 
     Ok(result.into())

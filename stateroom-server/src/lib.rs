@@ -163,7 +163,9 @@ async fn handle_socket(mut socket: WebSocket, state: Arc<ServerState>) {
             msg = socket.recv() => {
                 match msg {
                     Some(Ok(msg)) => send.send(Event::Message { client: client_id, message: msg }).await.unwrap(),
-                    Some(Err(_)) => todo!("Error receiving message from client."),
+                    Some(Err(err)) => {
+                        tracing::warn!(?err, "Error receiving message from client.");
+                    },
                     None => break,
                 }
             }
