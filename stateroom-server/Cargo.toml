@@ -10,7 +10,7 @@ description = "Server for Stateroom services over WebSockets"
 
 [dependencies]
 axum = { version = "0.7.5", features = ["ws"] }
-dashmap = "5.5.3"
+dashmap = "6"
 futures-util = "0.3.30"
 stateroom = {path="../stateroom", version="0.4.1"}
 tokio = { version = "1.37.0", features = ["rt-multi-thread"] }
