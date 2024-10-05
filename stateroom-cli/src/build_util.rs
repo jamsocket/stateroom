@@ -101,7 +101,7 @@ pub struct BuildResult {
 
 pub fn do_build(config: &StateroomConfig) -> Result<BuildResult> {
     tracing::info!("Building service");
-    let server_wasm = run_cargo_build_command(&config.service.package, "wasm32-wasi", true)?;
+    let server_wasm = run_cargo_build_command(&config.service.package, "wasm32-wasip1", true)?;
 
     let client_wasm = if let Some(client_config) = &config.client {
         tracing::info!("Building client");
